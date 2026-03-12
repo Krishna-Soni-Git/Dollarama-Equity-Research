@@ -1,6 +1,14 @@
-streamlit>=1.32
-plotly>=5.18
-pandas>=2.0
-numpy>=1.24
-python-dotenv>=1.0
-psycopg2-binary>=2.9
+# Dollarama Equity Research Dashboard
+# Install with: pip install -r requirements.txt
+
+# Core dashboard
+streamlit>=1.32.0
+plotly>=5.20.0
+pandas>=2.0.0
+numpy>=1.26.0
+
+# Data source (used in yfinance mode + dollarama_data_pull.py)
+yfinance>=0.2.38
+
+# Optional — loads .env file for local API keys if present
+python-dotenv>=1.0.0
