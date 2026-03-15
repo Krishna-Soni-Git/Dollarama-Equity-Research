@@ -74,8 +74,8 @@ except ImportError:
 
 # ─── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Dollarama — Equity Research Dashboard",
-    page_icon=None, layout="wide",
+    page_title="Dollarama — Equity Research",
+    page_icon="📈", layout="wide",
     initial_sidebar_state="expanded",
 )
 
@@ -85,53 +85,42 @@ BLUE="#3A7EC0"; PURPLE="#8B5CF6"; BG="#0D0F14"; CARD="#161A22"
 PANEL="#1E2330"; GRID="rgba(184,148,58,0.07)"; FG="#B8C0CC"; WHITE="#F0EBE0"
 
 st.markdown(f"""<style>
+/* ── Base ── */
 .stApp{{background:{BG}}}
-[data-testid="stSidebar"]{{background:{CARD};border-right:1px solid rgba(184,148,58,.2)}}
-html,body,[class*="css"]{{font-family:'Segoe UI',sans-serif;color:{WHITE}}}
-h1,h2,h3{{color:{WHITE}!important}}
-h1{{border-bottom:2px solid {GOLD};padding-bottom:8px}}
-hr{{border-color:rgba(184,148,58,.2)!important}}
-[data-testid="metric-container"]{{background:{PANEL};border:1px solid rgba(184,148,58,.2);
-  border-radius:8px;padding:14px;border-left:3px solid {GOLD}}}
-[data-testid="stMetricValue"]{{color:{GOLD_LT}!important;font-size:26px!important}}
-[data-testid="stMetricLabel"]{{color:#8A94A6!important}}
-.stTabs [data-baseweb="tab-list"]{{background:{CARD};border-bottom:1px solid rgba(184,148,58,.2)}}
-.stTabs [data-baseweb="tab"]{{color:#8A94A6;background:transparent;padding:8px 18px}}
-.stTabs [aria-selected="true"]{{color:{GOLD_LT}!important;
-  background:rgba(184,148,58,.08)!important;border-bottom:2px solid {GOLD}!important}}
-/* Hide the horizontal tab bar — navigation is in the sidebar */
-.stTabs [data-baseweb="tab-list"] {{ display: none !important; }}
-/* Sidebar nav buttons */
-[data-testid="stSidebar"] .stButton > button {{
-  text-align:left !important;
-  justify-content:flex-start !important;
-  font-size:13px !important;
-  padding:8px 12px !important;
-  border-radius:6px !important;
-  margin-bottom:2px !important;
-  border:1px solid transparent !important;
+[data-testid="stSidebar"]{{background:#0F1117;border-right:1px solid rgba(184,148,58,.12)}}
+html,body,[class*="css"]{{font-family:'Inter','Segoe UI',sans-serif;color:{WHITE}}}
+h1,h2,h3,h4{{color:{WHITE}!important;font-weight:600!important}}
+hr{{border-color:rgba(255,255,255,.06)!important;margin:1rem 0!important}}
+/* ── Metrics ── */
+[data-testid="metric-container"]{{
+  background:#1C2130;border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;padding:16px 18px;border-top:3px solid {GOLD}}}
+[data-testid="stMetricValue"]{{color:{GOLD_LT}!important;font-size:24px!important;font-weight:700!important}}
+[data-testid="stMetricLabel"]{{color:#6B7280!important;font-size:11px!important;text-transform:uppercase;letter-spacing:.05em}}
+/* ── Hide horizontal tab bar ── */
+.stTabs [data-baseweb="tab-list"]{{display:none!important}}
+/* ── Sidebar nav ── */
+[data-testid="stSidebar"] .stButton>button{{
+  width:100%!important;text-align:left!important;justify-content:flex-start!important;
+  font-size:13px!important;padding:9px 14px!important;border-radius:8px!important;
+  margin-bottom:3px!important;border:1px solid transparent!important;transition:all .15s!important;
 }}
-[data-testid="stSidebar"] .stButton > button[kind="secondary"] {{
-  background:transparent !important;
-  color:{FG} !important;
-  border-color:transparent !important;
+[data-testid="stSidebar"] .stButton>button[kind="secondary"]{{
+  background:transparent!important;color:#9CA3AF!important;
 }}
-[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {{
-  background:rgba(184,148,58,.08) !important;
-  color:{GOLD_LT} !important;
-  border-color:rgba(184,148,58,.25) !important;
+[data-testid="stSidebar"] .stButton>button[kind="secondary"]:hover{{
+  background:rgba(184,148,58,.1)!important;color:{GOLD_LT}!important;
+  border-color:rgba(184,148,58,.2)!important;
 }}
-[data-testid="stSidebar"] .stButton > button[kind="primary"] {{
-  background:rgba(184,148,58,.15) !important;
-  color:{GOLD_LT} !important;
-  border-color:{GOLD} !important;
-  font-weight:600 !important;
+[data-testid="stSidebar"] .stButton>button[kind="primary"]{{
+  background:rgba(184,148,58,.18)!important;color:{GOLD_LT}!important;
+  border-color:rgba(184,148,58,.5)!important;font-weight:600!important;
 }}
-.live-badge{{display:inline-block;background:rgba(61,158,106,.15);
-  border:1px solid rgba(61,158,106,.4);color:{GREEN};font-weight:700;
-  font-size:13px;padding:5px 14px;border-radius:4px;margin-left:8px}}
-.data-note{{background:rgba(58,126,192,0.08);border-left:3px solid {BLUE};
-  padding:10px 16px;border-radius:4px;font-size:12px;color:{FG};margin:8px 0}}
+/* ── Misc ── */
+.badge-live{{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.12);
+  border:1px solid rgba(16,185,129,.3);color:#34D399;font-size:11px;font-weight:600;
+  padding:4px 10px;border-radius:20px;letter-spacing:.04em}}
+[data-testid="stDataFrame"]{{border-radius:8px;overflow:hidden}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -189,7 +178,6 @@ def _load_csv_financials(uploaded_file_path: str) -> pd.DataFrame | None:
         return raw
     except Exception as e:
         return None
-
 
 def _load_csv_peers(uploaded_file_path: str) -> pd.DataFrame | None:
     """
@@ -287,8 +275,6 @@ FALLBACK_PEERS = pd.DataFrame({
     "csho":     [  215,     220],
     "prcc_f":   [   70,     100],
 })
-
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 3: DATA PROCESSING
@@ -405,8 +391,6 @@ def process_dol(raw: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-
-
 def process_peers(peer_raw: pd.DataFrame, dol_row: pd.Series) -> pd.DataFrame:
     """
     Build standardised peer comparison table.
@@ -459,11 +443,6 @@ def process_peers(peer_raw: pd.DataFrame, dol_row: pd.Series) -> pd.DataFrame:
 
     return pd.DataFrame(rows)
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 4: MONTE CARLO
-# All inputs (FCF, net debt, shares) sourced from Compustat via process_dol()
-# ══════════════════════════════════════════════════════════════════════════════
 @st.cache_data(show_spinner=False)
 def run_monte_carlo(n, base_fcf, net_debt, shares, wacc_mu, tgr_mu, rev_growth_mu):
     """
@@ -512,21 +491,24 @@ def run_monte_carlo(n, base_fcf, net_debt, shares, wacc_mu, tgr_mu, rev_growth_m
         "prob_below_80":   float(np.mean(px < 80) * 100),
     }
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 5: CHART HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 def base_layout(title=""):
-    """Returns layout dict WITHOUT height — pass height separately to update_layout()."""
+    """Clean professional chart layout."""
     return dict(
-        title=dict(text=title, font=dict(color=FG, size=12), x=0.01),
-        paper_bgcolor=CARD, plot_bgcolor=BG,
-        font=dict(family="Segoe UI", color=FG, size=11),
-        margin=dict(l=50, r=20, t=40, b=40),
-        xaxis=dict(gridcolor=GRID, linecolor=GRID, tickfont=dict(size=10)),
-        yaxis=dict(gridcolor=GRID, linecolor=GRID, tickfont=dict(size=10)),
-        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=10)),
+        title=dict(text=title, font=dict(color=WHITE, size=13, family="Inter, Segoe UI"), x=0.0),
+        paper_bgcolor="#161B27", plot_bgcolor="#0D1117",
+        font=dict(family="Inter, Segoe UI", color="#9CA3AF", size=11),
+        margin=dict(l=50, r=20, t=44, b=40),
+        xaxis=dict(gridcolor="rgba(255,255,255,.04)", linecolor="rgba(255,255,255,.08)",
+                   tickfont=dict(size=10, color="#9CA3AF"), zeroline=False),
+        yaxis=dict(gridcolor="rgba(255,255,255,.04)", linecolor="rgba(255,255,255,.08)",
+                   tickfont=dict(size=10, color="#9CA3AF"), zeroline=False),
+        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=10, color="#9CA3AF"),
+                    bordercolor="rgba(255,255,255,.06)", borderwidth=1),
         hovermode="x unified",
+        hoverlabel=dict(bgcolor="#1C2130", font=dict(color=WHITE, size=11)),
     )
 
 def show(fig, **kw):
@@ -542,7 +524,6 @@ def data_note(source_col, derived_formula, compustat_col=None):
     st.markdown(f"<div class='data-note'>{' &nbsp;|&nbsp; '.join(parts)}</div>",
                 unsafe_allow_html=True)
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 6: SIDEBAR — Data Source & Controls
 # ── Session state defaults for sliders (defined in tabs, used globally) ──────
@@ -554,11 +535,14 @@ if "active_tab" not in st.session_state: st.session_state.active_tab = 0
 
 # ══════════════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown("## Dollarama Research")
-    st.markdown("**DOL.TO · TSX · CAD**")
+    st.markdown(
+        f"<div style='padding:8px 4px 12px'>"
+        f"<div style='font-size:18px;font-weight:700;color:{WHITE}'>Dollarama Inc.</div>"
+        f"<div style='font-size:12px;color:#6B7280;margin-top:2px'>DOL.TO · Equity Research · MBAN5570</div>"
+        f"</div>", unsafe_allow_html=True)
     st.divider()
 
-    # ── Vertical tab navigation ───────────────────────────────────────────────
+    # ── Navigation ────────────────────────────────────────────────────────────
     _NAV = [
         ("📊", "Performance"),
         ("💰", "ROIC & Capital"),
@@ -584,8 +568,7 @@ with st.sidebar:
             st.rerun()
 
     st.divider()
-    st.caption("All $ in CAD millions unless noted.\nPeer figures in USD.\nMBAN5570 — Soni/Warner 2025.")
-    st.divider()
+    st.caption("All figures in CAD millions · Peer figures in USD\nData: Yahoo Finance (Live)")
     with st.expander("🤝 Clone & Contribute", expanded=False):
         st.code(
             "git clone https://github.com/YOUR_USERNAME/\\\n"
@@ -594,7 +577,6 @@ with st.sidebar:
             "streamlit run dollarama_research.py",
             language="bash"
         )
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 6b: yFINANCE FETCH
@@ -743,7 +725,6 @@ def fetch_from_yfinance():
     except Exception as e:
         return None, None, f"{str(e)}\n\n{_tb.format_exc()}"
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 7: LOAD & PROCESS DATA — Yahoo Finance (live)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -761,7 +742,7 @@ if raw_dol is not None and len(raw_dol) > 0 and raw_dol["revt"].max() > 0:
     )
 else:
     st.error(f"Yahoo Finance fetch failed: {err}")
-    st.info("Showing built-in data while Yahoo Finance is unavailable.")
+    st.warning("Yahoo Finance unavailable — showing built-in data.")
     df       = process_dol(FALLBACK_DOL)
     peers_df = process_peers(FALLBACK_PEERS, df.iloc[-1])
 
@@ -807,98 +788,46 @@ dcf_price = (pv_stage1 + pv_tv - nd_val) / sh_val
 peer_ev_avg  = peers_df["EV/EBITDA"].iloc[1:].mean() if peers_df is not None and len(peers_df) > 1 else 11.5
 comps_price  = (peer_ev_avg * 1.30 * float(latest["ebitda"]) - nd_val) / sh_val
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 8: HEADER
-# ══════════════════════════════════════════════════════════════════════════════
-hc1, hc2 = st.columns([3, 1])
+# ── Header ─────────────────────────────────────────────────────────────────
+hc1, hc2 = st.columns([5, 1])
 with hc1:
-    badge = '<span class="live-badge">◉ LIVE — Yahoo Finance</span>'
-    st.markdown(f"# Dollarama Inc. (DOL.TO) {badge}", unsafe_allow_html=True)
-    st.markdown(f"*FY{int(df['fyear'].min())}–FY{last_yr} · Equity Research Dashboard — MBAN5570*")
+    st.markdown(
+        f"<h1 style='margin-bottom:4px;font-size:28px'>Dollarama Inc. "
+        f"<span style='color:#6B7280;font-size:16px;font-weight:400'>DOL.TO · TSX</span>"
+        f"<span class='badge-live' style='margin-left:12px;font-size:11px'>● LIVE</span></h1>",
+        unsafe_allow_html=True)
+    st.markdown(
+        f"<p style='color:#6B7280;font-size:13px;margin-top:0'>"
+        f"Equity Research — FY{int(df['fyear'].min())}–FY{last_yr} · MBAN5570 · Soni & Warner 2025</p>",
+        unsafe_allow_html=True)
 with hc2:
-    st.markdown(f"""<div style='background:rgba(42,107,71,.15);border:1px solid rgba(61,158,106,.3);
-        border-radius:6px;padding:12px 20px;margin-top:10px;text-align:center'>
-        <div style='font-size:30px;font-weight:700;color:{GREEN};letter-spacing:3px'>BUY</div>
-        <div style='color:{WHITE};font-size:13px'>Target: <b>CAD $212.06</b></div>
-        <div style='color:{GREEN};font-size:11px'>+9.5% from ~$193.63</div>
-    </div>""", unsafe_allow_html=True)
+    st.markdown(
+        f"<div style='text-align:right;padding-top:8px'>"
+        f"<div style='font-size:28px;font-weight:800;color:{GREEN};letter-spacing:2px'>BUY</div>"
+        f"<div style='color:#9CA3AF;font-size:12px'>Target <b style='color:{WHITE}'>CAD $212.06</b></div>"
+        f"<div style='color:{GREEN};font-size:11px'>+9.5% upside</div>"
+        f"</div>", unsafe_allow_html=True)
 
 st.divider()
 
-# ── 5-Step Equity Research Process Banner ─────────────────────────────────
-st.markdown("### 🔎 Our Equity Research Process")
-step_cols = st.columns(5)
-steps = [
-    ("1️⃣", "Identify Critical Factors", "Revenue growth, store expansion, same-store sales, ROIC, and margin trends.", "Performance · Risk & Moat"),
-    ("2️⃣", "Build Financial Forecasts", "Project Dollarama's revenues, earnings, and cash flows over a 5-year horizon.", "Forward Outlook"),
-    ("3️⃣", "Value the Stock", "Use DCF analysis and peer multiples (EV/EBITDA, P/E) to set a price target.", "Valuation & DCF · Peer Comps"),
-    ("4️⃣", "Assess Risk & Uncertainty", "Monte Carlo simulation across 10,000 scenarios; macro and business risk review.", "Monte Carlo · Risk & Moat"),
-    ("5️⃣", "Make a Recommendation", "Combine all evidence into a clear BUY / HOLD / SELL with a price target.", "See header ↑"),
-]
-for col, (icon, title, desc, tabs_ref) in zip(step_cols, steps):
-    col.markdown(f"""<div style='background:{PANEL};border:1px solid rgba(184,148,58,.25);border-top:3px solid {GOLD};
-        border-radius:8px;padding:14px 12px;height:100%'>
-        <div style='font-size:22px;margin-bottom:4px'>{icon}</div>
-        <div style='color:{WHITE};font-weight:700;font-size:13px;margin-bottom:6px'>{title}</div>
-        <div style='color:{FG};font-size:11px;margin-bottom:8px'>{desc}</div>
-        <div style='color:{GOLD_LT};font-size:10px;font-style:italic'>→ {tabs_ref}</div>
-    </div>""", unsafe_allow_html=True)
+# ── KPI Row ────────────────────────────────────────────────────────────────
+_k = st.columns(6)
+_k[0].metric("Revenue",        f"${latest['revt']:,.0f}M",       f"{latest['rev_growth']:+.1f}% YoY")
+_k[1].metric("EBITDA Margin",  f"{latest['ebitda_margin']:.1f}%", f"{latest['ebitda_margin']-df.iloc[-2]['ebitda_margin']:+.1f}pp YoY")
+_k[2].metric("EPS",            f"${latest['epspx']:.2f}",         f"{latest['eps_growth']:+.1f}% YoY")
+_k[3].metric("ROIC",           f"{latest['roic']:.1f}%",          f"vs {wacc_s}% WACC")
+_k[4].metric("Free Cash Flow", f"${latest['fcf']:,.0f}M",         f"{latest['fcf_margin']:.1f}% of revenue")
+_k[5].metric("Net Debt/EBITDA",f"{latest['nd_ebitda']:.1f}×",     "leverage ratio")
 
 st.divider()
-
-# ── Top KPI row ───────────────────────────────────────────────────────────
-st.markdown(f"#### Key Metrics at a Glance — FY{last_yr}  <span style='font-size:12px;color:#8A94A6;font-weight:400;margin-left:8px'>Source: Yahoo Finance (Live)</span>", unsafe_allow_html=True)
-cols = st.columns(6)
-cols[0].metric(
-    "Annual Revenue",
-    f"${latest['revt']:,.0f}M",
-    f"{latest['rev_growth']:+.1f}% vs last year"
-)
-cols[1].metric(
-    "Operating Profit Margin",
-    f"{latest['ebitda_margin']:.1f}%",
-    f"{latest['ebitda_margin']-df.iloc[-2]['ebitda_margin']:+.1f} percentage points YoY"
-)
-cols[2].metric(
-    "Earnings Per Share",
-    f"${latest['epspx']:.2f}",
-    f"{latest['eps_growth']:+.1f}% vs last year"
-)
-cols[3].metric(
-    "Return on Capital (ROIC)",
-    f"{latest['roic']:.1f}%",
-    f"Cost of capital: {wacc_s}% — well above ✓" if latest['roic'] > wacc_s else f"Below cost of capital {wacc_s}%"
-)
-cols[4].metric(
-    "Free Cash Flow",
-    f"${latest['fcf']:,.0f}M",
-    f"{latest['fcf_margin']:.1f}% of revenue"
-)
-cols[5].metric(
-    "Debt vs Earnings",
-    f"{latest['nd_ebitda']:.1f}× Net Debt/EBITDA",
-    "How many years of earnings to repay debt"
-)
-
-st.divider()
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
-# Active tab driven by sidebar nav (no horizontal tab bar)
 _tab = st.session_state.active_tab
 
-# Dummy tabs object so existing with tabs[N] syntax still works
-tabs = st.tabs([" " * (i+1) for i in range(11)])   # invisible single-space labels
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 1 — FINANCIAL PERFORMANCE
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[0]:
-    st.subheader(f"Financial Performance — FY{int(df['fyear'].min())}–FY{last_yr}")
+if _tab == 0:
+    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Financial Performance — FY{int(df['fyear'].min())}–FY{last_yr}</h3>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -968,7 +897,7 @@ with tabs[0]:
             show(fig6)
 
     # Summary table
-    st.subheader("Income Statement — Full Table")
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Income Statement — Full Table</h3>", unsafe_allow_html=True)
     tbl_cols = {
         "fyear": "Year", "revt": "Revenue $M", "cogs": "COGS $M",
         "xsga": "SG&A $M", "dp": "D&A $M", "ebitda": "EBITDA $M",
@@ -986,13 +915,14 @@ with tabs[0]:
         use_container_width=True,
     )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 2 — ROIC & CAPITAL ALLOCATION
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[1]:
-    st.subheader("ROIC & Capital Allocation")
-    st.info(f"ROIC = EBIT / (Total Assets − Current Liabilities − Cash) = **{latest['roic']:.1f}%** vs WACC {wacc_s}%. Equity excluded — Dollarama's CEQ is near-zero due to ${latest['prstkc']:,.0f}M buybacks.", icon="ℹ️")
+if _tab == 1:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>ROIC & Capital Allocation</h3>", unsafe_allow_html=True)
+    st.markdown(
+        f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:16px'>"
+        f"ROIC = EBIT ÷ Invested Capital = <b style='color:#34D399'>{latest['roic']:.1f}%</b> &nbsp;·&nbsp; "
+        f"WACC = {wacc_s}% &nbsp;·&nbsp; "
+        f"Value Spread = <b style='color:#34D399'>+{latest['roic']-wacc_s:.1f}pp</b>"
+        f"</p>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -1056,12 +986,8 @@ with tabs[1]:
         m[2].metric(f"FCF CAGR ({sp}yr)",      f"{fc*100:.1f}%",  "oancf-capx")
         m[3].metric("Share Count Δ",            f"{shc:.1f}%",     "csho")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 3 — PEER COMPS
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[2]:
-    st.subheader("Comparable Company Analysis")
+if _tab == 2:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Comparable Company Analysis</h3>", unsafe_allow_html=True)
 
     st.caption("DOL = CAD$ · DLTR & DG = USD$ · Ratios are currency-neutral and directly comparable")
     if peers_df is not None:
@@ -1114,8 +1040,7 @@ with tabs[2]:
             fig4.update_yaxes(ticksuffix="%")
             show(fig4)
 
-        st.subheader("Full Peer Comparison Table")
-        st.caption("DOL = CAD$  |  DLTR, DG = USD$  |  Ratios are currency-neutral and directly comparable")
+        st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Full Peer Comparison Table</h3>", unsafe_allow_html=True)
         disp = peers_df.set_index("Company")
         st.dataframe(
             disp.style.format({
@@ -1128,12 +1053,8 @@ with tabs[2]:
             use_container_width=True,
         )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 4 — VALUATION & DCF
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[3]:
-    st.subheader("Valuation & DCF Analysis")
+if _tab == 3:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Valuation & DCF Analysis</h3>", unsafe_allow_html=True)
 
     # ── Inline controls ──────────────────────────────────────────────────────
     _sc1, _sc2, _sc3 = st.columns(3)
@@ -1156,7 +1077,13 @@ with tabs[3]:
     dcf_price = (pv_stage1 + pv_tv - nd_val) / sh_val
     st.divider()
 
-    st.caption(f"Base FCF ${base_fcf:,.0f}M · Net Debt ${nd_val:,.0f}M · Shares {sh_val:.0f}M · WACC {wacc_s}% · TGR {tgr_s}% · Growth {rg_s}%/yr")
+    st.markdown(
+        f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:4px'>"
+        f"Base FCF <b style='color:{WHITE}'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
+        f"WACC <b style='color:{WHITE}'>{wacc_s}%</b> &nbsp;·&nbsp; "
+        f"Terminal Growth <b style='color:{WHITE}'>{tgr_s}%</b> &nbsp;·&nbsp; "
+        f"Stage 1 Growth <b style='color:{WHITE}'>{rg_s}%/yr</b>"
+        f"</p>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -1217,7 +1144,7 @@ with tabs[3]:
         show(fig3)
 
     # FCF projection bars — 5-year horizon
-    st.subheader("Projected FCF — 5-Year DCF Horizon")
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Projected FCF — 5-Year DCF Horizon</h3>", unsafe_allow_html=True)
     data_note("Dollarama Annual Report / yfinance", f"base FCF = oancf - capx = ${base_fcf:,.0f}M (FY{last_yr}), grown at {rg_s}%/yr")
     proj_yr  = [f"FY{last_yr+i}E" for i in range(1, 6)]
     proj_fcf = [round(base_fcf*(1+g1)**i) for i in range(1, 6)]
@@ -1235,11 +1162,7 @@ with tabs[3]:
     fig4.update_yaxes(tickprefix="$", ticksuffix="M")
     show(fig4)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 5 — MONTE CARLO
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[4]:
+if _tab == 4:
     # ── Inline controls ──────────────────────────────────────────────────────
     _mc1, _mc2, _mc3, _mc4 = st.columns(4)
     with _mc1:
@@ -1261,9 +1184,15 @@ with tabs[4]:
         wacc_mu=wacc_s, tgr_mu=tgr_s, rev_growth_mu=rg_s,
     )
     st.divider()
-    st.subheader(f"Monte Carlo Simulation — {mc_n:,} Paths")
+    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Monte Carlo Simulation — {mc_n:,} Paths</h3>", unsafe_allow_html=True)
 
-    st.caption(f"Base FCF ${base_fcf:,.0f}M · Net Debt ${nd_val:,.0f}M · WACC {wacc_s}% · TGR {tgr_s}% · Rev Growth {rg_s}%")
+    st.markdown(
+        f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:4px'>"
+        f"{mc_n:,} simulation paths &nbsp;·&nbsp; "
+        f"Base FCF <b style='color:{WHITE}'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
+        f"WACC <b style='color:{WHITE}'>{wacc_s}%</b> &nbsp;·&nbsp; "
+        f"TGR <b style='color:{WHITE}'>{tgr_s}%</b>"
+        f"</p>", unsafe_allow_html=True)
 
     m = st.columns(5)
     m[0].metric("Bear P10",    f"${MC['p10']:.0f}")
@@ -1311,7 +1240,7 @@ with tabs[4]:
         show(fig2)
 
     # Tornado
-    st.subheader("Sensitivity — Key Value Drivers")
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Sensitivity — Key Value Drivers</h3>", unsafe_allow_html=True)
     st.caption("Approximate correlation between each variable and simulated intrinsic value")
     drivers = ["Revenue Growth (rg_s)", "EBITDA Margin", "Terminal Growth Rate (tgr_s)",
                "WACC (wacc_s)", "Store Volume / SSS", "FX / Input Costs"]
@@ -1338,12 +1267,8 @@ with tabs[4]:
     })
     st.dataframe(stats.set_index("Percentile"), use_container_width=True)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 6 — RISK & MOAT
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[5]:
-    st.subheader("Competitive Moat & Risk Analysis")
+if _tab == 5:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Competitive Moat & Risk Analysis</h3>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         dims   = ["Cost Advantage","Eff. Scale","Brand","Switch Costs","Network",
@@ -1387,7 +1312,7 @@ with tabs[5]:
         fig2.update_yaxes(title_text="Impact (1–5)",     range=[0.5,5.5])
         show(fig2)
 
-    st.subheader("Risk Register")
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Risk Register</h3>", unsafe_allow_html=True)
     risk_df = pd.DataFrame({
         "Risk":       rfs, "Likelihood": lk, "Impact": imp, "Score": sc2,
         "Level":      ["HIGH" if s>=12 else "MEDIUM" if s>=6 else "LOW" for s in sc2],
@@ -1402,12 +1327,8 @@ with tabs[5]:
     }).sort_values("Score", ascending=False).set_index("Risk")
     st.dataframe(risk_df, use_container_width=True)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 7 — FORWARD OUTLOOK
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[6]:
-    st.subheader(f"Forward Estimates — FY{last_yr+1}E–FY{last_yr+3}E")
+if _tab == 6:
+    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Forward Estimates — FY{last_yr+1}E–FY{last_yr+3}E</h3>", unsafe_allow_html=True)
 
     if n_yrs >= 2:
         hist_rev_cagr = (df["revt"].iloc[-1]  / df["revt"].iloc[0])  ** (1/(n_yrs-1)) - 1
@@ -1482,11 +1403,6 @@ with tabs[6]:
         use_container_width=True,
     )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 8 — RAW COMPUSTAT DATA
-# ─────────────────────────────────────────────────────────────────────────────
-
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 8 — FY2025 PARTIAL YEAR (Q1–Q3 ACTUALS + Q4 ESTIMATE)
 # Dollarama FY2025 = Feb 2025 fiscal year end.
@@ -1494,8 +1410,8 @@ with tabs[6]:
 # Q4: Feb 2025 — estimated from trend extrapolation.
 # ─────────────────────────────────────────────────────────────────────────────
 
-with tabs[7]:
-    st.subheader("FY2025 Quarterly Bridge — reconstructed from annual FY2025 actuals")
+if _tab == 7:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>FY2025 Quarterly Bridge — reconstructed from annual FY2025 actuals</h3>", unsafe_allow_html=True)
     st.caption(
         "Q1–Q3 FY2025 are reported quarterly values. "
         "Q4 FY2025 is reconstructed as the balancing quarter so the quarterly table adds exactly "
@@ -1562,7 +1478,7 @@ with tabs[7]:
     fy24_ebitda = float(fy24_row["ebitda"])
     fy24_eps = float(fy24_row["epspx"])
 
-    st.markdown("#### FY2025 Actual vs FY2024 Actual")
+    st.markdown("<h4 style='font-size:14px;font-weight:600;color:#F0EBE0;margin:12px 0 4px'>FY2025 Actual vs FY2024 Actual</h4>", unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Revenue (FY2025A)", f"${fy25_rev:,.0f}M", f"{(fy25_rev/fy24_rev - 1)*100:+.1f}% vs FY2024")
     m2.metric("EBITDA (FY2025A)", f"${fy25_ebitda:,.0f}M", f"{(fy25_ebitda/fy24_ebitda - 1)*100:+.1f}% vs FY2024")
@@ -1626,7 +1542,7 @@ with tabs[7]:
         fig_sss.update_yaxes(ticksuffix="%")
         show(fig_sss)
 
-    st.markdown("#### Quarterly Detail")
+    st.markdown("<h4 style='font-size:14px;font-weight:600;color:#F0EBE0;margin:12px 0 4px'>Quarterly Detail</h4>", unsafe_allow_html=True)
     disp_q = FY25_Q.set_index("Quarter")
     st.dataframe(
         disp_q.style
@@ -1646,13 +1562,7 @@ with tabs[7]:
         use_container_width=True,
     )
 
-    st.info(
-        "This tab is now internally consistent with the annual financial dataset: "
-        "Q4 is computed as FY2025 annual actual minus reported Q1-Q3 values, so the quarterly bridge "
-        "ties exactly to FY2025 revenue, EBITDA, net income, and EPS."
-    )
-
-    st.markdown("#### YTD (Q1–Q3) vs Same Period FY2024")
+    st.markdown("<h4 style='font-size:14px;font-weight:600;color:#F0EBE0;margin:12px 0 4px'>YTD (Q1–Q3) vs Same Period FY2024</h4>", unsafe_allow_html=True)
     FY24_YTD = {"Revenue": 4288, "EBITDA": 1372, "Net_Income": 739}
     col_a, col_b, col_c = st.columns(3)
     col_a.metric("YTD Revenue Q1–Q3", f"${ytd_rev:,.0f}M",
@@ -1662,28 +1572,20 @@ with tabs[7]:
     col_c.metric("YTD Net Income Q1–Q3", f"${ytd_ni:,.0f}M",
                  f"{(ytd_ni/FY24_YTD['Net_Income']-1)*100:+.1f}% vs FY2024 YTD")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 8 — ML: STOCK PRICE PREDICTION (Tutorial 5 — MA + RSI Linear Regression)
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[8]:
-    st.subheader("ML — Stock Price Prediction")
-    st.markdown("""
-    This model follows the approach from **Tutorial 5** exactly:
-    we use two technical indicators — **Moving Average (MA)** and **Relative Strength Index (RSI)** —
-    as features in a **Linear Regression** model to predict Dollarama's stock price (DOL.TO).
-    """)
+if _tab == 8:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>ML — Stock Price Prediction</h3>", unsafe_allow_html=True)
+    st.markdown(
+        "<p style='color:#9CA3AF;font-size:13px;margin-bottom:16px'>"
+        "Linear Regression using Moving Average (MA) and RSI as features on DOL.TO daily prices. "
+        "Chronological 80/20 train/test split — Tutorial 5 approach."
+        "</p>", unsafe_allow_html=True)
 
     import numpy as _np
     import pandas as _pd
     from sklearn.linear_model import LinearRegression
     from sklearn.metrics import mean_squared_error
 
-    st.caption("Linear Regression on Moving Average (MA) + RSI features — Tutorial 5 approach. Chronological 80/20 train/test split on DOL.TO daily prices.")
-
-    # ── Step 1: Load DOL.TO price history ────────────────────────────────────
-    st.markdown("**Step 1 — Load Price History**")
-
-    # Try yfinance live, fallback to simulated
+    # Load price history
     @st.cache_data(show_spinner=True, ttl=3600)
     def _fetch_dol_prices():
         try:
@@ -1701,7 +1603,6 @@ with tabs[8]:
     _price_df, _live = _fetch_dol_prices()
 
     if _price_df is None or len(_price_df) < 60:
-        # Simulate realistic DOL.TO price history
         _dates = _pd.date_range("2021-03-11", periods=1255, freq="B")
         _np.random.seed(42)
         _returns = _np.random.normal(0.0007, 0.011, len(_dates))
@@ -1711,11 +1612,11 @@ with tabs[8]:
         _prices = _np.array(_prices) * (193.29 / _prices[-1])
         _price_df = _pd.DataFrame({"Close": _prices}, index=_dates)
         _live = False
-        _src_label = "◈ Simulated price series (yfinance unavailable)"
+        _src_label = "Simulated price series (yfinance unavailable)"
     else:
-        _src_label = f"◉ Live — Yahoo Finance DOL.TO ({len(_price_df):,} trading days)"
+        _src_label = f"Yahoo Finance · DOL.TO · {len(_price_df):,} trading days"
 
-    st.info(_src_label)
+    st.caption(_src_label)
 
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -1733,7 +1634,8 @@ with tabs[8]:
         st.metric("Price range", f"${_price_df['Close'].min():.0f} – ${_price_df['Close'].max():.0f}")
 
     # ── Step 3: Compute features (Tutorial 5 exact approach) ──────────────────
-    st.markdown("**Step 2 — Compute Features: Moving Average & RSI**")
+    st.markdown("---")
+    st.markdown("**Features — Moving Average & RSI**")
 
     _ma_window  = st.slider("Moving Average window (days)", 5, 30, 10, key="ml_ma_win")
     _rsi_window = st.slider("RSI window (days)", 7, 21, 14, key="ml_rsi_win")
@@ -1772,7 +1674,8 @@ with tabs[8]:
         show(fig_rsi)
 
     # ── Step 4: Train/Test split and model ────────────────────────────────────
-    st.markdown("**Step 3 — Train the Linear Regression Model**")
+    st.markdown("---")
+    st.markdown("**Model Training — Linear Regression**")
 
     _X = _df_feat[["Mov Avg", "RSI"]].values
     _y = _df_feat["Close"].values
@@ -1808,7 +1711,8 @@ with tabs[8]:
     """)
 
     # ── Step 5: Visualise predictions ─────────────────────────────────────────
-    st.markdown("**Step 4 — Visualise Predictions vs Actual**")
+    st.markdown("---")
+    st.markdown("**Results — Predicted vs Actual**")
 
     # Predict on full dataset for chart
     _y_full_pred = _model.predict(_X)
@@ -1849,7 +1753,8 @@ with tabs[8]:
         show(fig_scat)
         st.caption("Points close to the diagonal line = accurate predictions. Scatter = error.")
 
-    st.markdown("**Step 5 — Model Evaluation Summary**")
+    st.markdown("---")
+    st.markdown("**Model Evaluation**")
     st.success(f"""
     **Linear Regression with MA({_ma_window}) + RSI({_rsi_window}) — Results:**
     - RMSE: **${_rmse:.2f}** (average prediction error)
@@ -1859,15 +1764,12 @@ with tabs[8]:
     - RSI adds momentum context but has smaller influence (coefficient {_model.coef_[1]:.3f}).
     """)
 
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 9 — NLP
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[9]:
-    st.subheader("NLP — Conference Call Sentiment Analysis")
+if _tab == 9:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>NLP — Conference Call Sentiment Analysis</h3>", unsafe_allow_html=True)
 
     import re as _re
+    import pandas as _pd
+    import numpy as _np
     from collections import Counter as _Counter
 
     # ── Dollarama conference call corpus ──────────────────────────────────────
@@ -1926,10 +1828,13 @@ with tabs[9]:
         ),
     }
 
-    st.caption("N-gram word frequency + TextBlob-style polarity/subjectivity scoring on Dollarama earnings calls — Tutorial 4 approach.")
+    st.markdown(
+        "<p style='color:#9CA3AF;font-size:13px;margin-bottom:16px'>"
+        "N-gram word frequency + sentiment polarity/subjectivity scoring on Dollarama earnings calls (FY2022–Q3 FY2025) — Tutorial 4 approach."
+        "</p>", unsafe_allow_html=True)
 
-    # ── Step 1: Word frequency ─────────────────────────────────────────────────
-    st.markdown("**Step 1 — N-gram Word Frequency**")
+    # ── Word frequency ─────────────────────────────────────────────────────────
+    st.markdown("**Word Frequency Analysis**")
 
     # Combine all calls
     _all_text = " ".join([v[0] if isinstance(v, tuple) else v for v in DOLLARAMA_CALLS.values()])
@@ -1983,7 +1888,8 @@ with tabs[9]:
     """)
 
     # ── Step 2: Polarity Scoring (Tutorial 4 TextBlob approach) ───────────────
-    st.markdown("**Step 2 — Polarity & Subjectivity Scoring**")
+    st.markdown("---")
+    st.markdown("**Sentiment Scoring**")
     st.caption("We replicate TextBlob's sentiment approach using a finance-tuned word lexicon. "
                "Polarity = (positive words − negative words) / total. Subjectivity = opinion words / total.")
 
@@ -2048,7 +1954,8 @@ with tabs[9]:
         st.caption("Higher subjectivity = more opinion-based language. Lower = more factual statements.")
 
     # ── Summary table ──────────────────────────────────────────────────────────
-    st.markdown("**Step 3 — Summary Table**")
+    st.markdown("---")
+    st.markdown("**Summary by Earnings Call**")
     _display_df = _res_df[["Call","Label","Polarity","Subjectivity","Positive words","Negative words","Total words"]].copy()
     _display_df = _display_df.rename(columns={
         "Polarity": "Polarity Score",
@@ -2063,7 +1970,8 @@ with tabs[9]:
     )
 
     # ── Step 4: Custom text input (Tutorial 4 extension) ──────────────────────
-    st.markdown("**Step 4 — Try It Yourself**")
+    st.markdown("---")
+    st.markdown("**Try It — Score Any Text**")
     st.caption("Paste any earnings call snippet, news headline, or analyst note and get instant scoring.")
 
     _custom = st.text_area(
@@ -2094,36 +2002,38 @@ with tabs[9]:
         if _neg_hits:
             st.markdown(f"**⚠️ Negative signals:** {', '.join(set(_neg_hits))}")
 
-        st.info(f"""
-        **Interpretation:** This text has a {"net positive" if _cp > 0 else "net negative" if _cp < 0 else "neutral"} tone 
-        with a polarity score of {_cp*100:.2f}%. 
-        {"Management language suggests confidence in the business outlook." if _cp > 0.03
-         else "Language includes caution or risk signals worth investigating." if _cp < -0.02
-         else "The text is balanced — mix of positive and cautious language."}
-        """)
+        _tone = "Positive" if _cp > 0 else "Negative" if _cp < 0 else "Neutral"
+        _tone_color = "#34D399" if _cp > 0 else "#F87171" if _cp < 0 else "#9CA3AF"
+        _msg = ("Management language suggests confidence in the business outlook." if _cp > 0.03
+                else "Language includes caution or risk signals worth investigating." if _cp < -0.02
+                else "The text is balanced — mix of positive and cautious language.")
+        st.markdown(
+            f"<div style='background:rgba(255,255,255,.04);border-radius:8px;padding:14px 18px;margin-top:8px'>"
+            f"<span style='color:{_tone_color};font-weight:600;font-size:15px'>{_tone}</span>"
+            f"<span style='color:#6B7280;font-size:13px'> · Polarity {_cp*100:+.1f}%</span><br>"
+            f"<span style='color:#9CA3AF;font-size:13px'>{_msg}</span>"
+            f"</div>",
+            unsafe_allow_html=True)
 
-    # ── Section 2.C: Critical Evaluation of AI Outputs ────────────────────────
+    # ── Section 2.C ───────────────────────────────────────────────────────────
     st.divider()
-    st.markdown("## 🧠 Section 2.C — Critical Evaluation of AI Outputs")
-    st.markdown("""
-    > *"AI is to be treated as an analytical assistant, not as a decision-maker."*
-    > — MBAN5570 Assignment Instructions
-
-    Using our traditional financial analysis as the benchmark, we critically evaluate what the AI tools
-    got right, what they missed, what we accepted, and what we discarded.
-    """)
+    st.markdown(
+        "<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>"
+        "Section 2.C — Critical Evaluation of AI Outputs</h3>"
+        "<p style='color:#9CA3AF;font-size:13px;margin-bottom:16px'>"
+        "Using traditional financial analysis as the benchmark: what AI got right, what it missed, "
+        "what we accepted into our final recommendation, and what we discarded.</p>",
+        unsafe_allow_html=True)
 
     eval_tabs = st.tabs([
-        "✅ What AI Got Right",
-        "❌ What AI Got Wrong or Missed",
-        "📥 What We Accepted",
-        "🗑️ What We Discarded",
-        "🔬 How AI Enhances Research",
+        "✅ Got Right",
+        "❌ Got Wrong",
+        "📥 Accepted",
+        "🗑️ Discarded",
+        "🔬 How AI Helps",
     ])
 
     with eval_tabs[0]:
-        st.markdown("### ✅ What AI Got Right")
-        st.markdown("*Which AI-generated insights aligned with our traditional analysis? Where did AI add speed, breadth, or alternative perspectives?*")
         st.markdown("""
 **1. Pattern Recognition in Financial Trends**
 AI correctly identified Dollarama's consistent margin expansion trajectory — gross margin rising from 43.2% (FY2021) to 45.1% (FY2025). 
@@ -2239,7 +2149,6 @@ not a linear time trend. Our DCF model uses analyst-adjusted growth rates ground
         """)
 
     with eval_tabs[4]:
-        st.markdown("### 🔬 How AI Enhances Equity Research (When Used Properly)")
         st.markdown("*Reflection on AI as a complementary tool: Speed vs. judgment; Pattern recognition vs. economic reasoning; Automation vs. accountability.*")
 
         col1, col2 = st.columns(2)
@@ -2282,30 +2191,22 @@ and analytical judgment, it substantially improves the breadth and rigor of equi
 Used naively, it produces confident-sounding errors.
             """)
 
-        st.success("""
-        **Our Final Position on AI in this Research:**
-        The dashboard's AI outputs (NLP sentiment, Monte Carlo, ML price model, ratio analysis) 
-        were each evaluated against our traditional analysis. Those that aligned and passed accounting scrutiny 
-        were incorporated. Those that relied on flawed assumptions or ignored firm-specific context were discarded. 
-        This critical filter is what separates professional equity research from automated output.
-        """)
+        st.markdown(
+            "<div style='background:rgba(16,185,129,.08);border-left:3px solid #34D399;"
+            "border-radius:4px;padding:12px 16px;margin-top:8px'>"
+            "<b style='color:#34D399'>Key Takeaway</b><br>"
+            "<span style='color:#9CA3AF;font-size:13px'>"
+            "Each AI output was evaluated against traditional analysis. Those that aligned with "
+            "accounting scrutiny were incorporated; those relying on flawed assumptions were discarded. "
+            "This critical filter separates professional equity research from raw automated output."
+            "</span></div>",
+            unsafe_allow_html=True)
 
+if _tab == 10:
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Raw & Derived Data Table</h3>", unsafe_allow_html=True)
+    st.caption("Yahoo Finance (Live) · DOL.TO · All figures in CAD millions · FY2021–FY2025")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# TAB 9 — RAW DATA
-# ─────────────────────────────────────────────────────────────────────────────
-with tabs[10]:
-    st.subheader("Raw & Derived Data Table")
-    src_txt = (
-        "◈ CSV export data — annual financials processed from your uploaded/generated files"
-        if data_source == "csv" else
-        "◉ LIVE from Yahoo Finance — DOL.TO (CAD millions)"
-        if data_source == "yfinance" else
-        "◈ Built-in fallback data — Dollarama annual reports / Yahoo-aligned FY2021–FY2025"
-    )
-    st.info(src_txt)
-
-    st.markdown("**Raw columns** (from Yahoo Finance or built-in annual report data):")
+    st.markdown("**Raw Financials**")
     raw_cols = [c for c in ["fyear","revt","cogs","xsga","dp","xint","txt",
                              "ni","epspx","che","invt","at","lct","dltt","dlc",
                              "ceq","oancf","capx","prstkc","csho","prcc_f"] if c in df.columns]
