@@ -85,65 +85,65 @@ BLUE="#1D5FA0"; PURPLE="#6D28D9"; BG="#F8F9FA"; CARD="#FFFFFF"
 PANEL="#F1F3F5"; GRID="rgba(0,0,0,0.06)"; FG="#4B5563"; WHITE="#111827"
 
 st.markdown(f"""<style>
-/* ── Base ── */
-.stApp{{background:#F8F9FA}}
-[data-testid="stSidebar"]{{background:#F1F3F5;border-right:1px solid rgba(154,123,47,.2)}}
-html,body,[class*="css"]{{font-family:'Inter','Segoe UI',sans-serif;color:#111827}}
-h1,h2,h3,h4{{color:#111827!important;font-weight:600!important}}
-hr{{border-color:rgba(0,0,0,.1)!important;margin:0.5rem 0!important}}
-/* Tighter dividers inside sidebar only */
-[data-testid="stSidebar"] hr{{margin:6px 0!important;border-color:rgba(0,0,0,.1)!important}}
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+html,body,[class*="css"]{{font-family:'Inter','Segoe UI',sans-serif}}
+
+hr{{border-color:rgba(128,128,128,.2)!important;margin:0.5rem 0!important}}
+[data-testid="stSidebar"] hr{{margin:6px 0!important;border-color:rgba(128,128,128,.15)!important}}
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"]>div{{gap:0!important}}
-/* Remove Streamlit's default top padding inside sidebar */
-[data-testid="stSidebar"] section[data-testid="stSidebarContent"]{{padding-top:0.75rem!important;padding-bottom:0.5rem!important}}
+[data-testid="stSidebar"] section[data-testid="stSidebarContent"]{{
+  padding-top:0.75rem!important;padding-bottom:0.5rem!important}}
+
 /* ── Metrics ── */
 [data-testid="metric-container"]{{
-  background:#FFFFFF;border:1px solid rgba(0,0,0,.08);
+  border:1px solid rgba(128,128,128,.15);
   border-radius:10px;padding:16px 18px;border-top:3px solid {GOLD}}}
-[data-testid="stMetricValue"]{{color:#7A6020!important;font-size:24px!important;font-weight:700!important}}
-[data-testid="stMetricLabel"]{{color:#6B7280!important;font-size:11px!important;text-transform:uppercase;letter-spacing:.05em}}
+[data-testid="stMetricValue"]{{color:{GOLD_LT}!important;font-size:24px!important;font-weight:700!important}}
+[data-testid="stMetricLabel"]{{font-size:11px!important;text-transform:uppercase;letter-spacing:.05em;opacity:.7}}
+
 /* ── Hide horizontal tab bar ── */
 .stTabs [data-baseweb="tab-list"]{{display:none!important}}
-/* ── Sidebar nav buttons ── */
+
+/* ── Sidebar nav buttons — base layout (colours set by JS) ── */
 [data-testid="stSidebar"] .stButton{{margin-bottom:0!important}}
 [data-testid="stSidebar"] .stButton>button{{
-  width:100%!important;
-  display:flex!important;align-items:center!important;
+  width:100%!important;display:flex!important;align-items:center!important;
   justify-content:flex-start!important;text-align:left!important;
   font-size:12px!important;font-family:'Inter','Segoe UI',sans-serif!important;
-  padding:5px 10px!important;
-  border-radius:6px!important;
-  margin-bottom:1px!important;
+  padding:5px 10px!important;border-radius:6px!important;margin-bottom:1px!important;
   border:1px solid transparent!important;
-  transition:background .12s,color .12s!important;
   white-space:nowrap!important;overflow:hidden!important;
   line-height:1.3!important;height:auto!important;min-height:0!important;
+  transition:background .12s,color .12s,border-color .12s!important;
 }}
 [data-testid="stSidebar"] .stButton>button *,
 [data-testid="stSidebar"] .stButton>button p,
 [data-testid="stSidebar"] .stButton>button span,
 [data-testid="stSidebar"] .stButton>button div{{
-  white-space:nowrap!important;overflow:hidden!important;
-  text-overflow:clip!important;text-align:left!important;
-  width:auto!important;max-width:100%!important;
-  margin:0!important;padding:0!important;
-  display:inline!important;line-height:1.3!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;
+  text-align:left!important;width:auto!important;max-width:100%!important;
+  margin:0!important;padding:0!important;display:inline!important;line-height:1.3!important;
+  color:inherit!important;
 }}
-[data-testid="stSidebar"] .stButton>button[kind="secondary"]{{
-  background:transparent!important;color:#374151!important;
+/* Active tab — always gold */
+[data-testid="stSidebar"] .stButton>button[kind="primary"]{{
+  background-color:rgba(154,123,47,.2)!important;
+  color:{GOLD_LT}!important;
+  border-color:rgba(154,123,47,.6)!important;
+  font-weight:600!important;
 }}
 [data-testid="stSidebar"] .stButton>button[kind="secondary"]:hover{{
-  background:rgba(154,123,47,.1)!important;color:#7A6020!important;
+  background-color:rgba(154,123,47,.12)!important;
+  color:{GOLD_LT}!important;
   border-color:rgba(154,123,47,.35)!important;
 }}
-[data-testid="stSidebar"] .stButton>button[kind="primary"]{{
-  background:rgba(154,123,47,.15)!important;color:#7A6020!important;
-  border-color:rgba(154,123,47,.6)!important;font-weight:600!important;
-}}
-/* ── Misc ── */
-.badge-live{{display:inline-flex;align-items:center;gap:6px;background:rgba(16,130,90,.08);
-  border:1px solid rgba(16,185,129,.3);color:#34D399;font-size:11px;font-weight:600;
+
+/* ── Live badge ── */
+.badge-live{{display:inline-flex;align-items:center;gap:6px;background:rgba(16,130,90,.1);
+  border:1px solid rgba(16,130,90,.3);color:#16A34A;font-size:11px;font-weight:600;
   padding:4px 10px;border-radius:20px;letter-spacing:.04em}}
+
+/* ── DataFrames ── */
 [data-testid="stDataFrame"]{{border-radius:8px;overflow:hidden}}
 </style>
 """, unsafe_allow_html=True)
@@ -527,20 +527,21 @@ def run_monte_carlo(n, base_fcf, net_debt, shares, wacc_mu, tgr_mu, rev_growth_m
 # SECTION 5: CHART HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 def base_layout(title=""):
-    """Clean professional chart layout."""
+    """Theme-adaptive chart layout — transparent backgrounds inherit the page theme."""
     return dict(
-        title=dict(text=title, font=dict(color="#111827", size=13, family="Inter, Segoe UI"), x=0.0),
-        paper_bgcolor="#FFFFFF", plot_bgcolor="#F8F9FA",
-        font=dict(family="Inter, Segoe UI", color="#4B5563", size=11),
+        title=dict(text=title, font=dict(size=13, family="Inter, Segoe UI"), x=0.0),
+        paper_bgcolor="rgba(0,0,0,0)",   # fully transparent — inherits page background
+        plot_bgcolor="rgba(0,0,0,0.02)", # very subtle tint works on both light & dark
+        font=dict(family="Inter, Segoe UI", size=11),
         margin=dict(l=50, r=20, t=44, b=40),
-        xaxis=dict(gridcolor="rgba(0,0,0,.06)", linecolor="rgba(0,0,0,.1)",
-                   tickfont=dict(size=10, color="#6B7280"), zeroline=False),
-        yaxis=dict(gridcolor="rgba(0,0,0,.06)", linecolor="rgba(0,0,0,.1)",
-                   tickfont=dict(size=10, color="#6B7280"), zeroline=False),
-        legend=dict(bgcolor="rgba(255,255,255,0.9)", font=dict(size=10, color="#374151"),
-                    bordercolor="rgba(0,0,0,.08)", borderwidth=1),
+        xaxis=dict(gridcolor="rgba(128,128,128,.15)", linecolor="rgba(128,128,128,.2)",
+                   tickfont=dict(size=10), zeroline=False),
+        yaxis=dict(gridcolor="rgba(128,128,128,.15)", linecolor="rgba(128,128,128,.2)",
+                   tickfont=dict(size=10), zeroline=False),
+        legend=dict(bgcolor="rgba(128,128,128,.08)", font=dict(size=10),
+                    bordercolor="rgba(128,128,128,.15)", borderwidth=1),
         hovermode="x unified",
-        hoverlabel=dict(bgcolor="#FFFFFF", font=dict(color="#111827", size=11)),
+        hoverlabel=dict(bgcolor="rgba(30,30,30,.9)", font=dict(color="#FFFFFF", size=11)),
     )
 
 def show(fig, **kw):
@@ -569,7 +570,7 @@ if "active_tab" not in st.session_state: st.session_state.active_tab = 0
 with st.sidebar:
     st.markdown(
         f"<div style='padding:2px 4px 8px'>"
-        f"<div style='font-size:16px;font-weight:700;color:#111827'>Dollarama Inc.</div>"
+        f"<div style='font-size:16px;font-weight:700;color:inherit'>Dollarama Inc.</div>"
         f"<div style='font-size:11px;color:#6B7280;margin-top:1px'>DOL.TO · Equity Research · MBAN5570</div>"
         f"</div>", unsafe_allow_html=True)
     st.divider()
@@ -609,6 +610,117 @@ with st.sidebar:
             "streamlit run dollarama_research.py",
             language="bash"
         )
+
+# ── JS: full theme controller — runs on load + every theme switch ─────────────
+st.markdown("""
+<script>
+(function() {
+  var GOLD       = "#C4982E";
+  var GOLD_LT    = "#D4AF5C";
+
+  // Light mode colours
+  var L_SIDEBAR  = "#F1F3F5";
+  var L_BTN_TEXT = "#374151";
+  var L_SUB_TEXT = "#6B7280";
+  var L_BORDER   = "rgba(0,0,0,0.08)";
+
+  // Dark mode colours  
+  var D_SIDEBAR  = "#0E1117";   // very dark — matches Streamlit dark app bg
+  var D_BTN_TEXT = "#E2E8F0";   // light grey — clearly visible on dark
+  var D_SUB_TEXT = "#94A3B8";
+  var D_BORDER   = "rgba(255,255,255,0.08)";
+
+  function isDark() {
+    // Method 1: check Streamlit's CSS variable
+    var v = getComputedStyle(document.documentElement)
+              .getPropertyValue('--background-color').trim();
+    if (v) {
+      var hex = v.replace('#','');
+      if (hex.length === 6) {
+        var r=parseInt(hex.substr(0,2),16),
+            g=parseInt(hex.substr(2,2),16),
+            b=parseInt(hex.substr(4,2),16);
+        return (0.299*r + 0.587*g + 0.114*b) < 140;
+      }
+    }
+    // Method 2: check computed body bg
+    var bg = getComputedStyle(document.body).backgroundColor;
+    var m  = bg.match(/[0-9]+/g);
+    if (m && m.length >= 3) {
+      return (0.299*parseInt(m[0]) + 0.587*parseInt(m[1]) + 0.114*parseInt(m[2])) < 140;
+    }
+    // Method 3: check stApp background
+    var app = document.querySelector('[data-testid="stApp"]') || document.querySelector('.stApp');
+    if (app) {
+      var appBg = getComputedStyle(app).backgroundColor;
+      var am = appBg.match(/[0-9]+/g);
+      if (am && am.length >= 3) {
+        return (0.299*parseInt(am[0]) + 0.587*parseInt(am[1]) + 0.114*parseInt(am[2])) < 140;
+      }
+    }
+    return false;
+  }
+
+  function applyTheme() {
+    var dark = isDark();
+
+    // 1. Sidebar background
+    var sidebar = document.querySelector('[data-testid="stSidebar"]');
+    if (sidebar) {
+      sidebar.style.setProperty('background', dark ? D_SIDEBAR : L_SIDEBAR, 'important');
+      sidebar.style.setProperty('border-right',
+        dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(154,123,47,0.2)',
+        'important');
+    }
+
+    // 2. Inactive nav buttons text colour
+    var btns = document.querySelectorAll(
+      '[data-testid="stSidebar"] .stButton>button[kind="secondary"]'
+    );
+    btns.forEach(function(btn) {
+      btn.style.setProperty('color',            dark ? D_BTN_TEXT : L_BTN_TEXT, 'important');
+      btn.style.setProperty('background-color', 'transparent', 'important');
+    });
+
+    // 3. Branding / caption text
+    var captions = document.querySelectorAll('[data-testid="stSidebar"] small, [data-testid="stSidebar"] .stCaption');
+    captions.forEach(function(el) {
+      el.style.setProperty('color', dark ? D_SUB_TEXT : L_SUB_TEXT, 'important');
+    });
+
+    // 4. Sidebar text colour globally
+    var sidebarText = document.querySelectorAll('[data-testid="stSidebar"] p, [data-testid="stSidebar"] div[class*="caption"]');
+    sidebarText.forEach(function(el) {
+      el.style.setProperty('color', dark ? D_SUB_TEXT : L_SUB_TEXT, 'important');
+    });
+  }
+
+  // Run immediately and after short delays (Streamlit renders async)
+  applyTheme();
+  setTimeout(applyTheme, 300);
+  setTimeout(applyTheme, 800);
+  setTimeout(applyTheme, 2000);
+
+  // Watch the entire document for Streamlit theme re-renders
+  var obs = new MutationObserver(function(mutations) {
+    var shouldRun = mutations.some(function(m) {
+      return m.type === 'attributes' ||
+             (m.type === 'childList' && m.addedNodes.length > 0);
+    });
+    if (shouldRun) setTimeout(applyTheme, 50);
+  });
+  obs.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class','style','data-theme'],
+    childList: true,
+    subtree: true
+  });
+
+  // Poll every 1.5s as final safety net
+  setInterval(applyTheme, 1500);
+})();
+</script>
+""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 6b: yFINANCE FETCH
@@ -830,7 +942,7 @@ with hc2:
     st.markdown(
         f"<div style='text-align:right;padding-top:8px'>"
         f"<div style='font-size:28px;font-weight:800;color:{GREEN};letter-spacing:2px'>BUY</div>"
-        f"<div style='color:#9CA3AF;font-size:12px'>Target <b style='color:#111827'>CAD $212.06</b></div>"
+        f"<div style='color:#9CA3AF;font-size:12px'>Target <b style='color:inherit'>CAD $212.06</b></div>"
         f"<div style='color:{GREEN};font-size:11px'>+9.5% upside</div>"
         f"</div>", unsafe_allow_html=True)
 
@@ -853,7 +965,7 @@ st.divider()
 _tab = st.session_state.active_tab
 
 if _tab == 0:
-    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Financial Performance — FY{int(df['fyear'].min())}–FY{last_yr}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Financial Performance — FY{int(df['fyear'].min())}–FY{last_yr}</h3>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -923,7 +1035,7 @@ if _tab == 0:
             show(fig6)
 
     # Summary table
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Income Statement — Full Table</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Income Statement — Full Table</h3>", unsafe_allow_html=True)
     tbl_cols = {
         "fyear": "Year", "revt": "Revenue $M", "cogs": "COGS $M",
         "xsga": "SG&A $M", "dp": "D&A $M", "ebitda": "EBITDA $M",
@@ -942,7 +1054,7 @@ if _tab == 0:
     )
 
 if _tab == 1:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>ROIC & Capital Allocation</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>ROIC & Capital Allocation</h3>", unsafe_allow_html=True)
     st.markdown(
         f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:16px'>"
         f"ROIC = EBIT ÷ Invested Capital = <b style='color:#34D399'>{latest['roic']:.1f}%</b> &nbsp;·&nbsp; "
@@ -1013,7 +1125,7 @@ if _tab == 1:
         m[3].metric("Share Count Δ",            f"{shc:.1f}%",     "csho")
 
 if _tab == 2:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Comparable Company Analysis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Comparable Company Analysis</h3>", unsafe_allow_html=True)
 
     st.markdown(
         "<div style='background:rgba(251,191,36,.08);border-left:3px solid #F59E0B;"
@@ -1075,7 +1187,7 @@ if _tab == 2:
             fig4.update_yaxes(ticksuffix="%")
             show(fig4)
 
-        st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Full Peer Comparison Table</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Full Peer Comparison Table</h3>", unsafe_allow_html=True)
         st.caption("Revenue, EBITDA, Net Income in local currency (CAD for DOL, USD for DLTR/DG) · Stock prices in CAD equivalent (USD × 1.44, Bank of Canada Feb 2025) · Ratios are currency-neutral")
         disp = peers_df.set_index("Company")
         st.dataframe(
@@ -1091,7 +1203,7 @@ if _tab == 2:
 
         # ── Analytical Report ─────────────────────────────────────────────────
         st.divider()
-        st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Analytical Summary — Who Wins and Why</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Analytical Summary — Who Wins and Why</h3>", unsafe_allow_html=True)
 
         dol_row  = peers_df[peers_df["Company"].str.contains("DOL")].iloc[0]
         dltr_row = peers_df[peers_df["Company"].str.contains("DLTR")].iloc[0]
@@ -1104,10 +1216,10 @@ if _tab == 2:
                 f"<div style='background:rgba(184,148,58,.08);border:1px solid rgba(184,148,58,.3);"
                 f"border-top:3px solid {GOLD};border-radius:8px;padding:16px;height:100%'>"
                 f"<div style='font-size:15px;font-weight:700;color:#7A6020;margin-bottom:8px'>🏆 Profitability Winner</div>"
-                f"<div style='font-size:22px;font-weight:800;color:#111827'>Dollarama</div>"
+                f"<div style='font-size:22px;font-weight:800;color:inherit'>Dollarama</div>"
                 f"<div style='color:#9CA3AF;font-size:13px;margin-top:6px;line-height:1.6'>"
-                f"EBITDA margin of <b style='color:#111827'>{dol_row['EBITDA Margin']:.1f}%</b> is nearly "
-                f"<b style='color:#111827'>3× higher</b> than Dollar Tree ({dltr_row['EBITDA Margin']:.1f}%) "
+                f"EBITDA margin of <b style='color:inherit'>{dol_row['EBITDA Margin']:.1f}%</b> is nearly "
+                f"<b style='color:inherit'>3× higher</b> than Dollar Tree ({dltr_row['EBITDA Margin']:.1f}%) "
                 f"and Dollar General ({dg_row['EBITDA Margin']:.1f}%). "
                 f"This reflects Dollarama's direct sourcing model, private-label mix, and lean store format. "
                 f"Higher margins mean more cash for every dollar of sales."
@@ -1119,13 +1231,13 @@ if _tab == 2:
                 f"<div style='background:rgba(61,158,106,.08);border:1px solid rgba(61,158,106,.25);"
                 f"border-top:3px solid {GREEN};border-radius:8px;padding:16px;height:100%'>"
                 f"<div style='font-size:15px;font-weight:700;color:{GREEN};margin-bottom:8px'>💡 Capital Efficiency Winner</div>"
-                f"<div style='font-size:22px;font-weight:800;color:#111827'>Dollarama</div>"
+                f"<div style='font-size:22px;font-weight:800;color:inherit'>Dollarama</div>"
                 f"<div style='color:#9CA3AF;font-size:13px;margin-top:6px;line-height:1.6'>"
-                f"ROIC of <b style='color:#111827'>{dol_row['ROIC']:.1f}%</b> vs "
+                f"ROIC of <b style='color:inherit'>{dol_row['ROIC']:.1f}%</b> vs "
                 f"Dollar Tree {dltr_row['ROIC']:.1f}% and Dollar General {dg_row['ROIC']:.1f}%. "
-                f"Dollarama earns nearly <b style='color:#111827'>2× more</b> per dollar of capital invested. "
+                f"Dollarama earns nearly <b style='color:inherit'>2× more</b> per dollar of capital invested. "
                 f"Combined with a WACC of just 7.8%, the value-creation spread is "
-                f"<b style='color:#111827'>+{dol_row['ROIC']-7.8:.0f} percentage points</b> — exceptional by any standard."
+                f"<b style='color:inherit'>+{dol_row['ROIC']-7.8:.0f} percentage points</b> — exceptional by any standard."
                 f"</div></div>",
                 unsafe_allow_html=True)
 
@@ -1134,9 +1246,9 @@ if _tab == 2:
                 f"<div style='background:rgba(58,126,192,.08);border:1px solid rgba(58,126,192,.25);"
                 f"border-top:3px solid {BLUE};border-radius:8px;padding:16px;height:100%'>"
                 f"<div style='font-size:15px;font-weight:700;color:{BLUE};margin-bottom:8px'>⚖️ Valuation Context</div>"
-                f"<div style='font-size:22px;font-weight:800;color:#111827'>Premium Justified</div>"
+                f"<div style='font-size:22px;font-weight:800;color:inherit'>Premium Justified</div>"
                 f"<div style='color:#9CA3AF;font-size:13px;margin-top:6px;line-height:1.6'>"
-                f"Dollarama trades at <b style='color:#111827'>{dol_row['EV/EBITDA']:.1f}×</b> EV/EBITDA vs "
+                f"Dollarama trades at <b style='color:inherit'>{dol_row['EV/EBITDA']:.1f}×</b> EV/EBITDA vs "
                 f"Dollar Tree {dltr_row['EV/EBITDA']:.1f}× and Dollar General {dg_row['EV/EBITDA']:.1f}×. "
                 f"The premium is justified: Dollarama has higher margins, better capital efficiency, "
                 f"lower leverage, and a faster-growth store network. "
@@ -1175,7 +1287,7 @@ if _tab == 2:
         st.dataframe(_diff_df, use_container_width=True)
 
 if _tab == 3:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Valuation & DCF Analysis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Valuation & DCF Analysis</h3>", unsafe_allow_html=True)
 
     # ── Inline controls ──────────────────────────────────────────────────────
     _sc1, _sc2, _sc3 = st.columns(3)
@@ -1200,10 +1312,10 @@ if _tab == 3:
 
     st.markdown(
         f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:4px'>"
-        f"Base FCF <b style='color:#111827'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
-        f"WACC <b style='color:#111827'>{wacc_s}%</b> &nbsp;·&nbsp; "
-        f"Terminal Growth <b style='color:#111827'>{tgr_s}%</b> &nbsp;·&nbsp; "
-        f"Stage 1 Growth <b style='color:#111827'>{rg_s}%/yr</b>"
+        f"Base FCF <b style='color:inherit'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
+        f"WACC <b style='color:inherit'>{wacc_s}%</b> &nbsp;·&nbsp; "
+        f"Terminal Growth <b style='color:inherit'>{tgr_s}%</b> &nbsp;·&nbsp; "
+        f"Stage 1 Growth <b style='color:inherit'>{rg_s}%/yr</b>"
         f"</p>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
@@ -1218,7 +1330,7 @@ if _tab == 3:
             textposition="outside", textfont=dict(color="#4B5563", size=12),
         ))
         fig.add_vline(x=193.63, line_dash="dash", line_color="rgba(240,235,224,0.4)",
-                      annotation_text="Current ~$193.63", annotation_font=dict(color="#4B5563", size=10))
+                      annotation_text="Current ~$193.63")
         fig.update_layout(**base_layout("Valuation Summary (CAD $/share)"), height=280)
         fig.update_xaxes(range=[0, max(prices)*1.3], tickprefix="$")
         show(fig)
@@ -1257,7 +1369,7 @@ if _tab == 3:
         fig3.add_shape(type="rect", x0=ti-0.5, x1=ti+0.5, y0=wi-0.5, y1=wi+0.5,
                        line=dict(color=GOLD_LT, width=3))
         fig3.update_layout(
-            paper_bgcolor='#FFFFFF', plot_bgcolor='#F9FAFB', height=320,
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,.02)', height=320,
             margin=dict(l=60, r=20, t=20, b=50),
             xaxis=dict(title="Terminal Growth Rate", tickfont=dict(color=FG)),
             yaxis=dict(title="WACC", tickfont=dict(color=FG)),
@@ -1265,7 +1377,7 @@ if _tab == 3:
         show(fig3)
 
     # FCF projection bars — 5-year horizon
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Projected FCF — 5-Year DCF Horizon</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Projected FCF — 5-Year DCF Horizon</h3>", unsafe_allow_html=True)
     data_note("Dollarama Annual Report / yfinance", f"base FCF = oancf - capx = ${base_fcf:,.0f}M (FY{last_yr}), grown at {rg_s}%/yr")
     proj_yr  = [f"FY{last_yr+i}E" for i in range(1, 6)]
     proj_fcf = [round(base_fcf*(1+g1)**i) for i in range(1, 6)]
@@ -1305,14 +1417,14 @@ if _tab == 4:
         wacc_mu=wacc_s, tgr_mu=tgr_s, rev_growth_mu=rg_s,
     )
     st.divider()
-    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Monte Carlo Simulation — {mc_n:,} Paths</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Monte Carlo Simulation — {mc_n:,} Paths</h3>", unsafe_allow_html=True)
 
     st.markdown(
         f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:4px'>"
         f"{mc_n:,} simulation paths &nbsp;·&nbsp; "
-        f"Base FCF <b style='color:#111827'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
-        f"WACC <b style='color:#111827'>{wacc_s}%</b> &nbsp;·&nbsp; "
-        f"TGR <b style='color:#111827'>{tgr_s}%</b>"
+        f"Base FCF <b style='color:inherit'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
+        f"WACC <b style='color:inherit'>{wacc_s}%</b> &nbsp;·&nbsp; "
+        f"TGR <b style='color:inherit'>{tgr_s}%</b>"
         f"</p>", unsafe_allow_html=True)
 
     m = st.columns(5)
@@ -1333,13 +1445,13 @@ if _tab == 4:
         fig = go.Figure(go.Bar(x=mids, y=cnts, marker_color=bc, opacity=0.85))
         # Vertical reference lines — stagger annotation positions to avoid overlap
         fig.add_vline(x=193.63, line_dash="dash", line_color=GOLD, line_width=1.5,
-                      annotation=dict(text="Current $193.63", font=dict(color="#9A7B2F", size=10),
+                      annotation=dict(text="Current $193.63", font=dict(size=10),
                                       y=1.0, yanchor="top"))
         fig.add_vline(x=212, line_dash="dot", line_color=GREEN, line_width=1.5,
                       annotation=dict(text="Target $212", font=dict(color=GREEN, size=10),
                                       y=0.85, yanchor="top"))
         fig.add_vline(x=MC["p50"], line_dash="dash", line_color=WHITE, line_width=1.5,
-                      annotation=dict(text=f"Median ${MC['p50']:.0f}", font=dict(color="#111827", size=10),
+                      annotation=dict(text=f"Median ${MC['p50']:.0f}", font=dict(size=10),
                                       y=0.70, yanchor="top"))
         fig.update_layout(**base_layout(f"Simulated Intrinsic Value Distribution  (n={mc_n:,})"), height=380)
         fig.update_xaxes(tickprefix="$")
@@ -1361,7 +1473,7 @@ if _tab == 4:
         show(fig2)
 
     # Tornado
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Sensitivity — Key Value Drivers</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Sensitivity — Key Value Drivers</h3>", unsafe_allow_html=True)
     st.caption("Approximate correlation between each variable and simulated intrinsic value")
     drivers = ["Revenue Growth (rg_s)", "EBITDA Margin", "Terminal Growth Rate (tgr_s)",
                "WACC (wacc_s)", "Store Volume / SSS", "FX / Input Costs"]
@@ -1372,7 +1484,7 @@ if _tab == 4:
         text=[f"{c:+.2f}" for c in corrs],
         textposition="outside", textfont=dict(color="#374151"),
     ))
-    fig3.add_vline(x=0, line_color="rgba(255,255,255,0.3)")
+    fig3.add_vline(x=0, line_color="rgba(128,128,128,0.4)")
     fig3.update_layout(**base_layout("Tornado — Correlation with Simulated Value"), height=300)
     show(fig3)
 
@@ -1389,7 +1501,7 @@ if _tab == 4:
     st.dataframe(stats.set_index("Percentile"), use_container_width=True)
 
 if _tab == 5:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Competitive Moat & Risk Analysis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Competitive Moat & Risk Analysis</h3>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         dims   = ["Cost Advantage","Eff. Scale","Brand","Switch Costs","Network",
@@ -1401,12 +1513,12 @@ if _tab == 5:
             line=dict(color=GREEN, width=2.5), marker=dict(color=GREEN, size=5),
         ))
         fig.update_layout(
-            polar=dict(bgcolor='#F9FAFB',
+            polar=dict(bgcolor='rgba(0,0,0,0)',
                 radialaxis=dict(visible=True, range=[0,10], tickfont=dict(size=8,color="#4B5563"),
-                                gridcolor="rgba(0,0,0,.06)", linecolor=GRID),
-                angularaxis=dict(tickfont=dict(size=10,color="#374151"), gridcolor=GRID),
+                                gridcolor='rgba(128,128,128,.15)', linecolor='rgba(128,128,128,.2)'),
+                angularaxis=dict(tickfont=dict(size=10), gridcolor='rgba(128,128,128,.15)'),
             ),
-            paper_bgcolor='#FFFFFF', height=400,
+            paper_bgcolor='rgba(0,0,0,0)', height=400,
             margin=dict(l=60,r=60,t=50,b=50),
             title=dict(text="Competitive Moat Radar (1–10)", font=dict(color="#4B5563",size=13)),
             showlegend=False,
@@ -1414,26 +1526,102 @@ if _tab == 5:
         show(fig)
 
     with c2:
-        rfs = ["FX/Import Cost","Labour Inflation","Supply Chain","Consumer Slowdown",
-               "Amazon/eComm","Interest Rate","Dollarcity LATAM","Regulatory"]
-        lk  = [4, 4, 3, 3, 2, 3, 3, 2]
-        imp = [4, 3, 4, 3, 3, 3, 3, 4]
-        sc2 = [l*i for l,i in zip(lk,imp)]
-        rclr= [RED if s>=12 else GOLD if s>=6 else GREEN for s in sc2]
-        fig2 = go.Figure(go.Scatter(
-            x=lk, y=imp, mode="markers+text",
-            marker=dict(size=[s*4 for s in sc2], color=rclr, opacity=0.7,
-                        line=dict(color="rgba(255,255,255,0.1)",width=1)),
-            text=rfs, textposition="top center", textfont=dict(size=9,color=FG),
-        ))
-        fig2.add_hline(y=3, line_dash="dot", line_color=GRID, opacity=0.5)
-        fig2.add_vline(x=3, line_dash="dot", line_color=GRID, opacity=0.5)
-        fig2.update_layout(**base_layout("Risk Matrix — Likelihood × Impact"), height=400)
-        fig2.update_xaxes(title_text="Likelihood (1–5)", range=[0.5,5.5])
-        fig2.update_yaxes(title_text="Impact (1–5)",     range=[0.5,5.5])
+        # Risk data: [name, likelihood, impact, description_offset_x, offset_y]
+        # Scores: likelihood × impact → size and colour
+        _risks = [
+            # name,              lk,  imp, jitter_x, jitter_y
+            ("FX / Import Cost",   4.0, 4.0,  0.0,   0.0),
+            ("Labour Inflation",   4.0, 3.0,  0.0,   0.0),
+            ("Supply Chain",       3.0, 4.0,  0.0,   0.0),
+            ("Consumer Slowdown",  3.0, 3.0,  0.15, -0.15),
+            ("Amazon / eComm",     2.0, 3.0,  0.0,   0.0),
+            ("Interest Rate",      3.0, 3.0, -0.15,  0.15),
+            ("Dollarcity LATAM",   3.0, 3.0,  0.0,   0.25),
+            ("Regulatory",         2.0, 4.0,  0.0,   0.0),
+        ]
+        rfs  = [r[0] for r in _risks]
+        lk   = [r[1] for r in _risks]
+        imp  = [r[2] for r in _risks]
+        jx   = [r[3] for r in _risks]
+        jy   = [r[4] for r in _risks]
+        sc2  = [round(l*i) for l,i in zip(lk,imp)]
+        rclr = [RED if s>=12 else GOLD if s>=6 else GREEN for s in sc2]
+
+        # Anchor positions for annotations — manually placed to avoid all overlaps
+        _ann_offsets = [
+            ( 0.28,  0.18),  # FX/Import Cost      → top right
+            ( 0.28, -0.22),  # Labour Inflation     → bottom right
+            (-0.28,  0.22),  # Supply Chain         → top left
+            ( 0.28, -0.18),  # Consumer Slowdown    → bottom right
+            (-0.28, -0.18),  # Amazon/eComm         → bottom left
+            (-0.28,  0.22),  # Interest Rate        → top left
+            ( 0.28,  0.22),  # Dollarcity LATAM     → top right
+            (-0.28,  0.22),  # Regulatory           → top left
+        ]
+
+        fig2 = go.Figure()
+
+        # Bubble traces — markers only, no text on trace
+        for i, (rf, x, y, jx_, jy_, sz, col) in enumerate(
+                zip(rfs, lk, imp, jx, jy, sc2, rclr)):
+            fig2.add_trace(go.Scatter(
+                x=[x + jx_], y=[y + jy_],
+                mode="markers",
+                marker=dict(
+                    size=max(sz * 5, 18),
+                    color=col, opacity=0.70,
+                    line=dict(color="rgba(128,128,128,0.5)", width=1.5)
+                ),
+                name=rf, showlegend=False,
+                hovertemplate=(
+                    f"<b>{rf}</b><br>"
+                    f"Likelihood: {x}<br>"
+                    f"Impact: {y}<br>"
+                    f"Score: {sz}<extra></extra>"
+                ),
+            ))
+
+        # Add labels as annotations for full position control
+        for i, (rf, x, y, jx_, jy_, (ax, ay)) in enumerate(
+                zip(rfs, lk, imp, jx, jy, _ann_offsets)):
+            fig2.add_annotation(
+                x=x + jx_, y=y + jy_,
+                ax=(x + jx_ + ax), ay=(y + jy_ + ay),
+                axref="x", ayref="y",
+                text=f"<b>{rf}</b>",
+                showarrow=True,
+                arrowhead=0, arrowwidth=1,
+                arrowcolor="rgba(128,128,128,0.4)",
+                font=dict(size=9),
+                bgcolor="rgba(200,200,200,0.55)",
+                borderpad=3,
+                xanchor="center", yanchor="middle",
+            )
+
+        fig2.add_hline(y=3, line_dash="dot",
+                       line_color="rgba(128,128,128,.35)", line_width=1)
+        fig2.add_vline(x=3, line_dash="dot",
+                       line_color="rgba(128,128,128,.35)", line_width=1)
+
+        # Quadrant labels
+        for qx, qy, qlbl in [(1.6, 4.7, "LOW"), (4.4, 4.7, "HIGH"),
+                              (1.6, 1.7, "MINIMAL"), (4.4, 1.7, "MEDIUM")]:
+            fig2.add_annotation(x=qx, y=qy, text=qlbl,
+                                showarrow=False,
+                                font=dict(size=8, color="rgba(128,128,128,0.5)"),
+                                xanchor="center")
+
+        fig2.update_layout(
+            **base_layout("Risk Matrix — Likelihood × Impact"),
+            height=460, showlegend=False
+        )
+        fig2.update_xaxes(title_text="Likelihood (1–5)", range=[0.8, 5.5],
+                          dtick=1, tickvals=[1,2,3,4,5])
+        fig2.update_yaxes(title_text="Impact (1–5)", range=[1.2, 5.3],
+                          dtick=1, tickvals=[1,2,3,4,5])
         show(fig2)
 
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Risk Register</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Risk Register</h3>", unsafe_allow_html=True)
     risk_df = pd.DataFrame({
         "Risk":       rfs, "Likelihood": lk, "Impact": imp, "Score": sc2,
         "Level":      ["HIGH" if s>=12 else "MEDIUM" if s>=6 else "LOW" for s in sc2],
@@ -1449,7 +1637,7 @@ if _tab == 5:
     st.dataframe(risk_df, use_container_width=True)
 
 if _tab == 6:
-    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Forward Estimates — FY{last_yr+1}E–FY{last_yr+3}E</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Forward Estimates — FY{last_yr+1}E–FY{last_yr+3}E</h3>", unsafe_allow_html=True)
 
     if n_yrs >= 2:
         hist_rev_cagr = (df["revt"].iloc[-1]  / df["revt"].iloc[0])  ** (1/(n_yrs-1)) - 1
@@ -1498,7 +1686,7 @@ if _tab == 6:
                     marker_color=[GREEN]*n_yrs + ["rgba(61,158,106,0.35)"]*3)
         fig.add_vrect(x0=fwd["Year"].iloc[0], x1=fwd["Year"].iloc[-1],
                       fillcolor=GOLD, opacity=0.04,
-                      annotation_text="Estimates →", annotation_font=dict(color="#9A7B2F", size=10))
+                      annotation_text="Estimates →", annotation_font=dict(size=10))
         fig.update_layout(**base_layout("Revenue & EBITDA — Actual + Forecast"), barmode="group")
         show(fig)
     with c2:
@@ -1532,7 +1720,7 @@ if _tab == 6:
 # ─────────────────────────────────────────────────────────────────────────────
 
 if _tab == 7:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>FY2025 Quarterly Bridge — reconstructed from annual FY2025 actuals</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>FY2025 Quarterly Bridge — reconstructed from annual FY2025 actuals</h3>", unsafe_allow_html=True)
     st.caption(
         "Q1–Q3 FY2025 are reported quarterly values. "
         "Q4 FY2025 is reconstructed as the balancing quarter so the quarterly table adds exactly "
@@ -1599,7 +1787,7 @@ if _tab == 7:
     fy24_ebitda = float(fy24_row["ebitda"])
     fy24_eps = float(fy24_row["epspx"])
 
-    st.markdown("<h4 style='font-size:14px;font-weight:600;color:#F0EBE0;margin:12px 0 4px'>FY2025 Actual vs FY2024 Actual</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='font-size:14px;font-weight:600;color:inherit;margin:12px 0 4px'>FY2025 Actual vs FY2024 Actual</h4>", unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Revenue (FY2025A)", f"${fy25_rev:,.0f}M", f"{(fy25_rev/fy24_rev - 1)*100:+.1f}% vs FY2024")
     m2.metric("EBITDA (FY2025A)", f"${fy25_ebitda:,.0f}M", f"{(fy25_ebitda/fy24_ebitda - 1)*100:+.1f}% vs FY2024")
@@ -1663,7 +1851,7 @@ if _tab == 7:
         fig_sss.update_yaxes(ticksuffix="%")
         show(fig_sss)
 
-    st.markdown("<h4 style='font-size:14px;font-weight:600;color:#F0EBE0;margin:12px 0 4px'>Quarterly Detail</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='font-size:14px;font-weight:600;color:inherit;margin:12px 0 4px'>Quarterly Detail</h4>", unsafe_allow_html=True)
     disp_q = FY25_Q.set_index("Quarter")
     st.dataframe(
         disp_q.style
@@ -1683,7 +1871,7 @@ if _tab == 7:
         use_container_width=True,
     )
 
-    st.markdown("<h4 style='font-size:14px;font-weight:600;color:#F0EBE0;margin:12px 0 4px'>YTD (Q1–Q3) vs Same Period FY2024</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='font-size:14px;font-weight:600;color:inherit;margin:12px 0 4px'>YTD (Q1–Q3) vs Same Period FY2024</h4>", unsafe_allow_html=True)
     FY24_YTD = {"Revenue": 4288, "EBITDA": 1372, "Net_Income": 739}
     col_a, col_b, col_c = st.columns(3)
     col_a.metric("YTD Revenue Q1–Q3", f"${ytd_rev:,.0f}M",
@@ -1694,7 +1882,7 @@ if _tab == 7:
                  f"{(ytd_ni/FY24_YTD['Net_Income']-1)*100:+.1f}% vs FY2024 YTD")
 
 if _tab == 8:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>ML — Stock Price Prediction</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>ML — Stock Price Prediction</h3>", unsafe_allow_html=True)
     st.markdown(
         "<p style='color:#9CA3AF;font-size:13px;margin-bottom:16px'>"
         "Linear Regression using Moving Average (MA) and RSI as features on DOL.TO daily prices. "
@@ -1886,7 +2074,7 @@ if _tab == 8:
     """)
 
 if _tab == 9:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>NLP — Conference Call Sentiment Analysis</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>NLP — Conference Call Sentiment Analysis</h3>", unsafe_allow_html=True)
 
     import re as _re
     import pandas as _pd
@@ -2139,7 +2327,7 @@ if _tab == 9:
     # ── Section 2.C ───────────────────────────────────────────────────────────
     st.divider()
     st.markdown(
-        "<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>"
+        "<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>"
         "Section 2.C — Critical Evaluation of AI Outputs</h3>"
         "<p style='color:#9CA3AF;font-size:13px;margin-bottom:16px'>"
         "Using traditional financial analysis as the benchmark: what AI got right, what it missed, "
@@ -2324,7 +2512,7 @@ Used naively, it produces confident-sounding errors.
             unsafe_allow_html=True)
 
 if _tab == 10:
-    st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Raw & Derived Data Table</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;color:inherit;margin:8px 0 4px'>Raw & Derived Data Table</h3>", unsafe_allow_html=True)
     st.caption("Yahoo Finance (Live) · DOL.TO · All figures in CAD millions · FY2021–FY2025")
 
     st.markdown("**Raw Financials**")

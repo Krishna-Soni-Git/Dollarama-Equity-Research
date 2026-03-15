@@ -3,7 +3,7 @@
 > **Course:** MBAN5570 — Equity Research Analytics
 > **Authors:** Soni & Warner (2025)
 > **Recommendation:** 🟢 **BUY** | Target: **CAD $212.06** | Upside: **+9.5%**
-> **Data:** Live from Yahoo Finance (auto-loads on startup)
+> **Data:** Live from Yahoo Finance — auto-loads on startup, no files needed
 
 ---
 
@@ -52,49 +52,37 @@ pip install -r requirements.txt
 streamlit run dollarama_research.py
 ```
 
-Open **http://localhost:8501** in your browser. The dashboard fetches live data from Yahoo Finance automatically — no data files needed.
+Open **http://localhost:8501** in your browser.
 
 ---
 
 ## Pulling the Latest Code After Cloning
 
-Once you have cloned the repo, use these commands to stay up to date:
-
 ```bash
-# Switch to the main branch
+# Pull latest changes
 git checkout main
-
-# Pull the latest changes from GitHub
 git pull origin main
 
-# If dependencies have changed, reinstall them
+# Reinstall if dependencies changed
 pip install -r requirements.txt
 
-# Run the dashboard
+# Run
 streamlit run dollarama_research.py
 ```
 
-### If you have local changes you want to keep
+### If you have local changes to keep
 
 ```bash
-# Save your local changes temporarily
-git stash
-
-# Pull the latest code
+git stash          # save your changes
 git pull origin main
-
-# Restore your saved changes on top
-git stash pop
+git stash pop      # restore your changes on top
 ```
 
-### Check what changed before pulling
+### Preview what changed before pulling
 
 ```bash
-# See what commits are new on the remote
 git fetch origin
 git log HEAD..origin/main --oneline
-
-# Then pull when ready
 git pull origin main
 ```
 
@@ -105,12 +93,46 @@ git pull origin main
 ```
 dollarama-equity-research/
 │
-├── dollarama_research.py      # Main Streamlit dashboard (2,300+ lines)
-├── dollarama_data_pull.py     # Optional: exports Yahoo Finance data to CSV
-├── requirements.txt           # Python dependencies (this file)
-├── .gitignore                 # Excludes venv, .env, cache files
-└── README.md                  # This file
+├── dollarama_research.py        # Main Streamlit dashboard (~2,560 lines)
+├── dollarama_data_pull.py       # Optional: exports Yahoo Finance data to CSV
+├── requirements.txt             # Python dependencies
+├── .gitignore                   # Excludes venv, .env, __pycache__, etc.
+├── README.md                    # This file
+│
+└── .streamlit/
+    └── config.toml              # Streamlit theme config (light/dark default)
 ```
+
+---
+
+## Theme Support (Light & Dark)
+
+The dashboard fully supports both Streamlit light and dark modes and **auto-adapts** when you switch.
+
+### Setting the default theme
+
+The `.streamlit/config.toml` file controls which theme loads by default:
+
+```toml
+# .streamlit/config.toml
+
+[theme]
+base = "light"               # Change to "dark" for dark mode default
+primaryColor = "#9A7B2F"
+backgroundColor = "#F8F9FA"
+secondaryBackgroundColor = "#F1F3F5"
+textColor = "#111827"
+font = "sans serif"
+```
+
+To switch to dark by default, change `base = "light"` to `base = "dark"`. Users can also switch at any time using the ☰ menu → Settings in the Streamlit interface.
+
+### How theme adaptation works
+
+- **Sidebar background** — switches between `#F1F3F5` (light) and `#0E1117` (dark) automatically via JavaScript
+- **Button text** — `#374151` on light, `#E2E8F0` on dark — always readable
+- **Charts** — use transparent backgrounds that inherit the page colour
+- **Inline text** — uses `color:inherit` to follow Streamlit's active theme
 
 ---
 
@@ -120,26 +142,26 @@ Navigate using the sidebar buttons on the left:
 
 | # | Tab | What It Shows |
 |---|-----|--------------|
-| 1 | 📊 Performance | Revenue, EBITDA, margins, EPS, store count FY2021–2025 |
+| 1 | 📊 Performance | Revenue, EBITDA, margins, EPS, SSS, store count FY2021–2025 |
 | 2 | 💰 ROIC & Capital | ROIC vs WACC spread, FCF, buybacks, share count |
 | 3 | 🏢 Peer Comps | Dollarama vs Dollar Tree vs Dollar General + analytical report |
 | 4 | 💵 Valuation & DCF | Live DCF model, EV/EBITDA comps, sensitivity heatmap |
-| 5 | 🎲 Monte Carlo | 5,000-path simulation, probability distribution |
-| 6 | ⚠️ Risk & Moat | Competitive moat radar, risk matrix, risk register |
+| 5 | 🎲 Monte Carlo | 5,000-path simulation, probability distribution, tornado chart |
+| 6 | ⚠️ Risk & Moat | Competitive moat radar, risk matrix (bubble chart), risk register |
 | 7 | 🔭 Forward Outlook | FY2026–2028 revenue, EPS, and store count forecasts |
 | 8 | 📅 FY2025 Partial | Quarterly bridge Q1–Q4 FY2025 |
-| 9 | 🤖 ML — Price Model | Linear Regression on MA + RSI (Tutorial 5) |
-| 10 | 💬 NLP — Sentiment | N-gram frequency + polarity scoring on earnings calls (Tutorial 4) |
+| 9 | 🤖 ML — Price Model | Linear Regression on MA + RSI features (Tutorial 5) |
+| 10 | 💬 NLP — Sentiment | N-gram frequency + polarity scoring on earnings calls (Tutorial 4) + Section 2.C |
 | 11 | 🗃️ Raw Data | Full audit trail — all raw columns and derived metrics |
 
 ---
 
 ## Interactive Controls
 
-The **Valuation & DCF** and **Monte Carlo** tabs have live sliders built directly into the tab (not the sidebar):
+The **Valuation & DCF** and **Monte Carlo** tabs have live sliders built directly into each tab:
 
-| Slider | Default | Where |
-|--------|---------|-------|
+| Slider | Default | Tab |
+|--------|---------|-----|
 | WACC (%) | 7.8% | Valuation & DCF, Monte Carlo |
 | Terminal Growth (%) | 2.5% | Valuation & DCF, Monte Carlo |
 | Stage 1 Revenue Growth (%) | 9.0% | Valuation & DCF, Monte Carlo |
@@ -168,17 +190,17 @@ All charts and valuations update live as you move the sliders.
 
 ## Peer Comparison Data
 
-Peer company data (Dollar Tree and Dollar General) is sourced from verified FY2025 SEC 10-K filings — **not** from Yahoo Finance's live feed, which returns partial and unreliable peer data.
+Peer company data uses **verified FY2025 SEC 10-K filings** — not Yahoo Finance's live peer feed, which returns partial/incorrect annual data.
 
-| | DLTR | DG |
+| | DLTR (USD) | DG (USD) |
 |--|--|--|
-| Revenue | $30,607M USD | $40,612M USD |
+| Revenue | $30,607M | $40,612M |
 | EBITDA Margin | 11.9% | 9.6% |
 | ROIC | 13.6% | 15.2% |
 | EV/EBITDA | 6.5× | 7.4× |
 | Stock price | $65 USD → CAD $93.60 | $73 USD → CAD $105.12 |
 
-> **Note:** DLTR net income is -$4,268M due to a one-time goodwill impairment write-down on the Family Dollar acquisition — not an operational loss. Prices converted at USD/CAD 1.44 (Bank of Canada, Feb 2025).
+> **Note on DLTR:** Net income of −$4,268M reflects a one-time goodwill impairment write-down on the Family Dollar acquisition — not an operational loss. Compare margins and EBITDA for a fair picture. Prices converted at USD/CAD 1.44 (Bank of Canada, Feb 2025 average).
 
 ---
 
@@ -188,27 +210,27 @@ Peer company data (Dollar Tree and Dollar General) is sourced from verified FY20
 # Create your own branch
 git checkout -b feature/your-name-changes
 
-# Make your changes, then commit
+# Make changes, then commit and push
 git add .
 git commit -m "Add: short description of change"
 git push origin feature/your-name-changes
 
-# Open a Pull Request on GitHub to merge into main
+# Open a Pull Request on GitHub
 ```
 
 ### Adding a new tab
 
-1. Add a label to the `_NAV` list in the sidebar section (~line 546)
-2. Add `if _tab == N:` block at the end of the tab section
-3. Increment the `active_tab` range check if needed
+1. Add an entry to the `_NAV` list in the sidebar section
+2. Add an `if _tab == N:` block in the tab content section
+3. Increment `active_tab` range as needed
 
 ### Coding conventions
 
-- All Dollarama figures in **CAD millions** unless noted
+- All Dollarama figures in **CAD millions** unless labelled
 - Peer figures in **USD millions**
 - Column names follow Compustat style: `revt`, `ni`, `epspx`, `at`, `lct`, `che`, etc.
 - All derived metrics computed in `process_dol()` — add new metrics there
-- Chart colours: `GOLD="#B8943A"`, `GREEN="#3D9E6A"`, `BLUE="#3A7EC0"`, `RED="#CC4444"`
+- Colours: `GOLD="#9A7B2F"`, `GREEN="#1A6B45"`, `BLUE="#1D5FA0"`, `RED="#B91C1C"`
 
 ---
 
@@ -216,37 +238,45 @@ git push origin feature/your-name-changes
 
 | Problem | Fix |
 |---------|-----|
-| `ModuleNotFoundError` | Run `pip install -r requirements.txt` |
+| `ModuleNotFoundError: No module named 'X'` | Run `pip install -r requirements.txt` |
+| `ModuleNotFoundError: matplotlib` | Run `pip install matplotlib>=3.7.0` |
 | `streamlit: command not found` | Run `python -m streamlit run dollarama_research.py` |
-| Yahoo Finance timeout / empty data | Restart the app — Yahoo rate-limits heavy usage |
-| Charts not rendering | Ensure `plotly>=6.0.0` — run `pip install --upgrade plotly` |
-| `sklearn` not found | Run `pip install scikit-learn>=1.4.0` |
+| Sidebar buttons invisible in dark mode | Refresh the page — JS theme watcher re-applies colours within 1.5s |
+| Yahoo Finance timeout or empty data | Restart the app — Yahoo rate-limits repeated requests |
+| Charts look wrong on dark mode | Add `.streamlit/config.toml` to your project folder (see Theme Support above) |
+| `sklearn` not found | Run `pip install scikit-learn>=1.3.0` |
+| `yfinance` install fails (C compiler error) | Your pip installed yfinance 1.x — run `pip install "yfinance>=0.2.50,<1.0.0"` |
 | Port already in use | Run `streamlit run dollarama_research.py --server.port 8502` |
-| yfinance returns wrong peer data | Expected — peers always use verified 10-K fallback values |
+| Peer data looks wrong | Expected — DLTR/DG always use verified 10-K fallback, not live Yahoo data |
 
 ---
 
 ## Dependencies
 
-| Package | Min Version | Latest | Used For |
-|---------|------------|--------|---------|
-| streamlit | 1.45.0 | 1.55.0 | Dashboard framework |
-| plotly | 6.0.0 | 6.6.0 | All interactive charts |
-| pandas | 2.2.0 | 3.0.1 | Data manipulation |
-| numpy | 1.26.0 | 2.4.3 | Numerical computing, Monte Carlo |
-| yfinance | 0.2.50 | 1.2.0 | Live DOL.TO financial data |
-| scikit-learn | 1.4.0 | 1.8.0 | ML tab Linear Regression |
-| python-dotenv | 1.0.0 | 1.2.2 | Optional .env config loading |
+| Package | Min Version | Latest (Mar 2026) | Used For |
+|---------|------------|-------------------|---------|
+| streamlit | 1.40.0 | 1.55.0 | Dashboard framework, sidebar nav, widgets |
+| plotly | 5.20.0 | 6.6.0 | All interactive charts |
+| pandas | 2.2.0 | 3.0.1 | Data loading, transformation, tables |
+| numpy | 1.26.0 | 2.4.3 | Numerical computing, Monte Carlo simulation |
+| matplotlib | 3.7.0 | 3.10.8 | Colour gradients in DataFrames (`cmap="Greens"`) |
+| yfinance | 0.2.50 (`<1.0.0`) | 0.2.66 stable | Live DOL.TO financial data |
+| scikit-learn | 1.3.0 | 1.8.0 | Linear Regression in ML tab (Tutorial 5) |
+| python-dotenv | 1.0.0 | 1.2.2 | Optional — loads `.env` for local config |
+
+> **Why `yfinance<1.0.0`?** yfinance 1.x introduced `curl_cffi` as a dependency, which requires a C compiler to install. This fails silently on Windows machines without Visual Studio Build Tools and on older macOS without Xcode Command Line Tools. Version 0.2.x has no native compilation requirements and installs cleanly everywhere.
 
 ---
 
 ## Known Data Notes
 
-1. **EBITDA definition** — Dashboard uses Yahoo Finance derivation: `(Gross Profit − SG&A) + D&A`. Dollarama's press releases report EBITDA directly from their income statement, which differs by ~$100–160M. Both are valid; the difference comes from how Yahoo reclassifies line items.
+1. **EBITDA definition** — Dashboard derives EBITDA as `(Gross Profit − SG&A) + D&A` from Yahoo Finance line items. Dollarama's press releases report EBITDA directly, which can differ by ~$100–160M due to Yahoo's line item reclassifications.
 
-2. **Peer prices in CAD** — DLTR and DG stock prices are converted from USD to CAD at the Bank of Canada February 2025 average rate of 1.44. EV/EBITDA and other ratios are unaffected (they are currency-neutral).
+2. **Peer prices in CAD** — DLTR and DG stock prices are converted from USD to CAD at 1.44 (Bank of Canada February 2025 average). Ratios (EV/EBITDA, P/E, margins) are unaffected.
 
-3. **FY2021 data** — Yahoo Finance only returns 4 years of annual data. FY2021 figures are backfilled from verified Dollarama annual report values.
+3. **FY2021 data** — Yahoo Finance returns at most 4 years of annual data. FY2021 is backfilled from verified Dollarama annual report values hardcoded in `FALLBACK_DOL`.
+
+4. **DLTR loss** — Dollar Tree's FY2025 net loss of −$4,268M is entirely from a goodwill impairment on the Family Dollar acquisition, not operational performance. Always flag this when presenting the peer comparison.
 
 ---
 
