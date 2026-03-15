@@ -1,14 +1,24 @@
-# Dollarama Equity Research Dashboard
-# Install with: pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+# Dollarama Equity Research Dashboard — Python Dependencies
+# Updated: March 2026
+#
+# Install all at once:
+#   pip install -r requirements.txt
+#
+# Python 3.10+ recommended. Python 3.12 fully supported.
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Core dashboard
-streamlit>=1.32.0
-plotly>=5.20.0
-pandas>=2.0.0
-numpy>=1.26.0
+# ── Core dashboard ────────────────────────────────────────────────────────────
+streamlit>=1.45.0          # Web dashboard framework  (latest: 1.55.0)
+plotly>=6.0.0              # Interactive charts        (latest: 6.6.0)
+pandas>=2.2.0              # Data manipulation         (latest: 3.0.1)
+numpy>=1.26.0              # Numerical computing       (latest: 2.4.3)
 
-# Data source (used in yfinance mode + dollarama_data_pull.py)
-yfinance>=0.2.38
+# ── Live data ─────────────────────────────────────────────────────────────────
+yfinance>=0.2.50           # Yahoo Finance data pull   (latest: 1.2.0)
 
-# Optional — loads .env file for local API keys if present
-python-dotenv>=1.0.0
+# ── Machine learning (ML tab) ─────────────────────────────────────────────────
+scikit-learn>=1.4.0        # LinearRegression + MSE    (latest: 1.8.0)
+
+# ── Optional ──────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0       # Loads .env for local config (latest: 1.2.2)

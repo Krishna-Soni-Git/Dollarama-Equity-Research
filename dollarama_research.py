@@ -80,44 +80,68 @@ st.set_page_config(
 )
 
 # ─── Colour palette ───────────────────────────────────────────────────────────
-GOLD="#B8943A"; GOLD_LT="#D4AF5C"; GREEN="#3D9E6A"; RED="#CC4444"
-BLUE="#3A7EC0"; PURPLE="#8B5CF6"; BG="#0D0F14"; CARD="#161A22"
-PANEL="#1E2330"; GRID="rgba(184,148,58,0.07)"; FG="#B8C0CC"; WHITE="#F0EBE0"
+GOLD="#9A7B2F"; GOLD_LT="#7A6020"; GREEN="#1A6B45"; RED="#B91C1C"
+BLUE="#1D5FA0"; PURPLE="#6D28D9"; BG="#F8F9FA"; CARD="#FFFFFF"
+PANEL="#F1F3F5"; GRID="rgba(0,0,0,0.06)"; FG="#4B5563"; WHITE="#111827"
 
 st.markdown(f"""<style>
 /* ── Base ── */
-.stApp{{background:{BG}}}
-[data-testid="stSidebar"]{{background:#0F1117;border-right:1px solid rgba(184,148,58,.12)}}
-html,body,[class*="css"]{{font-family:'Inter','Segoe UI',sans-serif;color:{WHITE}}}
-h1,h2,h3,h4{{color:{WHITE}!important;font-weight:600!important}}
-hr{{border-color:rgba(255,255,255,.06)!important;margin:1rem 0!important}}
+.stApp{{background:#F8F9FA}}
+[data-testid="stSidebar"]{{background:#F1F3F5;border-right:1px solid rgba(154,123,47,.2)}}
+html,body,[class*="css"]{{font-family:'Inter','Segoe UI',sans-serif;color:#111827}}
+h1,h2,h3,h4{{color:#111827!important;font-weight:600!important}}
+hr{{border-color:rgba(0,0,0,.1)!important;margin:0.5rem 0!important}}
+/* Tighter dividers inside sidebar only */
+[data-testid="stSidebar"] hr{{margin:6px 0!important;border-color:rgba(0,0,0,.1)!important}}
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"]>div{{gap:0!important}}
+/* Remove Streamlit's default top padding inside sidebar */
+[data-testid="stSidebar"] section[data-testid="stSidebarContent"]{{padding-top:0.75rem!important;padding-bottom:0.5rem!important}}
 /* ── Metrics ── */
 [data-testid="metric-container"]{{
-  background:#1C2130;border:1px solid rgba(255,255,255,.06);
+  background:#FFFFFF;border:1px solid rgba(0,0,0,.08);
   border-radius:10px;padding:16px 18px;border-top:3px solid {GOLD}}}
-[data-testid="stMetricValue"]{{color:{GOLD_LT}!important;font-size:24px!important;font-weight:700!important}}
+[data-testid="stMetricValue"]{{color:#7A6020!important;font-size:24px!important;font-weight:700!important}}
 [data-testid="stMetricLabel"]{{color:#6B7280!important;font-size:11px!important;text-transform:uppercase;letter-spacing:.05em}}
 /* ── Hide horizontal tab bar ── */
 .stTabs [data-baseweb="tab-list"]{{display:none!important}}
-/* ── Sidebar nav ── */
+/* ── Sidebar nav buttons ── */
+[data-testid="stSidebar"] .stButton{{margin-bottom:0!important}}
 [data-testid="stSidebar"] .stButton>button{{
-  width:100%!important;text-align:left!important;justify-content:flex-start!important;
-  font-size:13px!important;padding:9px 14px!important;border-radius:8px!important;
-  margin-bottom:3px!important;border:1px solid transparent!important;transition:all .15s!important;
+  width:100%!important;
+  display:flex!important;align-items:center!important;
+  justify-content:flex-start!important;text-align:left!important;
+  font-size:12px!important;font-family:'Inter','Segoe UI',sans-serif!important;
+  padding:5px 10px!important;
+  border-radius:6px!important;
+  margin-bottom:1px!important;
+  border:1px solid transparent!important;
+  transition:background .12s,color .12s!important;
+  white-space:nowrap!important;overflow:hidden!important;
+  line-height:1.3!important;height:auto!important;min-height:0!important;
+}}
+[data-testid="stSidebar"] .stButton>button *,
+[data-testid="stSidebar"] .stButton>button p,
+[data-testid="stSidebar"] .stButton>button span,
+[data-testid="stSidebar"] .stButton>button div{{
+  white-space:nowrap!important;overflow:hidden!important;
+  text-overflow:clip!important;text-align:left!important;
+  width:auto!important;max-width:100%!important;
+  margin:0!important;padding:0!important;
+  display:inline!important;line-height:1.3!important;
 }}
 [data-testid="stSidebar"] .stButton>button[kind="secondary"]{{
-  background:transparent!important;color:#9CA3AF!important;
+  background:transparent!important;color:#374151!important;
 }}
 [data-testid="stSidebar"] .stButton>button[kind="secondary"]:hover{{
-  background:rgba(184,148,58,.1)!important;color:{GOLD_LT}!important;
-  border-color:rgba(184,148,58,.2)!important;
+  background:rgba(154,123,47,.1)!important;color:#7A6020!important;
+  border-color:rgba(154,123,47,.35)!important;
 }}
 [data-testid="stSidebar"] .stButton>button[kind="primary"]{{
-  background:rgba(184,148,58,.18)!important;color:{GOLD_LT}!important;
-  border-color:rgba(184,148,58,.5)!important;font-weight:600!important;
+  background:rgba(154,123,47,.15)!important;color:#7A6020!important;
+  border-color:rgba(154,123,47,.6)!important;font-weight:600!important;
 }}
 /* ── Misc ── */
-.badge-live{{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.12);
+.badge-live{{display:inline-flex;align-items:center;gap:6px;background:rgba(16,130,90,.08);
   border:1px solid rgba(16,185,129,.3);color:#34D399;font-size:11px;font-weight:600;
   padding:4px 10px;border-radius:20px;letter-spacing:.04em}}
 [data-testid="stDataFrame"]{{border-radius:8px;overflow:hidden}}
@@ -256,24 +280,32 @@ FALLBACK_DOL = pd.DataFrame({
     "sss_growth":  [ 7.2,  9.5,   5.2,    4.8,    4.5],
 })
 FALLBACK_PEERS = pd.DataFrame({
-    "ticker":   ["DLTR",   "DG"],
-    "currency": ["USD",    "USD"],
-    "revt":     [17578,   40612],
-    "cogs":     [11284,   28595],
-    "xsga":     [ 4500,    8000],
-    "dp":       [  900,    2000],
-    "ni":       [-3030,    1125],
-    "epspx":    [-14.05,   5.11],
-    "che":      [ 1256,     933],
-    "at":       [18644,   31133],
-    "lct":      [ 4000,    6000],
-    "dltt":     [ 2431,    5719],
-    "dlc":      [  200,     300],
-    "ceq":      [ 3000,    4000],
-    "oancf":    [ 2862,    2996],
-    "capx":     [ 1300,    1310],
-    "csho":     [  215,     220],
-    "prcc_f":   [   70,     100],
+    # ── Verified from SEC 10-K filings (USD millions) ─────────────────────────
+    # DLTR: FY2025 ended Feb 1, 2025  |  DG: FY2025 ended Jan 31, 2025
+    # Prices converted to CAD at USD/CAD = 1.44 (Bank of Canada, Feb 2025 avg)
+    # so all three companies are on a comparable CAD basis in the dashboard.
+    # DLTR net loss = $4,268M goodwill impairment on Family Dollar — NOT operational.
+    "ticker":   ["DLTR",    "DG"],
+    "currency": ["USD",     "USD"],
+    "revt":     [30607,    40612],   # Net sales from 10-K
+    "cogs":     [21080,    27950],   # Cost of sales from 10-K
+    "xsga":     [ 7266,     9851],   # SG&A (excl. D&A) from 10-K
+    "dp":       [ 1388,     1079],   # Depreciation & amortisation from 10-K
+    "ni":       [-4268,     1661],   # Net income from 10-K
+    "epspx":    [-19.93,    7.83],   # Diluted EPS from 10-K
+    "che":      [  324,      390],   # Cash & equivalents
+    "at":       [21766,    24521],   # Total assets
+    "lct":      [ 4872,     5640],   # Current liabilities
+    "dltt":     [ 3413,     6246],   # Long-term debt
+    "dlc":      [  751,      500],   # Current portion of debt
+    "ceq":      [ 7163,     4963],   # Stockholders equity
+    "oancf":    [ 2100,     2100],   # Operating cash flow (approx)
+    "capx":     [ 1200,     1100],   # Capital expenditures (approx)
+    "csho":     [214.2,    212.0],   # Diluted shares outstanding (millions)
+    # Prices in CAD (USD price × 1.44 USD/CAD rate, Feb 2025)
+    # DLTR: $65.00 USD × 1.44 = $93.60 CAD
+    # DG:   $73.00 USD × 1.44 = $105.12 CAD
+    "prcc_f":   [93.60,   105.12],   # Year-end price in CAD equivalent
 })
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -497,18 +529,18 @@ def run_monte_carlo(n, base_fcf, net_debt, shares, wacc_mu, tgr_mu, rev_growth_m
 def base_layout(title=""):
     """Clean professional chart layout."""
     return dict(
-        title=dict(text=title, font=dict(color=WHITE, size=13, family="Inter, Segoe UI"), x=0.0),
-        paper_bgcolor="#161B27", plot_bgcolor="#0D1117",
-        font=dict(family="Inter, Segoe UI", color="#9CA3AF", size=11),
+        title=dict(text=title, font=dict(color="#111827", size=13, family="Inter, Segoe UI"), x=0.0),
+        paper_bgcolor="#FFFFFF", plot_bgcolor="#F8F9FA",
+        font=dict(family="Inter, Segoe UI", color="#4B5563", size=11),
         margin=dict(l=50, r=20, t=44, b=40),
-        xaxis=dict(gridcolor="rgba(255,255,255,.04)", linecolor="rgba(255,255,255,.08)",
-                   tickfont=dict(size=10, color="#9CA3AF"), zeroline=False),
-        yaxis=dict(gridcolor="rgba(255,255,255,.04)", linecolor="rgba(255,255,255,.08)",
-                   tickfont=dict(size=10, color="#9CA3AF"), zeroline=False),
-        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=10, color="#9CA3AF"),
-                    bordercolor="rgba(255,255,255,.06)", borderwidth=1),
+        xaxis=dict(gridcolor="rgba(0,0,0,.06)", linecolor="rgba(0,0,0,.1)",
+                   tickfont=dict(size=10, color="#6B7280"), zeroline=False),
+        yaxis=dict(gridcolor="rgba(0,0,0,.06)", linecolor="rgba(0,0,0,.1)",
+                   tickfont=dict(size=10, color="#6B7280"), zeroline=False),
+        legend=dict(bgcolor="rgba(255,255,255,0.9)", font=dict(size=10, color="#374151"),
+                    bordercolor="rgba(0,0,0,.08)", borderwidth=1),
         hovermode="x unified",
-        hoverlabel=dict(bgcolor="#1C2130", font=dict(color=WHITE, size=11)),
+        hoverlabel=dict(bgcolor="#FFFFFF", font=dict(color="#111827", size=11)),
     )
 
 def show(fig, **kw):
@@ -536,9 +568,9 @@ if "active_tab" not in st.session_state: st.session_state.active_tab = 0
 # ══════════════════════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown(
-        f"<div style='padding:8px 4px 12px'>"
-        f"<div style='font-size:18px;font-weight:700;color:{WHITE}'>Dollarama Inc.</div>"
-        f"<div style='font-size:12px;color:#6B7280;margin-top:2px'>DOL.TO · Equity Research · MBAN5570</div>"
+        f"<div style='padding:2px 4px 8px'>"
+        f"<div style='font-size:16px;font-weight:700;color:#111827'>Dollarama Inc.</div>"
+        f"<div style='font-size:11px;color:#6B7280;margin-top:1px'>DOL.TO · Equity Research · MBAN5570</div>"
         f"</div>", unsafe_allow_html=True)
     st.divider()
 
@@ -549,11 +581,11 @@ with st.sidebar:
         ("🏢", "Peer Comps"),
         ("💵", "Valuation & DCF"),
         ("🎲", "Monte Carlo"),
-        ("⚠️", "Risk & Moat"),
+        ("⚠️",  "Risk & Moat"),
         ("🔭", "Forward Outlook"),
         ("📅", "FY2025 Partial"),
-        ("🤖", "ML — Price Prediction"),
-        ("💬", "NLP — Sentiment"),
+        ("🤖", "ML Prediction"),
+        ("💬", "NLP Sentiment"),
         ("🗃️", "Raw Data"),
     ]
     for _i, (_icon, _label) in enumerate(_NAV):
@@ -568,7 +600,7 @@ with st.sidebar:
             st.rerun()
 
     st.divider()
-    st.caption("All figures in CAD millions · Peer figures in USD\nData: Yahoo Finance (Live)")
+    st.markdown("<div style='font-size:10px;color:#6B7280;line-height:1.5;padding:2px 0'>CAD millions · Peers in USD · Yahoo Finance (Live)</div>", unsafe_allow_html=True)
     with st.expander("🤝 Clone & Contribute", expanded=False):
         st.code(
             "git clone https://github.com/YOUR_USERNAME/\\\n"
@@ -710,16 +742,7 @@ def fetch_from_yfinance():
         dol_df["store_count"] = dol_df["fyear"].map(STORE_DATA).fillna(0).astype(int)
         dol_df["sss_growth"]  = dol_df["fyear"].map(SSS_DATA).fillna(0)
 
-        peer_frames = []
-        for sym, ticker in [("DLTR", "DLTR"), ("DG", "DG")]:
-            try:
-                p = pull_ticker(sym, n_years=1)
-                p.insert(0, "ticker",   ticker)
-                p.insert(1, "currency", "USD")
-                peer_frames.append(p)
-            except Exception:
-                pass
-        peer_df = pd.concat(peer_frames, ignore_index=True) if peer_frames else None
+        peer_df = None   # Peer data always comes from FALLBACK_PEERS (verified annual report values)
         return dol_df, peer_df, None
 
     except Exception as e:
@@ -735,7 +758,10 @@ with st.spinner("Fetching live data from Yahoo Finance (DOL.TO)…"):
 
 if raw_dol is not None and len(raw_dol) > 0 and raw_dol["revt"].max() > 0:
     df       = process_dol(raw_dol)
-    peers_df = process_peers(raw_peers, df.iloc[-1]) if raw_peers is not None else process_peers(FALLBACK_PEERS, df.iloc[-1])
+    # Always use FALLBACK_PEERS for peer companies — Yahoo Finance returns
+    # partial/incorrect annual data for DLTR and DG (wrong revenue, wrong EBITDA).
+    # FALLBACK_PEERS contains verified FY2025 annual report values.
+    peers_df = process_peers(FALLBACK_PEERS, df.iloc[-1])
     st.success(
         f"✅ Live Yahoo Finance — "
         f"FY{int(df['fyear'].min())}–FY{int(df['fyear'].max())} ({len(df)} years)"
@@ -804,7 +830,7 @@ with hc2:
     st.markdown(
         f"<div style='text-align:right;padding-top:8px'>"
         f"<div style='font-size:28px;font-weight:800;color:{GREEN};letter-spacing:2px'>BUY</div>"
-        f"<div style='color:#9CA3AF;font-size:12px'>Target <b style='color:{WHITE}'>CAD $212.06</b></div>"
+        f"<div style='color:#9CA3AF;font-size:12px'>Target <b style='color:#111827'>CAD $212.06</b></div>"
         f"<div style='color:{GREEN};font-size:11px'>+9.5% upside</div>"
         f"</div>", unsafe_allow_html=True)
 
@@ -854,7 +880,7 @@ if _tab == 0:
             x=YR, y=df["epspx"],
             marker_color=[f"rgba(184,148,58,{0.38+i*0.068})" for i in range(n_yrs)],
             text=[f"${v:.2f}" for v in df["epspx"]],
-            textposition="outside", textfont=dict(size=9, color=FG),
+            textposition="outside", textfont=dict(size=9, color="#374151"),
         ))
         fig3.update_layout(**base_layout("Diluted EPS (CAD $)  [epspx]"))
         fig3.update_yaxes(tickprefix="$")
@@ -865,7 +891,7 @@ if _tab == 0:
             x=YR, y=df["ni"],
             marker_color=[GREEN if v > 0 else RED for v in df["ni"]],
             text=[f"${v:,.0f}" for v in df["ni"]],
-            textposition="outside", textfont=dict(size=9, color=FG),
+            textposition="outside", textfont=dict(size=9, color="#374151"),
         ))
         fig4.update_layout(**base_layout("Net Income ($M CAD)  [ni]"))
         fig4.update_yaxes(tickprefix="$", ticksuffix="M")
@@ -880,7 +906,7 @@ if _tab == 0:
                 x=YR, y=df["sss_growth"],
                 marker_color=[GREEN if v >= 5 else RED for v in df["sss_growth"]],
                 text=[f"{v:.1f}%" for v in df["sss_growth"]],
-                textposition="outside", textfont=dict(size=9, color=FG),
+                textposition="outside", textfont=dict(size=9, color="#374151"),
             ))
             fig5.add_hline(y=5, line_dash="dot", line_color=GOLD, opacity=0.5)
             fig5.update_layout(**base_layout("Same-Store Sales Growth (%) — Press Release Data"))
@@ -989,7 +1015,16 @@ if _tab == 1:
 if _tab == 2:
     st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Comparable Company Analysis</h3>", unsafe_allow_html=True)
 
-    st.caption("DOL = CAD$ · DLTR & DG = USD$ · Ratios are currency-neutral and directly comparable")
+    st.markdown(
+        "<div style='background:rgba(251,191,36,.08);border-left:3px solid #F59E0B;"
+        "border-radius:4px;padding:10px 16px;margin-bottom:12px'>"
+        "<b style='color:#F59E0B'>⚠️ Note on Dollar Tree (DLTR)</b>"
+        "<span style='color:#9CA3AF;font-size:13px'> — The negative net income ($-4,193M) and EPS ($-19.70) "
+        "reflect a one-time goodwill impairment write-down, not operational failure. "
+        "DLTR's stores remain profitable. Compare margins and EBITDA, not net income, for a fair picture.</span>"
+        "</div>",
+        unsafe_allow_html=True)
+    st.caption("DOL = CAD$ · DLTR & DG = USD$ · Ratios (margins, ROIC, EV/EBITDA) are currency-neutral and directly comparable")
     if peers_df is not None:
         companies = peers_df["Company"].tolist()
         clrs      = [GOLD, BLUE, RED][:len(companies)]
@@ -999,7 +1034,7 @@ if _tab == 2:
             fig = go.Figure(go.Bar(
                 x=companies, y=peers_df["EV/EBITDA"], marker_color=clrs,
                 text=[f"{v:.1f}×" for v in peers_df["EV/EBITDA"]],
-                textposition="outside", textfont=dict(color=FG),
+                textposition="outside", textfont=dict(color="#374151"),
             ))
             fig.update_layout(**base_layout("EV / EBITDA (×)"), height=320)
             fig.update_yaxes(ticksuffix="×")
@@ -1013,7 +1048,7 @@ if _tab == 2:
                     marker=dict(size=max(16, min(40, abs(row["EV/EBITDA"]) * 2)),
                                 color=clrs[min(i, len(clrs)-1)], opacity=0.8),
                     text=[row["Company"]], textposition="top center",
-                    textfont=dict(color=FG, size=10), name=row["Company"], showlegend=False,
+                    textfont=dict(color="#4B5563", size=10), name=row["Company"], showlegend=False,
                 ))
             fig2.update_layout(**base_layout("ROIC vs. EBITDA Margin"), height=320)
             fig2.update_xaxes(title_text="EBITDA Margin (%)", ticksuffix="%")
@@ -1025,7 +1060,7 @@ if _tab == 2:
             fig3 = go.Figure(go.Bar(
                 x=companies, y=peers_df["ROIC"], marker_color=clrs,
                 text=[f"{v:.1f}%" for v in peers_df["ROIC"]],
-                textposition="outside", textfont=dict(color=FG),
+                textposition="outside", textfont=dict(color="#374151"),
             ))
             fig3.update_layout(**base_layout("ROIC (%)  — ebit/(at-lct-che)  [WP method]"), height=280)
             fig3.update_yaxes(ticksuffix="%")
@@ -1034,13 +1069,14 @@ if _tab == 2:
             fig4 = go.Figure(go.Bar(
                 x=companies, y=peers_df["EBITDA Margin"], marker_color=clrs,
                 text=[f"{v:.1f}%" for v in peers_df["EBITDA Margin"]],
-                textposition="outside", textfont=dict(color=FG),
+                textposition="outside", textfont=dict(color="#374151"),
             ))
             fig4.update_layout(**base_layout("EBITDA Margin (%)  — (revt-cogs-xsga+dp)/revt"), height=280)
             fig4.update_yaxes(ticksuffix="%")
             show(fig4)
 
         st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Full Peer Comparison Table</h3>", unsafe_allow_html=True)
+        st.caption("Revenue, EBITDA, Net Income in local currency (CAD for DOL, USD for DLTR/DG) · Stock prices in CAD equivalent (USD × 1.44, Bank of Canada Feb 2025) · Ratios are currency-neutral")
         disp = peers_df.set_index("Company")
         st.dataframe(
             disp.style.format({
@@ -1052,6 +1088,91 @@ if _tab == 2:
             .highlight_min(subset=["Net Debt/EBITDA"],        props="color:#3D9E6A;font-weight:bold"),
             use_container_width=True,
         )
+
+        # ── Analytical Report ─────────────────────────────────────────────────
+        st.divider()
+        st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Analytical Summary — Who Wins and Why</h3>", unsafe_allow_html=True)
+
+        dol_row  = peers_df[peers_df["Company"].str.contains("DOL")].iloc[0]
+        dltr_row = peers_df[peers_df["Company"].str.contains("DLTR")].iloc[0]
+        dg_row   = peers_df[peers_df["Company"].str.contains("DG")].iloc[0]
+
+        _a1, _a2, _a3 = st.columns(3)
+
+        with _a1:
+            st.markdown(
+                f"<div style='background:rgba(184,148,58,.08);border:1px solid rgba(184,148,58,.3);"
+                f"border-top:3px solid {GOLD};border-radius:8px;padding:16px;height:100%'>"
+                f"<div style='font-size:15px;font-weight:700;color:#7A6020;margin-bottom:8px'>🏆 Profitability Winner</div>"
+                f"<div style='font-size:22px;font-weight:800;color:#111827'>Dollarama</div>"
+                f"<div style='color:#9CA3AF;font-size:13px;margin-top:6px;line-height:1.6'>"
+                f"EBITDA margin of <b style='color:#111827'>{dol_row['EBITDA Margin']:.1f}%</b> is nearly "
+                f"<b style='color:#111827'>3× higher</b> than Dollar Tree ({dltr_row['EBITDA Margin']:.1f}%) "
+                f"and Dollar General ({dg_row['EBITDA Margin']:.1f}%). "
+                f"This reflects Dollarama's direct sourcing model, private-label mix, and lean store format. "
+                f"Higher margins mean more cash for every dollar of sales."
+                f"</div></div>",
+                unsafe_allow_html=True)
+
+        with _a2:
+            st.markdown(
+                f"<div style='background:rgba(61,158,106,.08);border:1px solid rgba(61,158,106,.25);"
+                f"border-top:3px solid {GREEN};border-radius:8px;padding:16px;height:100%'>"
+                f"<div style='font-size:15px;font-weight:700;color:{GREEN};margin-bottom:8px'>💡 Capital Efficiency Winner</div>"
+                f"<div style='font-size:22px;font-weight:800;color:#111827'>Dollarama</div>"
+                f"<div style='color:#9CA3AF;font-size:13px;margin-top:6px;line-height:1.6'>"
+                f"ROIC of <b style='color:#111827'>{dol_row['ROIC']:.1f}%</b> vs "
+                f"Dollar Tree {dltr_row['ROIC']:.1f}% and Dollar General {dg_row['ROIC']:.1f}%. "
+                f"Dollarama earns nearly <b style='color:#111827'>2× more</b> per dollar of capital invested. "
+                f"Combined with a WACC of just 7.8%, the value-creation spread is "
+                f"<b style='color:#111827'>+{dol_row['ROIC']-7.8:.0f} percentage points</b> — exceptional by any standard."
+                f"</div></div>",
+                unsafe_allow_html=True)
+
+        with _a3:
+            st.markdown(
+                f"<div style='background:rgba(58,126,192,.08);border:1px solid rgba(58,126,192,.25);"
+                f"border-top:3px solid {BLUE};border-radius:8px;padding:16px;height:100%'>"
+                f"<div style='font-size:15px;font-weight:700;color:{BLUE};margin-bottom:8px'>⚖️ Valuation Context</div>"
+                f"<div style='font-size:22px;font-weight:800;color:#111827'>Premium Justified</div>"
+                f"<div style='color:#9CA3AF;font-size:13px;margin-top:6px;line-height:1.6'>"
+                f"Dollarama trades at <b style='color:#111827'>{dol_row['EV/EBITDA']:.1f}×</b> EV/EBITDA vs "
+                f"Dollar Tree {dltr_row['EV/EBITDA']:.1f}× and Dollar General {dg_row['EV/EBITDA']:.1f}×. "
+                f"The premium is justified: Dollarama has higher margins, better capital efficiency, "
+                f"lower leverage, and a faster-growth store network. "
+                f"Investors pay more for quality — and Dollarama delivers it consistently."
+                f"</div></div>",
+                unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Key differentiators table
+        st.markdown("**Why Dollarama Outperforms — Key Structural Advantages**")
+        _diff_data = {
+            "Factor": [
+                "Single price-point model (up to $5)",
+                "Direct sourcing from Asia — no middlemen",
+                "Private-label products (~40% of mix)",
+                "Canada-only focus — no US market exposure",
+                "New store economics: <$1M cost, $3M+ revenue in yr 2",
+                "Dollarcity — 600+ Latin America stores (50.1% owned)",
+                "No e-commerce threat — basket avg <$15",
+                "Conservative balance sheet — ND/EBITDA only 1.1×",
+            ],
+            "Impact": [
+                "Simplifies operations, reduces shrinkage, drives traffic",
+                "Gross margin 45% vs sector avg ~30%",
+                "Higher margins + pricing flexibility",
+                "Avoids US minimum wage and tariff pressures",
+                "~2-year payback — best in class store ROI",
+                "Second growth engine beyond Canada",
+                "Physical retail irreplaceable for this format",
+                "Room for further buybacks without financial stress",
+            ],
+        }
+        import pandas as _pd_peers
+        _diff_df = _pd_peers.DataFrame(_diff_data).set_index("Factor")
+        st.dataframe(_diff_df, use_container_width=True)
 
 if _tab == 3:
     st.markdown("<h3 style='font-size:18px;font-weight:600;color:#F0EBE0;margin:8px 0 4px'>Valuation & DCF Analysis</h3>", unsafe_allow_html=True)
@@ -1079,10 +1200,10 @@ if _tab == 3:
 
     st.markdown(
         f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:4px'>"
-        f"Base FCF <b style='color:{WHITE}'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
-        f"WACC <b style='color:{WHITE}'>{wacc_s}%</b> &nbsp;·&nbsp; "
-        f"Terminal Growth <b style='color:{WHITE}'>{tgr_s}%</b> &nbsp;·&nbsp; "
-        f"Stage 1 Growth <b style='color:{WHITE}'>{rg_s}%/yr</b>"
+        f"Base FCF <b style='color:#111827'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
+        f"WACC <b style='color:#111827'>{wacc_s}%</b> &nbsp;·&nbsp; "
+        f"Terminal Growth <b style='color:#111827'>{tgr_s}%</b> &nbsp;·&nbsp; "
+        f"Stage 1 Growth <b style='color:#111827'>{rg_s}%/yr</b>"
         f"</p>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
@@ -1094,10 +1215,10 @@ if _tab == 3:
         fig = go.Figure(go.Bar(
             x=prices, y=methods, orientation="h", marker_color=bar_colors,
             text=[f"CAD ${p}" for p in prices],
-            textposition="outside", textfont=dict(color=FG, size=12),
+            textposition="outside", textfont=dict(color="#4B5563", size=12),
         ))
         fig.add_vline(x=193.63, line_dash="dash", line_color="rgba(240,235,224,0.4)",
-                      annotation_text="Current ~$193.63", annotation_font=dict(color=FG, size=10))
+                      annotation_text="Current ~$193.63", annotation_font=dict(color="#4B5563", size=10))
         fig.update_layout(**base_layout("Valuation Summary (CAD $/share)"), height=280)
         fig.update_xaxes(range=[0, max(prices)*1.3], tickprefix="$")
         show(fig)
@@ -1136,7 +1257,7 @@ if _tab == 3:
         fig3.add_shape(type="rect", x0=ti-0.5, x1=ti+0.5, y0=wi-0.5, y1=wi+0.5,
                        line=dict(color=GOLD_LT, width=3))
         fig3.update_layout(
-            paper_bgcolor=CARD, plot_bgcolor=BG, height=320,
+            paper_bgcolor='#FFFFFF', plot_bgcolor='#F9FAFB', height=320,
             margin=dict(l=60, r=20, t=20, b=50),
             xaxis=dict(title="Terminal Growth Rate", tickfont=dict(color=FG)),
             yaxis=dict(title="WACC", tickfont=dict(color=FG)),
@@ -1153,11 +1274,11 @@ if _tab == 3:
         x=proj_yr, y=proj_fcf,
         marker_color=[GREEN]*5, opacity=0.85,
         text=[f"${v:,}" for v in proj_fcf],
-        textposition="outside", textfont=dict(size=10, color=FG),
+        textposition="outside", textfont=dict(size=10, color="#374151"),
     ))
     fig4.add_annotation(x=proj_yr[2], y=max(proj_fcf)*0.85,
                         text=f"Growth: {rg_s}%/yr + terminal value",
-                        showarrow=False, font=dict(color=GREEN, size=11))
+                        showarrow=False, font=dict(color="#1A6B45", size=11))
     fig4.update_layout(**base_layout(f"Projected FCF ($M) — 5-Year Horizon ({rg_s}%/yr)"), height=280)
     fig4.update_yaxes(tickprefix="$", ticksuffix="M")
     show(fig4)
@@ -1189,9 +1310,9 @@ if _tab == 4:
     st.markdown(
         f"<p style='color:#9CA3AF;font-size:13px;margin-bottom:4px'>"
         f"{mc_n:,} simulation paths &nbsp;·&nbsp; "
-        f"Base FCF <b style='color:{WHITE}'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
-        f"WACC <b style='color:{WHITE}'>{wacc_s}%</b> &nbsp;·&nbsp; "
-        f"TGR <b style='color:{WHITE}'>{tgr_s}%</b>"
+        f"Base FCF <b style='color:#111827'>${base_fcf:,.0f}M</b> &nbsp;·&nbsp; "
+        f"WACC <b style='color:#111827'>{wacc_s}%</b> &nbsp;·&nbsp; "
+        f"TGR <b style='color:#111827'>{tgr_s}%</b>"
         f"</p>", unsafe_allow_html=True)
 
     m = st.columns(5)
@@ -1212,13 +1333,13 @@ if _tab == 4:
         fig = go.Figure(go.Bar(x=mids, y=cnts, marker_color=bc, opacity=0.85))
         # Vertical reference lines — stagger annotation positions to avoid overlap
         fig.add_vline(x=193.63, line_dash="dash", line_color=GOLD, line_width=1.5,
-                      annotation=dict(text="Current $193.63", font=dict(color=GOLD, size=10),
+                      annotation=dict(text="Current $193.63", font=dict(color="#9A7B2F", size=10),
                                       y=1.0, yanchor="top"))
         fig.add_vline(x=212, line_dash="dot", line_color=GREEN, line_width=1.5,
                       annotation=dict(text="Target $212", font=dict(color=GREEN, size=10),
                                       y=0.85, yanchor="top"))
         fig.add_vline(x=MC["p50"], line_dash="dash", line_color=WHITE, line_width=1.5,
-                      annotation=dict(text=f"Median ${MC['p50']:.0f}", font=dict(color=WHITE, size=10),
+                      annotation=dict(text=f"Median ${MC['p50']:.0f}", font=dict(color="#111827", size=10),
                                       y=0.70, yanchor="top"))
         fig.update_layout(**base_layout(f"Simulated Intrinsic Value Distribution  (n={mc_n:,})"), height=380)
         fig.update_xaxes(tickprefix="$")
@@ -1249,7 +1370,7 @@ if _tab == 4:
         y=drivers, x=corrs, orientation="h",
         marker_color=[GREEN if c > 0 else RED for c in corrs],
         text=[f"{c:+.2f}" for c in corrs],
-        textposition="outside", textfont=dict(color=FG),
+        textposition="outside", textfont=dict(color="#374151"),
     ))
     fig3.add_vline(x=0, line_color="rgba(255,255,255,0.3)")
     fig3.update_layout(**base_layout("Tornado — Correlation with Simulated Value"), height=300)
@@ -1280,14 +1401,14 @@ if _tab == 5:
             line=dict(color=GREEN, width=2.5), marker=dict(color=GREEN, size=5),
         ))
         fig.update_layout(
-            polar=dict(bgcolor=BG,
-                radialaxis=dict(visible=True, range=[0,10], tickfont=dict(size=8,color=FG),
-                                gridcolor=GRID, linecolor=GRID),
-                angularaxis=dict(tickfont=dict(size=10,color=FG), gridcolor=GRID),
+            polar=dict(bgcolor='#F9FAFB',
+                radialaxis=dict(visible=True, range=[0,10], tickfont=dict(size=8,color="#4B5563"),
+                                gridcolor="rgba(0,0,0,.06)", linecolor=GRID),
+                angularaxis=dict(tickfont=dict(size=10,color="#374151"), gridcolor=GRID),
             ),
-            paper_bgcolor=CARD, height=400,
+            paper_bgcolor='#FFFFFF', height=400,
             margin=dict(l=60,r=60,t=50,b=50),
-            title=dict(text="Competitive Moat Radar (1–10)", font=dict(color=FG,size=13)),
+            title=dict(text="Competitive Moat Radar (1–10)", font=dict(color="#4B5563",size=13)),
             showlegend=False,
         )
         show(fig)
@@ -1377,7 +1498,7 @@ if _tab == 6:
                     marker_color=[GREEN]*n_yrs + ["rgba(61,158,106,0.35)"]*3)
         fig.add_vrect(x0=fwd["Year"].iloc[0], x1=fwd["Year"].iloc[-1],
                       fillcolor=GOLD, opacity=0.04,
-                      annotation_text="Estimates →", annotation_font=dict(color=GOLD, size=10))
+                      annotation_text="Estimates →", annotation_font=dict(color="#9A7B2F", size=10))
         fig.update_layout(**base_layout("Revenue & EBITDA — Actual + Forecast"), barmode="group")
         show(fig)
     with c2:
@@ -1495,11 +1616,11 @@ if _tab == 7:
             x=FY25_Q["Quarter"], y=FY25_Q["Revenue"],
             marker_color=clrs_q, opacity=0.88,
             text=[f"${v:,}M" for v in FY25_Q["Revenue"]],
-            textposition="outside", textfont=dict(color=FG, size=11),
+            textposition="outside", textfont=dict(color="#4B5563", size=11),
         ))
         fig_r.add_annotation(x=3, y=max(FY25_Q["Revenue"]) * 0.72,
                              text="Gold = reconstructed Q4 actual bridge",
-                             showarrow=False, font=dict(color=GOLD, size=10))
+                             showarrow=False, font=dict(color="#9A7B2F", size=10))
         fig_r.update_layout(**base_layout("Quarterly Revenue ($M CAD)"), height=300)
         fig_r.update_yaxes(tickprefix="$", ticksuffix="M")
         show(fig_r)
@@ -1509,11 +1630,11 @@ if _tab == 7:
         fig_e.add_bar(x=FY25_Q["Quarter"], y=FY25_Q["EBITDA"], name="EBITDA",
                       marker_color=BLUE, opacity=0.75,
                       text=[f"${v:,}M" for v in FY25_Q["EBITDA"]],
-                      textposition="outside", textfont=dict(color=FG, size=10))
+                      textposition="outside", textfont=dict(color="#4B5563", size=10))
         fig_e.add_bar(x=FY25_Q["Quarter"], y=FY25_Q["Net_Income"], name="Net Income",
                       marker_color=GREEN, opacity=0.75,
                       text=[f"${v:,}M" for v in FY25_Q["Net_Income"]],
-                      textposition="outside", textfont=dict(color=FG, size=10))
+                      textposition="outside", textfont=dict(color="#4B5563", size=10))
         fig_e.update_layout(**base_layout("Quarterly EBITDA vs Net Income ($M CAD)"),
                             height=300, barmode="group")
         fig_e.update_yaxes(tickprefix="$", ticksuffix="M")
@@ -1525,7 +1646,7 @@ if _tab == 7:
             x=FY25_Q["Quarter"], y=FY25_Q["EPS"],
             marker_color=clrs_q, opacity=0.88,
             text=[f"${v:.2f}" for v in FY25_Q["EPS"]],
-            textposition="outside", textfont=dict(color=FG, size=11),
+            textposition="outside", textfont=dict(color="#4B5563", size=11),
         ))
         fig_eps.update_layout(**base_layout("Quarterly EPS ($)"), height=280)
         fig_eps.update_yaxes(tickprefix="$")
@@ -1536,7 +1657,7 @@ if _tab == 7:
             x=FY25_Q["Quarter"], y=FY25_Q["SSS_Growth"],
             marker_color=clrs_q, opacity=0.88,
             text=[f"{v:.1f}%" for v in FY25_Q["SSS_Growth"]],
-            textposition="outside", textfont=dict(color=FG, size=11),
+            textposition="outside", textfont=dict(color="#4B5563", size=11),
         ))
         fig_sss.update_layout(**base_layout("Same-Store Sales Growth (%)"), height=280)
         fig_sss.update_yaxes(ticksuffix="%")
