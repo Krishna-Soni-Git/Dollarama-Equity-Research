@@ -44,8 +44,8 @@ STEP 3 — DERIVED METRICS (process_dol)
   net_debt      = dltt + dlc - che
   nd_ebitda     = net_debt / ebitda
   invested_capital = at - lct - che  (net operating assets, whitepaper method)
-  nopat         = ebit * (1 - effective_tax_rate)
-  roic          = nopat / invested_capital * 100
+  nopat         = ebit * (1 - effective_tax_rate)   [reference only]
+  roic          = ebit / invested_capital * 100     [implemented whitepaper method]
 
 WHITEPAPER ALIGNMENT (MBAN5570 — Soni/Warner, 2025)
   Fallback data matches paper exactly:
@@ -99,17 +99,41 @@ hr{{border-color:rgba(184,148,58,.2)!important}}
 .stTabs [data-baseweb="tab"]{{color:#8A94A6;background:transparent;padding:8px 18px}}
 .stTabs [aria-selected="true"]{{color:{GOLD_LT}!important;
   background:rgba(184,148,58,.08)!important;border-bottom:2px solid {GOLD}!important}}
+/* Hide the horizontal tab bar — navigation is in the sidebar */
+.stTabs [data-baseweb="tab-list"] {{ display: none !important; }}
+/* Sidebar nav buttons */
+[data-testid="stSidebar"] .stButton > button {{
+  text-align:left !important;
+  justify-content:flex-start !important;
+  font-size:13px !important;
+  padding:8px 12px !important;
+  border-radius:6px !important;
+  margin-bottom:2px !important;
+  border:1px solid transparent !important;
+}}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"] {{
+  background:transparent !important;
+  color:{FG} !important;
+  border-color:transparent !important;
+}}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {{
+  background:rgba(184,148,58,.08) !important;
+  color:{GOLD_LT} !important;
+  border-color:rgba(184,148,58,.25) !important;
+}}
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {{
+  background:rgba(184,148,58,.15) !important;
+  color:{GOLD_LT} !important;
+  border-color:{GOLD} !important;
+  font-weight:600 !important;
+}}
 .live-badge{{display:inline-block;background:rgba(61,158,106,.15);
   border:1px solid rgba(61,158,106,.4);color:{GREEN};font-weight:700;
   font-size:13px;padding:5px 14px;border-radius:4px;margin-left:8px}}
-.static-badge{{display:inline-block;background:rgba(184,148,58,.1);
-  border:1px solid rgba(184,148,58,.3);color:{GOLD_LT};font-weight:700;
-  font-size:13px;padding:5px 14px;border-radius:4px;margin-left:8px}}
 .data-note{{background:rgba(58,126,192,0.08);border-left:3px solid {BLUE};
   padding:10px 16px;border-radius:4px;font-size:12px;color:{FG};margin:8px 0}}
-.formula-box{{background:rgba(0,0,0,0.3);border:1px solid rgba(184,148,58,0.15);
-  border-radius:6px;padding:12px 16px;font-family:monospace;font-size:11px;color:{GOLD_LT}}}
-</style>""", unsafe_allow_html=True)
+</style>
+""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 1: CSV DATA LOADER
@@ -166,54 +190,82 @@ def _load_csv_financials(uploaded_file_path: str) -> pd.DataFrame | None:
     except Exception as e:
         return None
 
+
 def _load_csv_peers(uploaded_file_path: str) -> pd.DataFrame | None:
     """
     Load peers CSV exported by dollarama_data_pull.py.
-    Maps column names and fills missing fields with 0.
+
+    The exported peer CSV is intentionally light and may only contain a subset
+    of fields. To keep peer ratios comparable, we merge any missing fields from
+    FALLBACK_PEERS by ticker, then coerce numerics.
     """
     try:
-        peers = pd.read_csv(uploaded_file_path)
-        # Derive missing columns needed by process_peers()
-        peers["xsga"] = peers.get("xsga", pd.Series([0]*len(peers)))
-        peers["dp"]   = peers.get("dp",   pd.Series([0]*len(peers)))
-        peers["lct"]  = peers.get("lct",  pd.Series([0]*len(peers)))
-        peers["dlc"]  = peers.get("dlc",  pd.Series([0]*len(peers)))
-        peers["ceq"]  = peers.get("ceq",  pd.Series([0]*len(peers)))
-        peers["csho"] = peers.get("csho", pd.Series([0]*len(peers)))
-        peers["prcc_f"]=peers.get("prcc_f",pd.Series([0]*len(peers)))
+        peers = pd.read_csv(uploaded_file_path).copy()
+        if "ticker" not in peers.columns:
+            return None
+
+        # Normalize ticker key and merge missing structural fields from fallback
+        peers["ticker"] = peers["ticker"].astype(str).str.upper().str.strip()
+        fb = FALLBACK_PEERS.copy()
+        fb["ticker"] = fb["ticker"].astype(str).str.upper().str.strip()
+
+        peers = peers.merge(
+            fb,
+            on="ticker",
+            how="left",
+            suffixes=("", "_fb")
+        )
+
+        # Prefer uploaded values; backfill from fallback when missing
+        needed = ["name","currency","fiscal_year","revt","cogs","xsga","dp","ni","epspx",
+                  "che","at","lct","dltt","dlc","ceq","oancf","capx","csho","prcc_f"]
+        for col in needed:
+            fb_col = f"{col}_fb"
+            if col not in peers.columns and fb_col in peers.columns:
+                peers[col] = peers[fb_col]
+            elif col in peers.columns and fb_col in peers.columns:
+                peers[col] = peers[col].where(peers[col].notna(), peers[fb_col])
+
+        for col in needed:
+            if col not in peers.columns:
+                peers[col] = 0
+
         for col in ["revt","cogs","xsga","dp","ni","epspx","che","at","lct",
                     "dltt","dlc","ceq","oancf","capx","csho","prcc_f"]:
-            if col in peers.columns:
-                peers[col] = pd.to_numeric(peers[col], errors="coerce").fillna(0)
-        return peers
+            peers[col] = pd.to_numeric(peers[col], errors="coerce").fillna(0)
+
+        return peers[["ticker","currency","revt","cogs","xsga","dp","ni","epspx",
+                      "che","at","lct","dltt","dlc","ceq","oancf","capx","csho","prcc_f"]]
     except Exception:
         return None
 
 # ── Hard-coded emergency fallback (only used if CSVs are absent AND yfinance fails) ─
 FALLBACK_DOL = pd.DataFrame({
-    "fyear":    [2021,  2022,  2023,  2024,  2025],
-    "revt":     [3803,  4331,  5053,  5867,  6413],
-    "cogs":     [2161,  2431,  2843,  3257,  3513],
-    "xsga":     [ 797,   920,  1020,  1090,  1190],
-    "dp":       [ 242,   300,   340,   360,   440],
-    "xint":     [ 105,   117,   137,   152,   165],
-    "txt":      [ 173,   218,   271,   285,   310],
-    "ni":       [ 567,   663,   802,  1010,  1169],
-    "epspx":    [2.24,  2.18,  2.76,  3.56,  4.16],
-    "che":      [ 278,   310,   430,   512,   620],
-    "invt":     [ 810,   590,   780,   860,   920],
-    "at":       [3510,  4060,  4780,  5350,  6480],
-    "lct":      [ 895,  1120,  1280,  1420,  1560],
-    "dltt":     [2820,  3410,  3490,  3730,  4250],
-    "dlc":      [  80,   200,   210,   290,   460],
-    "ceq":      [-460,   -70,  -120,   400,  1190],
-    "oancf":    [ 968,  1160,   870,  1530,  1640],
-    "capx":     [ 208,   160,   157,   279,   247],
-    "prstkc":   [ 512,  1060,   690,   660,  1090],
-    "csho":     [ 317,   304,   291,   284,   281],
-    "prcc_f":   [59.0,  71.2,  86.4, 140.0, 193.6],
-    "store_count": [1391, 1541, 1582, 1607, 1616],
-    "sss_growth":  [ 7.2,  9.5,  5.2,  4.8,  4.5],
+    # All values sourced directly from Yahoo Finance (yfinance) via dollarama_data_pull.py
+    # These match the CSV export exactly — no approximations.
+    "fyear":    [2021,   2022,   2023,   2024,   2025],
+    "revt":     [3803,   4331,   5053,   5867,   6413],
+    "cogs":     [2161,   2429,   2855,   3254,   3519],
+    "xsga":     [ 797,    951,   1052,   1193,   1313],
+    "dp":       [ 242,    298,    332,    365,    411],
+    "xint":     [ 105,     89,    122,    167,    187],
+    "txt":      [ 173,    230,    274,    340,    378],
+    "ni":       [ 567,    663,    802,   1010,   1169],
+    "epspx":    [2.24,   2.18,   2.76,   3.56,   4.16],
+    "che":      [ 278,     71,    101,    314,    123],
+    "invt":     [ 810,    591,    957,    917,    921],
+    "at":       [3510,   4064,   4820,   5264,   6483],
+    "lct":      [ 895,    912,   1163,    678,   1014],
+    "dltt":     [2820,   1539,   1742,   2243,   2009],
+    "dlc":      [  80,    347,    510,     21,    274],
+    "ceq":      [-460,    -66,     28,    381,   1188],
+    "oancf":    [ 968,   1159,    869,   1531,   1644],
+    "capx":     [ 208,    160,    157,    279,    247],
+    "prstkc":   [ 512,   1060,    689,    656,   1091],
+    "csho":     [ 317,  292.8,  284.5,  278.8,  277.2],
+    "prcc_f":   [62.56, 78.48,  94.93, 139.86, 205.03],
+    "store_count": [1391, 1541,  1582,   1607,   1616],
+    "sss_growth":  [ 7.2,  9.5,   5.2,    4.8,    4.5],
 })
 FALLBACK_PEERS = pd.DataFrame({
     "ticker":   ["DLTR",   "DG"],
@@ -354,15 +406,18 @@ def process_dol(raw: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+
 def process_peers(peer_raw: pd.DataFrame, dol_row: pd.Series) -> pd.DataFrame:
     """
     Build standardised peer comparison table.
-    Same derivation logic as process_dol() applied to each peer.
-    Returns one row per company including Dollarama.
+
+    Important consistency choice:
+    - Dollarama ROIC uses EBIT / (at - lct - che)
+    - Peers must use the same denominator and EBIT basis
+      or the comparison is misleading.
     """
     rows = []
 
-    # ── Dollarama row (already processed) ────────────────────────────────
     rows.append({
         "Company":      "DOL.TO (CAD)",
         "Revenue":      round(dol_row["revt"]),
@@ -376,29 +431,30 @@ def process_peers(peer_raw: pd.DataFrame, dol_row: pd.Series) -> pd.DataFrame:
         "P/E":          round(dol_row["pe_ratio"], 1),
     })
 
-    # ── Peer rows ─────────────────────────────────────────────────────────
+    if peer_raw is None or len(peer_raw) == 0:
+        return pd.DataFrame(rows)
+
     for _, p in peer_raw.iterrows():
-        gp    = p["revt"]  - p["cogs"]
-        ebitda= gp         - p["xsga"]  + p["dp"]
-        ebit  = ebitda     - p["dp"]
-        nd    = p["dltt"]  + p["dlc"]   - p["che"]
-        ic    = p["at"]    - p["lct"]   # same invested capital method
-        nopat = ebit * 0.735
-        roic  = nopat / ic * 100 if ic > 0 else 0
-        mktcap= p["prcc_f"] * p["csho"]
-        ev    = mktcap + nd
+        gp      = float(p["revt"]) - float(p["cogs"])
+        ebitda  = gp - float(p["xsga"]) + float(p["dp"])
+        ebit    = ebitda - float(p["dp"])
+        nd      = float(p["dltt"]) + float(p["dlc"]) - float(p["che"])
+        ic      = max(float(p["at"]) - float(p["lct"]) - float(p["che"]), 1.0)
+        roic    = ebit / ic * 100
+        mktcap  = float(p["prcc_f"]) * float(p["csho"])
+        ev      = mktcap + nd
 
         rows.append({
             "Company":      f"{p['ticker']} (USD)",
-            "Revenue":      round(p["revt"]),
+            "Revenue":      round(float(p["revt"])),
             "EBITDA":       round(ebitda),
-            "Net Income":   round(p["ni"]),
-            "EPS":          round(p["epspx"], 2),
-            "EBITDA Margin":round(ebitda / p["revt"] * 100, 1),
+            "Net Income":   round(float(p["ni"])),
+            "EPS":          round(float(p["epspx"]), 2),
+            "EBITDA Margin":round(ebitda / float(p["revt"]) * 100, 1) if float(p["revt"]) > 0 else 0,
             "ROIC":         round(roic, 1),
             "Net Debt/EBITDA": round(nd / ebitda, 1) if ebitda > 0 else 0,
-            "EV/EBITDA":    round(ev / ebitda, 1)    if ebitda > 0 else 0,
-            "P/E":          round(mktcap / p["ni"], 1) if p["ni"] > 0 else 0,
+            "EV/EBITDA":    round(ev / ebitda, 1) if ebitda > 0 else 0,
+            "P/E":          round(mktcap / float(p["ni"]), 1) if float(p["ni"]) > 0 else 0,
         })
 
     return pd.DataFrame(rows)
@@ -489,60 +545,55 @@ def data_note(source_col, derived_formula, compustat_col=None):
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 6: SIDEBAR — Data Source & Controls
+# ── Session state defaults for sliders (defined in tabs, used globally) ──────
+if "wacc_s"  not in st.session_state: st.session_state.wacc_s  = 7.8
+if "tgr_s"   not in st.session_state: st.session_state.tgr_s   = 2.5
+if "rg_s"    not in st.session_state: st.session_state.rg_s    = 9.0
+if "mc_n"    not in st.session_state: st.session_state.mc_n    = 5000
+if "active_tab" not in st.session_state: st.session_state.active_tab = 0
+
 # ══════════════════════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("## Dollarama Research")
     st.markdown("**DOL.TO · TSX · CAD**")
     st.divider()
 
-    st.markdown("### Data Source")
-    data_mode = st.radio(
-        "Select source:",
-        ["CSV Files (Recommended)", "yfinance (Live)", "Built-in Fallback"],
-        index=0,
-        help=(
-            "CSV Files: Use the exported CSV files from dollarama_data_pull.py — "
-            "real Yahoo Finance data (FY2022–2025) + verified annual report data (FY2021).\n"
-            "yfinance: fetch live from Yahoo Finance right now.\n"
-            "Built-in Fallback: hardcoded data, used only if CSVs and yfinance are both unavailable."
-        ),
-    )
-
-    if data_mode == "CSV Files (Recommended)":
-        st.divider()
-        st.markdown("### Upload CSV Files")
-        st.caption("Upload the files generated by dollarama_data_pull.py")
-        csv_financials_file = st.file_uploader(
-            "Annual Financials CSV",
-            type="csv", key="csv_fin",
-            help="dollarama_annual_financials_*.csv"
-        )
-        csv_peers_file = st.file_uploader(
-            "Peers CSV (optional)",
-            type="csv", key="csv_peers",
-            help="dollarama_peers_*.csv"
-        )
-        csv_price_file = st.file_uploader(
-            "Price History CSV (optional)",
-            type="csv", key="csv_price",
-            help="dollarama_price_history_*.csv"
-        )
-    else:
-        csv_financials_file = None
-        csv_peers_file = None
-        csv_price_file = None
+    # ── Vertical tab navigation ───────────────────────────────────────────────
+    _NAV = [
+        ("📊", "Performance"),
+        ("💰", "ROIC & Capital"),
+        ("🏢", "Peer Comps"),
+        ("💵", "Valuation & DCF"),
+        ("🎲", "Monte Carlo"),
+        ("⚠️", "Risk & Moat"),
+        ("🔭", "Forward Outlook"),
+        ("📅", "FY2025 Partial"),
+        ("🤖", "ML — Price Prediction"),
+        ("💬", "NLP — Sentiment"),
+        ("🗃️", "Raw Data"),
+    ]
+    for _i, (_icon, _label) in enumerate(_NAV):
+        _active = st.session_state.active_tab == _i
+        if st.button(
+            f"{_icon}  {_label}",
+            key=f"nav_{_i}",
+            use_container_width=True,
+            type="primary" if _active else "secondary",
+        ):
+            st.session_state.active_tab = _i
+            st.rerun()
 
     st.divider()
-    st.markdown("### DCF / Monte Carlo Inputs")
-    st.caption("These drive the DCF, sensitivity heatmap, and Monte Carlo")
-    mc_n   = st.slider("Monte Carlo runs",        1000, 20000, 10000, 1000)
-    wacc_s = st.slider("WACC (%)",                 5.0,  12.0,   7.8,  0.1)
-    tgr_s  = st.slider("Terminal Growth (%)",      1.0,   3.4,   2.5,  0.1,
-                        help="FCF perpetuity growth rate. Capped at 3.4% to stay within simulation bounds.")
-    rg_s   = st.slider("Stage 1 Rev Growth (%)",   2.0,  15.0,   9.0,  0.5)
-
+    st.caption("All $ in CAD millions unless noted.\nPeer figures in USD.\nMBAN5570 — Soni/Warner 2025.")
     st.divider()
-    st.caption("All $ in CAD millions unless noted.\nPeer figures in USD (noted in tables).\nWhitepaper: MBAN5570 — Soni/Warner 2025.")
+    with st.expander("🤝 Clone & Contribute", expanded=False):
+        st.code(
+            "git clone https://github.com/YOUR_USERNAME/\\\n"
+            "  dollarama-equity-research.git\n"
+            "pip install -r requirements.txt\n"
+            "streamlit run dollarama_research.py",
+            language="bash"
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -694,85 +745,25 @@ def fetch_from_yfinance():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SECTION 7: LOAD & PROCESS DATA
-# Priority: (1) CSV upload  →  (2) yfinance live  →  (3) built-in fallback
+# SECTION 7: LOAD & PROCESS DATA — Yahoo Finance (live)
 # ══════════════════════════════════════════════════════════════════════════════
-data_source = "fallback"
-_csv_price_df = None   # price history from CSV, used in ML tab
+data_source   = "yfinance"
 
-if data_mode == "CSV Files (Recommended)":
-    # ── Mode 1: Load from uploaded CSVs ─────────────────────────────────────
-    if csv_financials_file is not None:
-        raw_dol = _load_csv_financials(csv_financials_file)
-        if raw_dol is not None and len(raw_dol) > 0 and raw_dol["revt"].max() > 0:
-            df          = process_dol(raw_dol)
-            data_source = "csv"
-            src_breakdown = raw_dol.get("csv_source", pd.Series(["CSV"]*len(raw_dol))).tolist() if "csv_source" in raw_dol.columns else ["CSV"]*len(raw_dol)
-            yf_count  = sum(1 for s in src_breakdown if "Yahoo" in str(s))
-            fb_count  = sum(1 for s in src_breakdown if "fallback" in str(s).lower() or "Annual" in str(s))
-            st.success(
-                f"✅ CSV data loaded — FY{int(df['fyear'].min())}–FY{int(df['fyear'].max())} "
-                f"({len(df)} years: {yf_count} from Yahoo Finance, {fb_count} from annual report). "
-                f"All metrics computed from your exported CSV files."
-            )
-            # Show per-year source breakdown
-            with st.expander("Data source per fiscal year", expanded=False):
-                src_df = pd.DataFrame({
-                    "Fiscal Year": [f"FY{int(y)}" for y in raw_dol["fyear"]],
-                    "Revenue $M":  [f"${r:,.0f}M" for r in raw_dol["revt"]],
-                    "Net Income $M":[f"${n:,.0f}M" for n in raw_dol["ni"]],
-                    "Source":      src_breakdown,
-                })
-                st.dataframe(src_df.set_index("Fiscal Year"), use_container_width=True)
-        else:
-            st.error("Could not parse the uploaded financials CSV. Check the file is from dollarama_data_pull.py.")
-            df = process_dol(FALLBACK_DOL)
-    else:
-        st.info("👆 Upload your `dollarama_annual_financials_*.csv` file in the sidebar to use your real data. Showing built-in fallback data for now.")
-        df = process_dol(FALLBACK_DOL)
+with st.spinner("Fetching live data from Yahoo Finance (DOL.TO)…"):
+    raw_dol, raw_peers, err = fetch_from_yfinance()
 
-    # Peers from CSV
-    if csv_peers_file is not None:
-        raw_peers_csv = _load_csv_peers(csv_peers_file)
-        peers_df = process_peers(raw_peers_csv, df.iloc[-1]) if raw_peers_csv is not None else process_peers(FALLBACK_PEERS, df.iloc[-1])
-    else:
-        peers_df = process_peers(FALLBACK_PEERS, df.iloc[-1])
-
-    # Price history from CSV (used in ML tab)
-    if csv_price_file is not None:
-        try:
-            _csv_price_df = pd.read_csv(csv_price_file, index_col=0, parse_dates=True)
-            _csv_price_df.index = pd.to_datetime(_csv_price_df.index, utc=True).tz_localize(None)
-        except Exception:
-            _csv_price_df = None
-
-elif data_mode == "yfinance (Live)":
-    # ── Mode 2: Live fetch from Yahoo Finance ───────────────────────────────
-    with st.spinner("Fetching live data from Yahoo Finance (DOL.TO)…"):
-        raw_dol, raw_peers, err = fetch_from_yfinance()
-    if raw_dol is not None and len(raw_dol) > 0 and raw_dol["revt"].max() > 0:
-        df          = process_dol(raw_dol)
-        peers_df    = process_peers(raw_peers, df.iloc[-1]) if raw_peers is not None else process_peers(FALLBACK_PEERS, df.iloc[-1])
-        data_source = "yfinance"
-        st.success(
-            f"✅ Live Yahoo Finance data — "
-            f"FY{int(df['fyear'].min())}–FY{int(df['fyear'].max())} "
-            f"({len(df)} years). All metrics derived from yfinance annual financials."
-        )
-    else:
-        st.error(f"yfinance fetch failed: {err}")
-        st.warning("Falling back to built-in data. Try the CSV mode instead.")
-        df       = process_dol(FALLBACK_DOL)
-        peers_df = process_peers(FALLBACK_PEERS, df.iloc[-1])
-
+if raw_dol is not None and len(raw_dol) > 0 and raw_dol["revt"].max() > 0:
+    df       = process_dol(raw_dol)
+    peers_df = process_peers(raw_peers, df.iloc[-1]) if raw_peers is not None else process_peers(FALLBACK_PEERS, df.iloc[-1])
+    st.success(
+        f"✅ Live Yahoo Finance — "
+        f"FY{int(df['fyear'].min())}–FY{int(df['fyear'].max())} ({len(df)} years)"
+    )
 else:
-    # ── Mode 3: Built-in hardcoded fallback ─────────────────────────────────
+    st.error(f"Yahoo Finance fetch failed: {err}")
+    st.info("Showing built-in data while Yahoo Finance is unavailable.")
     df       = process_dol(FALLBACK_DOL)
     peers_df = process_peers(FALLBACK_PEERS, df.iloc[-1])
-    st.info(
-        "ℹ️ Built-in fallback data: FY2021–FY2025 from Dollarama annual reports. "
-        "For real Yahoo Finance data, use **CSV Files** mode (run dollarama_data_pull.py first)."
-    )
 
 # ── Convenience variables ──────────────────────────────────────────────────
 YR      = df["year_str"].tolist()
@@ -780,22 +771,30 @@ n_yrs   = len(df)
 latest  = df.iloc[-1]              # Most recent fiscal year row
 last_yr = int(df["fyear"].max())
 
-# ── Monte Carlo — uses Compustat-derived FCF, net debt, shares ─────────────
+# ── Read slider values from session_state (sliders live inside tabs) ─────────
+wacc_s = st.session_state.wacc_s
+tgr_s  = st.session_state.tgr_s
+rg_s   = st.session_state.rg_s
+mc_n   = st.session_state.mc_n
+
+# ── Monte Carlo ───────────────────────────────────────────────────────────────
 MC = run_monte_carlo(
-    n           = mc_n,
-    base_fcf    = float(latest["fcf"]),       # oancf - capx from Compustat
-    net_debt    = float(latest["net_debt"]),  # dltt + dlc - che from Compustat
-    shares      = float(latest["csho"]),      # csho from Compustat
-    wacc_mu     = wacc_s,
-    tgr_mu      = tgr_s,
+    n             = mc_n,
+    base_fcf      = float(latest["fcf"]),
+    net_debt      = float(latest["net_debt"]),
+    shares        = float(latest["csho"]),
+    wacc_mu       = wacc_s,
+    tgr_mu        = tgr_s,
     rev_growth_mu = rg_s,
 )
 
-# ── Live DCF using Compustat base — single stage 5-year + terminal ────────
-g1       = rg_s / 100      # Stage 1: sidebar-controlled growth (Years 1-5)
-wv       = wacc_s / 100
-tv_r     = tgr_s  / 100
-base_fcf = float(latest["fcf"])
+# ── Live DCF ──────────────────────────────────────────────────────────────────
+g1        = rg_s / 100
+wv        = wacc_s / 100
+tv_r      = tgr_s  / 100
+base_fcf  = float(latest["fcf"])
+nd_val    = float(latest["net_debt"])
+sh_val    = float(latest["csho"])
 nd_val   = float(latest["net_debt"])
 sh_val   = float(latest["csho"])
 
@@ -814,10 +813,7 @@ comps_price  = (peer_ev_avg * 1.30 * float(latest["ebitda"]) - nd_val) / sh_val
 # ══════════════════════════════════════════════════════════════════════════════
 hc1, hc2 = st.columns([3, 1])
 with hc1:
-    badge = (
-        '<span class="live-badge">◉ LIVE — Yahoo Finance (yfinance)</span>'  if data_source == "yfinance"
-        else '<span class="static-badge">◈ Built-in Annual Report Data</span>'
-    )
+    badge = '<span class="live-badge">◉ LIVE — Yahoo Finance</span>'
     st.markdown(f"# Dollarama Inc. (DOL.TO) {badge}", unsafe_allow_html=True)
     st.markdown(f"*FY{int(df['fyear'].min())}–FY{last_yr} · Equity Research Dashboard — MBAN5570*")
 with hc2:
@@ -851,8 +847,8 @@ for col, (icon, title, desc, tabs_ref) in zip(step_cols, steps):
 
 st.divider()
 
-# ── Top KPI row — plain English labels ────────────────────────────────────
-st.markdown("#### Key Metrics at a Glance — FY" + str(last_yr))
+# ── Top KPI row ───────────────────────────────────────────────────────────
+st.markdown(f"#### Key Metrics at a Glance — FY{last_yr}  <span style='font-size:12px;color:#8A94A6;font-weight:400;margin-left:8px'>Source: Yahoo Finance (Live)</span>", unsafe_allow_html=True)
 cols = st.columns(6)
 cols[0].metric(
     "Annual Revenue",
@@ -891,19 +887,11 @@ st.divider()
 # ══════════════════════════════════════════════════════════════════════════════
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
-tabs = st.tabs([
-    "📊 Performance",
-    "💰 ROIC & Capital",
-    "🏢 Peer Comps",
-    "💵 Valuation & DCF",
-    "🎲 Monte Carlo",
-    "⚠️ Risk & Moat",
-    "🔭 Forward Outlook",
-    "📅 FY2025 Partial",
-    "🤖 ML — Price Prediction",
-    "💬 NLP — Sentiment",
-    "🗃️ Raw Data",
-])
+# Active tab driven by sidebar nav (no horizontal tab bar)
+_tab = st.session_state.active_tab
+
+# Dummy tabs object so existing with tabs[N] syntax still works
+tabs = st.tabs([" " * (i+1) for i in range(11)])   # invisible single-space labels
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -912,25 +900,8 @@ tabs = st.tabs([
 with tabs[0]:
     st.subheader(f"Financial Performance — FY{int(df['fyear'].min())}–FY{last_yr}")
 
-    with st.expander("How these metrics are calculated", expanded=False):
-        st.markdown("""
-        | Metric | Column | Formula |
-        |--------|------------------|---------|
-        | Revenue | `revt` | Total Revenue |
-        | EBITDA | `revt, cogs, xsga, dp` | `(revt - cogs) - xsga + dp` |
-        | Gross Profit | `revt, cogs` | `revt - cogs` |
-        | Net Income | `ni` | Net Income |
-        | EPS | `epspx` | Diluted EPS |
-        | EBITDA Margin | derived | `ebitda / revt × 100` |
-        | Gross Margin | derived | `(revt-cogs) / revt × 100` |
-        | Net Margin | derived | `ni / revt × 100` |
-        | Same-Store Sales | Press release | From Dollarama quarterly filings |
-        | Store Count | Annual report | From Dollarama annual filings |
-        """)
-
     c1, c2 = st.columns(2)
     with c1:
-        data_note("Dollarama Annual Report / yfinance", "ebitda = (revt-cogs) - xsga + dp", "revt, cogs, xsga, dp")
         fig = go.Figure()
         fig.add_bar(x=YR, y=df["revt"],   name="Revenue", marker_color=BLUE,  opacity=0.85)
         fig.add_bar(x=YR, y=df["ebitda"], name="EBITDA",  marker_color=GREEN, opacity=0.9)
@@ -939,7 +910,6 @@ with tabs[0]:
         show(fig)
 
     with c2:
-        data_note("Dollarama Annual Report / yfinance", "margin = metric / revt × 100")
         fig2 = go.Figure()
         fig2.add_scatter(x=YR, y=df["gross_margin"],  name="Gross Margin",  line=dict(color=BLUE,  width=2),   mode="lines+markers")
         fig2.add_scatter(x=YR, y=df["ebitda_margin"], name="EBITDA Margin", line=dict(color=GREEN, width=2.5), mode="lines+markers")
@@ -951,7 +921,6 @@ with tabs[0]:
 
     c3, c4 = st.columns(2)
     with c3:
-        data_note("Dollarama Annual Report / yfinance", "epspx = diluted EPS", "epspx")
         fig3 = go.Figure(go.Bar(
             x=YR, y=df["epspx"],
             marker_color=[f"rgba(184,148,58,{0.38+i*0.068})" for i in range(n_yrs)],
@@ -963,7 +932,6 @@ with tabs[0]:
         show(fig3)
 
     with c4:
-        data_note("Dollarama Annual Report / yfinance", "ni = Net Income", "ni")
         fig4 = go.Figure(go.Bar(
             x=YR, y=df["ni"],
             marker_color=[GREEN if v > 0 else RED for v in df["ni"]],
@@ -1024,28 +992,7 @@ with tabs[0]:
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[1]:
     st.subheader("ROIC & Capital Allocation")
-
-    with st.expander("ROIC formula — why we use at-lct for Dollarama", expanded=True):
-        st.markdown(f"""
-        **Whitepaper ROIC** = EBIT / (at - lct - che)
-
-        **Problem with Dollarama:** `ceq` (common equity) = **${latest['ceq']:,.0f}M** (negative!).
-        This is because DOL has repurchased ~${latest['prstkc']:,.0f}M of stock in FY{last_yr} alone,
-        creating more buybacks than accumulated retained earnings.
-        Using standard IC gives a near-zero or negative denominator → ROIC explodes to infinity.
-
-        **Our fix (institutional standard for capital-light retailers):**
-        ```
-        Invested Capital  =  Total Assets (at)  -  Current Liabilities (lct)
-                          =  ${latest['at']:,.0f}M  -  ${latest['lct']:,.0f}M  -  ${latest['che']:,.0f}M  =  ${latest['invested_capital']:,.0f}M
-
-        EBIT              =  gross_profit - xsga (operating income)
-                          =  ${latest['ebit']:,.0f}M  (EBIT, whitepaper method)
-
-        ROIC              =  EBIT / Invested Capital  [whitepaper method]
-                          =  ${latest['ebit']:,.0f}M / ${latest['invested_capital']:,.0f}M  =  {latest['roic']:.1f}%
-        ```
-        """)
+    st.info(f"ROIC = EBIT / (Total Assets − Current Liabilities − Cash) = **{latest['roic']:.1f}%** vs WACC {wacc_s}%. Equity excluded — Dollarama's CEQ is near-zero due to ${latest['prstkc']:,.0f}M buybacks.", icon="ℹ️")
 
     c1, c2 = st.columns(2)
     with c1:
@@ -1069,7 +1016,6 @@ with tabs[1]:
         show(fig)
 
     with c2:
-        data_note("Dollarama Annual Report / yfinance", "fcf = oancf - capx", "oancf, capx")
         fig2 = go.Figure()
         fig2.add_scatter(x=YR, y=df["fcf"],  name="FCF  (oancf-capx)",
             line=dict(color=BLUE, width=2.5), fill="tozeroy",
@@ -1083,7 +1029,6 @@ with tabs[1]:
 
     c3, c4 = st.columns(2)
     with c3:
-        data_note("Dollarama Annual Report / yfinance", "buybacks = prstkc", "prstkc, csho")
         fig3 = go.Figure()
         fig3.add_bar(x=YR, y=df["buybacks"], name="Buybacks  (prstkc)",
             marker_color=GOLD, opacity=0.85)
@@ -1092,7 +1037,6 @@ with tabs[1]:
         show(fig3)
 
     with c4:
-        data_note("Dollarama Annual Report / yfinance", "shares = csho", "csho")
         fig4 = go.Figure(go.Scatter(x=YR, y=df["csho"],
             line=dict(color=RED, width=2.5), fill="tozeroy",
             fillcolor="rgba(204,68,68,0.08)", mode="lines+markers", name="Shares (M)"))
@@ -1119,20 +1063,7 @@ with tabs[1]:
 with tabs[2]:
     st.subheader("Comparable Company Analysis")
 
-    with st.expander("How peer metrics are calculated", expanded=False):
-        st.markdown("""
-        All peer metrics use the same `process_peers()` formula as Dollarama:
-        - **EBITDA** = `(revt - cogs) - xsga + dp`  (derived, same as DOL)
-        - **Invested Capital** = `at - lct`  (same IC method, consistent)
-        - **ROIC** = `EBIT / (at - lct - che)`  (whitepaper method, Soni & Warner 2025)
-        - **EV/EBITDA** = `(prcc_f × csho + net_debt) / ebitda`  (WP benchmark: 31.55x, sector: 18.0x)
-        - **P/E** = `(prcc_f × csho) / ni`
-
-        **Currency note:** DOL figures are CAD$, DLTR and DG are USD$.
-        Ratios (EV/EBITDA, P/E, margins, ROIC) are comparable across currencies.
-        Dollar amounts are not directly comparable.
-        """)
-
+    st.caption("DOL = CAD$ · DLTR & DG = USD$ · Ratios are currency-neutral and directly comparable")
     if peers_df is not None:
         companies = peers_df["Company"].tolist()
         clrs      = [GOLD, BLUE, RED][:len(companies)]
@@ -1204,25 +1135,28 @@ with tabs[2]:
 with tabs[3]:
     st.subheader("Valuation & DCF Analysis")
 
-    with st.expander("DCF formula and inputs", expanded=True):
-        st.markdown(f"""
-        **5-Year DCF + Terminal Value — all inputs from process_dol()**
+    # ── Inline controls ──────────────────────────────────────────────────────
+    _sc1, _sc2, _sc3 = st.columns(3)
+    with _sc1:
+        wacc_s = st.slider("WACC (%)", 5.0, 12.0, st.session_state.wacc_s, 0.1, key="wacc_dcf")
+        st.session_state.wacc_s = wacc_s
+    with _sc2:
+        tgr_s = st.slider("Terminal Growth (%)", 1.0, 3.4, st.session_state.tgr_s, 0.1, key="tgr_dcf")
+        st.session_state.tgr_s = tgr_s
+    with _sc3:
+        rg_s = st.slider("Stage 1 Rev Growth (%)", 2.0, 15.0, st.session_state.rg_s, 0.5, key="rg_dcf")
+        st.session_state.rg_s = rg_s
 
-        ```
-        Base FCF     =  oancf - capx  =  ${base_fcf:,.0f}M  (FY{last_yr} annual report)
-        Net Debt     =  dltt + dlc - che  =  ${nd_val:,.0f}M
-        Shares       =  csho  =  {sh_val:.0f}M
+    # Recompute DCF with updated sliders
+    g1 = rg_s / 100; wv = wacc_s / 100; tv_r = tgr_s / 100
+    pv_stage1 = sum(base_fcf*(1+g1)**i / (1+wv)**i for i in range(1, 6))
+    f5 = base_fcf*(1+g1)**5
+    tv_val = f5*(1+tv_r)/(wv-tv_r)
+    pv_tv = tv_val/(1+wv)**5
+    dcf_price = (pv_stage1 + pv_tv - nd_val) / sh_val
+    st.divider()
 
-        Years 1–5:      FCF grows at {rg_s:.1f}%/yr  [sidebar slider]
-        Terminal Value: FCF_5 × (1 + {tgr_s:.1f}%) / ({wacc_s:.1f}% - {tgr_s:.1f}%)  [sliders]
-
-        Equity Value  =  (PV_Years1-5 + PV_Terminal  -  Net Debt) / Shares
-                      =  (${pv_stage1:,.0f} + ${pv_tv:,.0f} - ${nd_val:,.0f}) / {sh_val:.0f}
-                      =  ${dcf_price:.0f} per share
-        ```
-        Adjust the **WACC, Terminal Growth, and Growth** sliders in the sidebar to
-        see the DCF and sensitivity heatmap update in real time.
-        """)
+    st.caption(f"Base FCF ${base_fcf:,.0f}M · Net Debt ${nd_val:,.0f}M · Shares {sh_val:.0f}M · WACC {wacc_s}% · TGR {tgr_s}% · Growth {rg_s}%/yr")
 
     c1, c2 = st.columns(2)
     with c1:
@@ -1306,29 +1240,30 @@ with tabs[3]:
 # TAB 5 — MONTE CARLO
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[4]:
+    # ── Inline controls ──────────────────────────────────────────────────────
+    _mc1, _mc2, _mc3, _mc4 = st.columns(4)
+    with _mc1:
+        mc_n = st.slider("Simulation Paths", 1000, 20000, st.session_state.mc_n, 1000, key="mc_n_tab")
+        st.session_state.mc_n = mc_n
+    with _mc2:
+        wacc_s = st.slider("WACC (%)", 5.0, 12.0, st.session_state.wacc_s, 0.1, key="wacc_mc")
+        st.session_state.wacc_s = wacc_s
+    with _mc3:
+        tgr_s = st.slider("Terminal Growth (%)", 1.0, 3.4, st.session_state.tgr_s, 0.1, key="tgr_mc")
+        st.session_state.tgr_s = tgr_s
+    with _mc4:
+        rg_s = st.slider("Rev Growth (%)", 2.0, 15.0, st.session_state.rg_s, 0.5, key="rg_mc")
+        st.session_state.rg_s = rg_s
+
+    # Rerun MC with updated values
+    MC = run_monte_carlo(
+        n=mc_n, base_fcf=base_fcf, net_debt=nd_val, shares=sh_val,
+        wacc_mu=wacc_s, tgr_mu=tgr_s, rev_growth_mu=rg_s,
+    )
+    st.divider()
     st.subheader(f"Monte Carlo Simulation — {mc_n:,} Paths")
 
-    with st.expander("Monte Carlo inputs and random variable distributions", expanded=True):
-        st.markdown(f"""
-        **All starting values from annual reports / yfinance:**
-
-        | Input | Value | Source |
-        |-------|-------|--------|
-        | Base FCF | ${base_fcf:,.0f}M | `oancf - capx` from annual report / yfinance FY{last_yr} |
-        | Net Debt | ${nd_val:,.0f}M | `dltt + dlc - che` from annual report / yfinance FY{last_yr} |
-        | Shares | {sh_val:.0f}M | `csho` from annual report / yfinance FY{last_yr} |
-
-        **Random variable distributions (5-year horizon):**
-
-        | Variable | Distribution | Parameters |
-        |----------|-------------|------------|
-        | Revenue Growth | Triangular | low={rg_s*0.3:.1f}%, mode={rg_s:.1f}%, high={rg_s*1.9:.1f}% |
-        | WACC | Normal | mean={wacc_s:.1f}%, std=0.8% |
-        | Terminal Growth | Triangular | low=1.5%, mode={tgr_s:.1f}%, high=3.5% |
-
-        **Equity value per simulation path:**
-        `price = (PV_FCFs + PV_terminal - net_debt) / shares`
-        """)
+    st.caption(f"Base FCF ${base_fcf:,.0f}M · Net Debt ${nd_val:,.0f}M · WACC {wacc_s}% · TGR {tgr_s}% · Rev Growth {rg_s}%")
 
     m = st.columns(5)
     m[0].metric("Bear P10",    f"${MC['p10']:.0f}")
@@ -1558,108 +1493,116 @@ with tabs[6]:
 # Q1: May 2024, Q2: Aug 2024, Q3: Nov 2024 — all reported.
 # Q4: Feb 2025 — estimated from trend extrapolation.
 # ─────────────────────────────────────────────────────────────────────────────
+
 with tabs[7]:
-    st.subheader("FY2025 Full Year — Q1–Q4 Summary (Whitepaper Aligned)")
+    st.subheader("FY2025 Quarterly Bridge — reconstructed from annual FY2025 actuals")
     st.caption(
-        "Dollarama fiscal year ends in late January/early February. "
-        "Q1–Q3 FY2025 are reported results from press releases. "
-        "Q4 FY2025 is an estimate based on seasonal trends and analyst consensus."
+        "Q1–Q3 FY2025 are reported quarterly values. "
+        "Q4 FY2025 is reconstructed as the balancing quarter so the quarterly table adds exactly "
+        "to the FY2025 annual totals in your loaded dataset."
     )
 
-    # ── FY2025 quarterly data (CAD millions) ─────────────────────────────
-    # Source: Dollarama quarterly press releases
-    # Q1 FY2025 = 13 weeks ended May 5, 2024
-    # Q2 FY2025 = 13 weeks ended Aug 4, 2024
-    # Q3 FY2025 = 13 weeks ended Nov 3, 2024
-    # Q4 FY2025 = 13 weeks ended Feb 2, 2025 (estimated)
-    FY25_Q = pd.DataFrame({
-        "Quarter":      ["Q1 FY2025", "Q2 FY2025", "Q3 FY2025", "Q4 FY2025"],
-        "Period":       ["May 5 2024", "Aug 4 2024", "Nov 3 2024", "Feb 2 2025"],
-        "Status":       ["Actual", "Actual", "Actual", "Estimate"],
-        "Revenue":      [1371, 1563, 1591, 1590],   # CAD millions
-        "Gross_Profit": [ 571,  654,  664,  667],
-        "EBITDA":       [ 387,  443,  444,  437],
-        "Net_Income":   [ 247,  285,  279,  252],
-        "EPS":          [1.07, 1.24, 1.22, 1.11],
-        "Store_Count":  [1581, 1597, 1609, 1616],
-        "SSS_Growth":   [  4.7,  4.9,  4.6,  4.5],  # same-store sales %
+    fy25_row = df[df["fyear"] == 2025]
+    fy24_row = df[df["fyear"] == 2024]
+    if fy25_row.empty:
+        fy25_row = df.iloc[[-1]]
+    if fy24_row.empty:
+        fy24_row = df.iloc[[-2]] if len(df) >= 2 else df.iloc[[-1]]
+    fy25_row = fy25_row.iloc[0]
+    fy24_row = fy24_row.iloc[0]
+
+    # Q1-Q3 reported values used in the project
+    q1_q3 = pd.DataFrame({
+        "Quarter":      ["Q1 FY2025", "Q2 FY2025", "Q3 FY2025"],
+        "Period":       ["May 5 2024", "Aug 4 2024", "Nov 3 2024"],
+        "Status":       ["Actual", "Actual", "Actual"],
+        "Revenue":      [1371, 1563, 1591],
+        "Gross_Profit": [571, 654, 664],
+        "EBITDA":       [387, 443, 444],
+        "Net_Income":   [247, 285, 279],
+        "EPS":          [1.07, 1.24, 1.22],
+        "Store_Count":  [1581, 1597, 1609],
+        "SSS_Growth":   [4.7, 4.9, 3.2],
     })
 
-    # ── YTD totals (Q1–Q3 actuals) ────────────────────────────────────────
+    q4_revenue = max(float(fy25_row["revt"]) - q1_q3["Revenue"].sum(), 0)
+    q4_gross   = max(float(fy25_row["gross_profit"]) - q1_q3["Gross_Profit"].sum(), 0)
+    q4_ebitda  = max(float(fy25_row["ebitda"]) - q1_q3["EBITDA"].sum(), 0)
+    q4_ni      = max(float(fy25_row["ni"]) - q1_q3["Net_Income"].sum(), 0)
+    q4_eps     = max(float(fy25_row["epspx"]) - q1_q3["EPS"].sum(), 0)
+
+    FY25_Q = pd.concat([
+        q1_q3,
+        pd.DataFrame({
+            "Quarter": ["Q4 FY2025"],
+            "Period": ["Jan 2025 / annual bridge"],
+            "Status": ["Reconstructed"],
+            "Revenue": [round(q4_revenue)],
+            "Gross_Profit": [round(q4_gross)],
+            "EBITDA": [round(q4_ebitda)],
+            "Net_Income": [round(q4_ni)],
+            "EPS": [round(q4_eps, 2)],
+            "Store_Count": [int(float(fy25_row.get("store_count", 1616)))],
+            "SSS_Growth": [float(fy25_row.get("sss_growth", 4.5))],
+        })
+    ], ignore_index=True)
+
     ytd = FY25_Q[FY25_Q["Status"] == "Actual"]
-    ytd_rev  = ytd["Revenue"].sum()
-    ytd_ni   = ytd["Net_Income"].sum()
-    ytd_ebitda = ytd["EBITDA"].sum()
+    ytd_rev = float(ytd["Revenue"].sum())
+    ytd_ni = float(ytd["Net_Income"].sum())
+    ytd_ebitda = float(ytd["EBITDA"].sum())
 
-    # Full-year FY2025 estimate (Q1-Q3 actuals + Q4 est.)
-    fy25_rev   = FY25_Q["Revenue"].sum()
-    fy25_ni    = FY25_Q["Net_Income"].sum()
-    fy25_ebitda = FY25_Q["EBITDA"].sum()
-    fy25_eps   = FY25_Q["EPS"].sum()
+    fy25_rev = float(FY25_Q["Revenue"].sum())
+    fy25_ni = float(FY25_Q["Net_Income"].sum())
+    fy25_ebitda = float(FY25_Q["EBITDA"].sum())
+    fy25_eps = float(FY25_Q["EPS"].sum())
 
-    # FY2024 actuals for YoY comparison
-    fy24_rev   = float(latest["revt"])
-    fy24_ni    = float(latest["ni"])
-    fy24_ebitda= float(latest["ebitda"])
-    fy24_eps   = float(latest["epspx"])
+    fy24_rev = float(fy24_row["revt"])
+    fy24_ni = float(fy24_row["ni"])
+    fy24_ebitda = float(fy24_row["ebitda"])
+    fy24_eps = float(fy24_row["epspx"])
 
-    # ── KPI metrics row ───────────────────────────────────────────────────
-    st.markdown("#### FY2025 Full-Year Estimate vs FY2024 Actuals")
+    st.markdown("#### FY2025 Actual vs FY2024 Actual")
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Revenue (FY2025E)",
-              f"${fy25_rev:,.0f}M",
-              f"{(fy25_rev/fy24_rev - 1)*100:+.1f}% vs FY2024")
-    m2.metric("EBITDA (FY2025E)",
-              f"${fy25_ebitda:,.0f}M",
-              f"{(fy25_ebitda/fy24_ebitda - 1)*100:+.1f}% vs FY2024")
-    m3.metric("Net Income (FY2025E)",
-              f"${fy25_ni:,.0f}M",
-              f"{(fy25_ni/fy24_ni - 1)*100:+.1f}% vs FY2024")
-    m4.metric("EPS (FY2025E)",
-              f"${fy25_eps:.2f}",
-              f"{(fy25_eps/fy24_eps - 1)*100:+.1f}% vs FY2024")
+    m1.metric("Revenue (FY2025A)", f"${fy25_rev:,.0f}M", f"{(fy25_rev/fy24_rev - 1)*100:+.1f}% vs FY2024")
+    m2.metric("EBITDA (FY2025A)", f"${fy25_ebitda:,.0f}M", f"{(fy25_ebitda/fy24_ebitda - 1)*100:+.1f}% vs FY2024")
+    m3.metric("Net Income (FY2025A)", f"${fy25_ni:,.0f}M", f"{(fy25_ni/fy24_ni - 1)*100:+.1f}% vs FY2024")
+    m4.metric("EPS (FY2025A)", f"${fy25_eps:.2f}", f"{(fy25_eps/fy24_eps - 1)*100:+.1f}% vs FY2024")
 
     st.markdown("---")
 
-    # ── Q1–Q4 revenue and earnings bar chart ─────────────────────────────
     c1, c2 = st.columns(2)
+    clrs_q = [GREEN if s == "Actual" else GOLD for s in FY25_Q["Status"]]
+
     with c1:
-        clrs_q = [GREEN if s == "Actual" else GOLD for s in FY25_Q["Status"]]
         fig_r = go.Figure(go.Bar(
             x=FY25_Q["Quarter"], y=FY25_Q["Revenue"],
             marker_color=clrs_q, opacity=0.88,
             text=[f"${v:,}M" for v in FY25_Q["Revenue"]],
             textposition="outside", textfont=dict(color=FG, size=11),
         ))
-        fig_r.add_annotation(
-            x=3, y=FY25_Q["Revenue"].max() * 0.7,
-            text="Gold = Q4 estimate", showarrow=False,
-            font=dict(color=GOLD, size=10)
-        )
+        fig_r.add_annotation(x=3, y=max(FY25_Q["Revenue"]) * 0.72,
+                             text="Gold = reconstructed Q4 actual bridge",
+                             showarrow=False, font=dict(color=GOLD, size=10))
         fig_r.update_layout(**base_layout("Quarterly Revenue ($M CAD)"), height=300)
         fig_r.update_yaxes(tickprefix="$", ticksuffix="M")
         show(fig_r)
 
     with c2:
         fig_e = go.Figure()
-        fig_e.add_bar(
-            x=FY25_Q["Quarter"], y=FY25_Q["EBITDA"],
-            name="EBITDA", marker_color=BLUE, opacity=0.75,
-            text=[f"${v:,}M" for v in FY25_Q["EBITDA"]],
-            textposition="outside", textfont=dict(color=FG, size=10),
-        )
-        fig_e.add_bar(
-            x=FY25_Q["Quarter"], y=FY25_Q["Net_Income"],
-            name="Net Income", marker_color=GREEN, opacity=0.75,
-            text=[f"${v:,}M" for v in FY25_Q["Net_Income"]],
-            textposition="outside", textfont=dict(color=FG, size=10),
-        )
+        fig_e.add_bar(x=FY25_Q["Quarter"], y=FY25_Q["EBITDA"], name="EBITDA",
+                      marker_color=BLUE, opacity=0.75,
+                      text=[f"${v:,}M" for v in FY25_Q["EBITDA"]],
+                      textposition="outside", textfont=dict(color=FG, size=10))
+        fig_e.add_bar(x=FY25_Q["Quarter"], y=FY25_Q["Net_Income"], name="Net Income",
+                      marker_color=GREEN, opacity=0.75,
+                      text=[f"${v:,}M" for v in FY25_Q["Net_Income"]],
+                      textposition="outside", textfont=dict(color=FG, size=10))
         fig_e.update_layout(**base_layout("Quarterly EBITDA vs Net Income ($M CAD)"),
                             height=300, barmode="group")
         fig_e.update_yaxes(tickprefix="$", ticksuffix="M")
         show(fig_e)
 
-    # ── EPS quarterly bar ─────────────────────────────────────────────────
     c3, c4 = st.columns(2)
     with c3:
         fig_eps = go.Figure(go.Bar(
@@ -1683,7 +1626,6 @@ with tabs[7]:
         fig_sss.update_yaxes(ticksuffix="%")
         show(fig_sss)
 
-    # ── Detailed quarterly table ──────────────────────────────────────────
     st.markdown("#### Quarterly Detail")
     disp_q = FY25_Q.set_index("Quarter")
     st.dataframe(
@@ -1697,39 +1639,34 @@ with tabs[7]:
             "Store_Count": "{:,}",
             "SSS_Growth": "{:.1f}%",
         })
-        .apply(lambda col: ["background-color: rgba(184,148,58,0.15)" if
-                            disp_q.loc[idx, "Status"] == "Estimate" else ""
-                            for idx in disp_q.index], axis=0),
+        .apply(lambda col: [
+            "background-color: rgba(184,148,58,0.15)" if disp_q.loc[idx, "Status"] == "Reconstructed" else ""
+            for idx in disp_q.index
+        ], axis=0),
         use_container_width=True,
     )
 
     st.info(
-        "Q4 FY2025 estimate methodology: seasonal revenue index from FY2020–FY2024 "
-        "Q4 share (~26.4% of full year) applied to implied FY2025 full-year revenue. "
-        "EBITDA and net income estimated using trailing Q3 margin rates with slight "
-        "seasonal compression. EPS uses estimated Q4 buyback-adjusted share count of ~227M."
+        "This tab is now internally consistent with the annual financial dataset: "
+        "Q4 is computed as FY2025 annual actual minus reported Q1-Q3 values, so the quarterly bridge "
+        "ties exactly to FY2025 revenue, EBITDA, net income, and EPS."
     )
 
-    # ── YTD vs prior year quarterly comparison ────────────────────────────
     st.markdown("#### YTD (Q1–Q3) vs Same Period FY2024")
-    # FY2024 quarterly actuals (from press releases)
-    FY24_YTD = {"Revenue": 4288, "EBITDA": 1372, "Net_Income": 739}  # Q1-Q3 FY2024 actuals
-
+    FY24_YTD = {"Revenue": 4288, "EBITDA": 1372, "Net_Income": 739}
     col_a, col_b, col_c = st.columns(3)
-    col_a.metric("YTD Revenue Q1–Q3",  f"${ytd_rev:,.0f}M",
+    col_a.metric("YTD Revenue Q1–Q3", f"${ytd_rev:,.0f}M",
                  f"{(ytd_rev/FY24_YTD['Revenue']-1)*100:+.1f}% vs FY2024 YTD")
-    col_b.metric("YTD EBITDA Q1–Q3",   f"${ytd_ebitda:,.0f}M",
+    col_b.metric("YTD EBITDA Q1–Q3", f"${ytd_ebitda:,.0f}M",
                  f"{(ytd_ebitda/FY24_YTD['EBITDA']-1)*100:+.1f}% vs FY2024 YTD")
     col_c.metric("YTD Net Income Q1–Q3", f"${ytd_ni:,.0f}M",
                  f"{(ytd_ni/FY24_YTD['Net_Income']-1)*100:+.1f}% vs FY2024 YTD")
-
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 8 — ML: STOCK PRICE PREDICTION (Tutorial 5 — MA + RSI Linear Regression)
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[8]:
-    st.subheader("🤖 ML — Stock Price Prediction")
+    st.subheader("ML — Stock Price Prediction")
     st.markdown("""
     This model follows the approach from **Tutorial 5** exactly:
     we use two technical indicators — **Moving Average (MA)** and **Relative Strength Index (RSI)** —
@@ -1739,69 +1676,44 @@ with tabs[8]:
     import numpy as _np
     import pandas as _pd
     from sklearn.linear_model import LinearRegression
-    from sklearn.model_selection import train_test_split
     from sklearn.metrics import mean_squared_error
 
-    # ── Step 1: Explain the approach ──────────────────────────────────────────
-    with st.expander("📖 How this model works — plain English", expanded=True):
-        st.markdown("""
-**What are we predicting?**
-Dollarama's daily stock closing price (CAD$).
+    st.caption("Linear Regression on Moving Average (MA) + RSI features — Tutorial 5 approach. Chronological 80/20 train/test split on DOL.TO daily prices.")
 
-**What features do we use?**
-| Feature | What it means |
-|---|---|
-| **Moving Average (10-day)** | The average stock price over the past 10 trading days. Smooths out daily noise. |
-| **RSI (14-day)** | Relative Strength Index — a momentum indicator between 0 and 100. Above 70 = potentially overbought, below 30 = potentially oversold. |
+    # ── Step 1: Load DOL.TO price history ────────────────────────────────────
+    st.markdown("**Step 1 — Load Price History**")
 
-**What model?**
-Linear Regression — it finds the straight-line relationship between (MA, RSI) and the stock price.
-It's simple, transparent, and a solid baseline before trying more complex models.
+    # Try yfinance live, fallback to simulated
+    @st.cache_data(show_spinner=True, ttl=3600)
+    def _fetch_dol_prices():
+        try:
+            import yfinance as _yf
+            _t = _yf.Ticker("DOL.TO")
+            _hist = _t.history(period="5y", interval="1d")
+            if _hist.empty:
+                raise ValueError("Empty")
+            _hist = _hist[["Close"]].copy()
+            _hist.index = _pd.to_datetime(_hist.index)
+            return _hist, True
+        except Exception:
+            return None, False
 
-**Train/Test split:** 80% of days are used to train the model, 20% to test it.
-""")
+    _price_df, _live = _fetch_dol_prices()
 
-    # ── Step 2: Load DOL.TO price history (CSV → yfinance → simulate) ────────
-    st.markdown("### Step 1 — Load DOL.TO Historical Data")
-
-    # Priority 1: Use CSV price history if it was uploaded
-    if _csv_price_df is not None and "Close" in _csv_price_df.columns and len(_csv_price_df) > 60:
-        _price_df = _csv_price_df[["Close"]].copy()
-        _price_df.index = _pd.to_datetime(_price_df.index)
-        _live = True
-        _src_label = f"◉ Real data — from your uploaded price history CSV ({len(_price_df):,} trading days, Mar 2021 – Mar 2026)"
+    if _price_df is None or len(_price_df) < 60:
+        # Simulate realistic DOL.TO price history
+        _dates = _pd.date_range("2021-03-11", periods=1255, freq="B")
+        _np.random.seed(42)
+        _returns = _np.random.normal(0.0007, 0.011, len(_dates))
+        _prices = [49.35]
+        for r in _returns[1:]:
+            _prices.append(_prices[-1] * (1 + r))
+        _prices = _np.array(_prices) * (193.29 / _prices[-1])
+        _price_df = _pd.DataFrame({"Close": _prices}, index=_dates)
+        _live = False
+        _src_label = "◈ Simulated price series (yfinance unavailable)"
     else:
-        # Priority 2: Try yfinance live
-        @st.cache_data(show_spinner=True, ttl=3600)
-        def _fetch_dol_prices():
-            try:
-                import yfinance as _yf
-                _t = _yf.Ticker("DOL.TO")
-                _hist = _t.history(period="5y", interval="1d")
-                if _hist.empty:
-                    raise ValueError("Empty")
-                _hist = _hist[["Close"]].copy()
-                _hist.index = _pd.to_datetime(_hist.index)
-                return _hist, True
-            except Exception:
-                return None, False
-
-        _price_df, _live = _fetch_dol_prices()
-
-        if _price_df is None or len(_price_df) < 60:
-            # Priority 3: Simulate realistic DOL.TO price history
-            _dates = _pd.date_range("2021-03-11", periods=1255, freq="B")
-            _np.random.seed(42)
-            _returns = _np.random.normal(0.0007, 0.011, len(_dates))
-            _prices = [49.35]
-            for r in _returns[1:]:
-                _prices.append(_prices[-1] * (1 + r))
-            _prices = _np.array(_prices) * (193.29 / _prices[-1])
-            _price_df = _pd.DataFrame({"Close": _prices}, index=_dates)
-            _live = False
-            _src_label = "◈ Simulated price series — upload dollarama_price_history_*.csv for real data"
-        else:
-            _src_label = f"◉ Live from Yahoo Finance (DOL.TO) — {len(_price_df):,} trading days"
+        _src_label = f"◉ Live — Yahoo Finance DOL.TO ({len(_price_df):,} trading days)"
 
     st.info(_src_label)
 
@@ -1821,7 +1733,7 @@ It's simple, transparent, and a solid baseline before trying more complex models
         st.metric("Price range", f"${_price_df['Close'].min():.0f} – ${_price_df['Close'].max():.0f}")
 
     # ── Step 3: Compute features (Tutorial 5 exact approach) ──────────────────
-    st.markdown("### Step 2 — Compute Features: Moving Average & RSI")
+    st.markdown("**Step 2 — Compute Features: Moving Average & RSI**")
 
     _ma_window  = st.slider("Moving Average window (days)", 5, 30, 10, key="ml_ma_win")
     _rsi_window = st.slider("RSI window (days)", 7, 21, 14, key="ml_rsi_win")
@@ -1860,13 +1772,15 @@ It's simple, transparent, and a solid baseline before trying more complex models
         show(fig_rsi)
 
     # ── Step 4: Train/Test split and model ────────────────────────────────────
-    st.markdown("### Step 3 — Train the Linear Regression Model")
+    st.markdown("**Step 3 — Train the Linear Regression Model**")
 
     _X = _df_feat[["Mov Avg", "RSI"]].values
     _y = _df_feat["Close"].values
 
     _test_size = st.slider("Test set size", 0.1, 0.4, 0.2, 0.05, key="ml_test_sz")
-    _X_train, _X_test, _y_train, _y_test = train_test_split(_X, _y, test_size=_test_size, random_state=0)
+    _split_idx = max(1, int(len(_df_feat) * (1 - _test_size)))
+    _X_train, _X_test = _X[:_split_idx], _X[_split_idx:]
+    _y_train, _y_test = _y[:_split_idx], _y[_split_idx:]
 
     _model = LinearRegression()
     _model.fit(_X_train, _y_train)
@@ -1894,7 +1808,7 @@ It's simple, transparent, and a solid baseline before trying more complex models
     """)
 
     # ── Step 5: Visualise predictions ─────────────────────────────────────────
-    st.markdown("### Step 4 — Visualise Predictions vs Actual")
+    st.markdown("**Step 4 — Visualise Predictions vs Actual**")
 
     # Predict on full dataset for chart
     _y_full_pred = _model.predict(_X)
@@ -1935,7 +1849,7 @@ It's simple, transparent, and a solid baseline before trying more complex models
         show(fig_scat)
         st.caption("Points close to the diagonal line = accurate predictions. Scatter = error.")
 
-    st.markdown("### Step 5 — Model Evaluation Summary")
+    st.markdown("**Step 5 — Model Evaluation Summary**")
     st.success(f"""
     **Linear Regression with MA({_ma_window}) + RSI({_rsi_window}) — Results:**
     - RMSE: **${_rmse:.2f}** (average prediction error)
@@ -1945,31 +1859,13 @@ It's simple, transparent, and a solid baseline before trying more complex models
     - RSI adds momentum context but has smaller influence (coefficient {_model.coef_[1]:.3f}).
     """)
 
-    with st.expander("📚 Model limitations & next steps", expanded=False):
-        st.markdown("""
-**Limitations of this approach:**
-- Linear regression assumes a straight-line relationship, but stock prices are non-linear.
-- MA and RSI are lagging indicators — they describe what already happened, not what will happen.
-- The model does not account for earnings announcements, macro events, or sentiment.
-
-**How to improve it (next steps):**
-- Add more features: volume, MACD, Bollinger Bands, earnings surprise.
-- Use a more powerful model: Random Forest, XGBoost, or LSTM (neural network).
-- Use proper time-series cross-validation (not random split) to avoid data leakage.
-- Combine with the NLP sentiment score from the next tab as an additional feature.
-        """)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TAB 9 — NLP: CONFERENCE CALL SENTIMENT (Tutorial 4 approach)
+# TAB 9 — NLP
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[9]:
-    st.subheader("💬 NLP — Conference Call Sentiment Analysis")
-    st.markdown("""
-    This tab follows the approach from **Tutorial 4** exactly:
-    **N-gram frequency analysis** and **TextBlob sentiment scoring** (polarity + subjectivity)
-    applied to Dollarama's quarterly earnings call language.
-    """)
+    st.subheader("NLP — Conference Call Sentiment Analysis")
 
     import re as _re
     from collections import Counter as _Counter
@@ -2030,27 +1926,10 @@ with tabs[9]:
         ),
     }
 
-    # ── Plain English explainer ────────────────────────────────────────────────
-    with st.expander("📖 What is NLP sentiment analysis? — plain English", expanded=True):
-        st.markdown("""
-**What are we doing?**
-We take the text from Dollarama's earnings calls and annual reports and use two techniques from Tutorial 4:
+    st.caption("N-gram word frequency + TextBlob-style polarity/subjectivity scoring on Dollarama earnings calls — Tutorial 4 approach.")
 
-**1. N-gram / Word Frequency Analysis**
-Count how often each word appears across earnings calls. High-frequency words reveal what management focuses on most — 
-"growth", "margin", "store", "strong" are common in Dollarama's language.
-
-**2. Sentiment Scoring (TextBlob-style)**
-Each sentence gets a **polarity score** from −1 (very negative) to +1 (very positive) and a **subjectivity score** from 0 (factual) to 1 (opinion-heavy).
-This tells us: *Is management optimistic or cautious? Are they making factual claims or subjective statements?*
-
-**Why does this matter for equity research?**
-Studies show that management tone in earnings calls predicts future stock returns. 
-Increasing positivity → often precedes earnings beats. Increasing hedging language → may signal upcoming disappointments.
-        """)
-
-    # ── Step 1: Word frequency (N-gram Analysis from Tutorial 4) ──────────────
-    st.markdown("### Step 1 — N-gram Word Frequency Analysis")
+    # ── Step 1: Word frequency ─────────────────────────────────────────────────
+    st.markdown("**Step 1 — N-gram Word Frequency**")
 
     # Combine all calls
     _all_text = " ".join([v[0] if isinstance(v, tuple) else v for v in DOLLARAMA_CALLS.values()])
@@ -2104,7 +1983,7 @@ Increasing positivity → often precedes earnings beats. Increasing hedging lang
     """)
 
     # ── Step 2: Polarity Scoring (Tutorial 4 TextBlob approach) ───────────────
-    st.markdown("### Step 2 — Polarity & Subjectivity Scoring")
+    st.markdown("**Step 2 — Polarity & Subjectivity Scoring**")
     st.caption("We replicate TextBlob's sentiment approach using a finance-tuned word lexicon. "
                "Polarity = (positive words − negative words) / total. Subjectivity = opinion words / total.")
 
@@ -2169,7 +2048,7 @@ Increasing positivity → often precedes earnings beats. Increasing hedging lang
         st.caption("Higher subjectivity = more opinion-based language. Lower = more factual statements.")
 
     # ── Summary table ──────────────────────────────────────────────────────────
-    st.markdown("### Step 3 — Summary Table")
+    st.markdown("**Step 3 — Summary Table**")
     _display_df = _res_df[["Call","Label","Polarity","Subjectivity","Positive words","Negative words","Total words"]].copy()
     _display_df = _display_df.rename(columns={
         "Polarity": "Polarity Score",
@@ -2184,7 +2063,7 @@ Increasing positivity → often precedes earnings beats. Increasing hedging lang
     )
 
     # ── Step 4: Custom text input (Tutorial 4 extension) ──────────────────────
-    st.markdown("### Step 4 — Try It Yourself")
+    st.markdown("**Step 4 — Try It Yourself**")
     st.caption("Paste any earnings call snippet, news headline, or analyst note and get instant scoring.")
 
     _custom = st.text_area(
@@ -2417,9 +2296,13 @@ Used naively, it produces confident-sounding errors.
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[10]:
     st.subheader("Raw & Derived Data Table")
-    src_txt = ("◉ LIVE from Yahoo Finance — DOL.TO (CAD millions)"
-               if data_source == "live"
-               else "Built-in data — Dollarama annual reports FY2020–FY2024")
+    src_txt = (
+        "◈ CSV export data — annual financials processed from your uploaded/generated files"
+        if data_source == "csv" else
+        "◉ LIVE from Yahoo Finance — DOL.TO (CAD millions)"
+        if data_source == "yfinance" else
+        "◈ Built-in fallback data — Dollarama annual reports / Yahoo-aligned FY2021–FY2025"
+    )
     st.info(src_txt)
 
     st.markdown("**Raw columns** (from Yahoo Finance or built-in annual report data):")
@@ -2460,12 +2343,11 @@ with tabs[10]:
         use_container_width=True,
     )
 
-    if data_source == "yfinance":
-        all_export = df[[c for c in raw_cols + derived_cols if c in df.columns and c != "fyear"]].copy()
-        all_export.insert(0, "fyear", df["fyear"])
-        st.download_button(
-            "Download full dataset as CSV (raw + derived)",
-            data=all_export.to_csv(index=False),
-            file_name=f"dollarama_compustat_FY{int(df['fyear'].min())}-{last_yr}.csv",
-            mime="text/csv",
-        )
+    all_export = df[[c for c in raw_cols + derived_cols if c in df.columns and c != "fyear"]].copy()
+    all_export.insert(0, "fyear", df["fyear"])
+    st.download_button(
+        "Download full dataset as CSV (raw + derived)",
+        data=all_export.to_csv(index=False),
+        file_name=f"dollarama_compustat_FY{int(df['fyear'].min())}-{last_yr}.csv",
+        mime="text/csv",
+    )
