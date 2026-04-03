@@ -1728,7 +1728,7 @@ elif tab == 11:
     st.markdown(f"#### Deep-Dive: {sel}")
     ct = NLP_CORPUS[sel]; p,s,pos,neg = sc_(ct)
     dc1,dc2,dc3 = st.columns(3)
-    dc1.metric("Polarity",f"{p:.2f}%","Positive" if p>2 else "Cautious")
+    dc1.metric("Polarity",f"{p:.2f}%","Positive" if p>2 else "Negative" if p<0 else "Cautious")
     dc2.metric("Subjectivity",f"{s:.2f}%","Opinion density")
     dc3.metric("Pos/Neg",f"{pos}/{neg}","lexicon matches")
 
