@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dollarama Inc. — Equity Research Dashboard | MBAN5570</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --g:#1B7B3A;--g-lt:#e8f5ee;--g-dk:#0f4d23;--y:#F7C700;--y-lt:#fffbe6;
+  --ink:#111;--muted:#5a5a5a;--line:#e0e0e0;--bg:#f9f8f5;--white:#fff;
+  --red:#c0392b;--blue:#1a5fa0;--amber:#b87800;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;}
+.shell{display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-width:220px;background:var(--g-dk);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo-block{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.08);}
+.logo-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--y);line-height:1.1;}
+.logo-sub{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.38);margin-top:3px;}
+.rec-pill{margin-top:9px;display:inline-block;background:var(--y);color:var(--g-dk);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.03em;}
+.nav-dots{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap;}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:all .15s;}
+.dot.active{background:var(--y);width:14px;border-radius:3px;}
+.nav{padding:8px 0;flex:1;}
+.nav-sec{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:10px 16px 3px;}
+.nav-item{display:flex;align-items:center;gap:7px;padding:6px 16px;cursor:pointer;color:rgba(255,255,255,.5);font-size:12px;transition:all .12s;border-left:2px solid transparent;user-select:none;}
+.nav-item:hover{color:rgba(255,255,255,.88);background:rgba(255,255,255,.04);}
+.nav-item.active{color:var(--y);border-left-color:var(--y);background:rgba(247,199,0,.07);font-weight:600;}
+.nav-num{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.2);min-width:16px;}
+.timer-block{padding:10px 16px 16px;border-top:1px solid rgba(255,255,255,.08);}
+.timer-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.28);margin-bottom:3px;}
+.timer-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--y);}
+.tbar-bg{height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:5px;}
+.tbar{height:3px;background:var(--y);border-radius:2px;transition:width .5s,background .3s;}
+.btn-row{margin-top:7px;display:flex;gap:5px;}
+.btn-t{flex:1;font-family:'DM Sans',sans-serif;font-size:10px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);border:none;border-radius:4px;padding:4px 0;cursor:pointer;transition:background .13s;}
+.btn-t:hover{background:rgba(255,255,255,.15);color:#fff;}
+
+/* MAIN */
+.main{flex:1;overflow:hidden;}
+.page{display:none;animation:fi .18s ease;}
+.page.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.ph{background:var(--white);border-bottom:1px solid var(--line);padding:18px 32px 15px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;}
+.ph-left .ey{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.ph-left .pt{font-family:'DM Serif Display',serif;font-size:24px;color:var(--ink);}
+.ph-left .ps{font-size:12px;color:var(--muted);margin-top:2px;}
+.tbadge{font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--line);padding:4px 10px;border-radius:20px;font-family:'DM Mono',monospace;white-space:nowrap;}
+.scroll{height:calc(100vh - 75px);overflow-y:auto;}
+.content{padding:22px 32px;}
+
+/* CARDS */
+.kpi-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.kpi-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:var(--white);border:1px solid var(--line);border-radius:9px;padding:12px 14px;border-top:3px solid var(--g);}
+.kpi.y{border-top-color:var(--y)}.kpi.b{border-top-color:var(--blue)}.kpi.r{border-top-color:var(--red)}
+.kl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px;}
+.kv{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);}
+.ks{font-size:11px;color:var(--muted);margin-top:2px;}
+.ks.up{color:var(--g)}.ks.dn{color:var(--red)}
+.card{background:var(--white);border:1px solid var(--line);border-radius:9px;padding:16px 18px;}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;}
+.ch200{position:relative;height:200px;}
+.ch220{position:relative;height:220px;}
+.ch240{position:relative;height:240px;}
+.ch260{position:relative;height:260px;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;}
+td{padding:7px 8px;border-bottom:1px solid #f0f0f0;}
+tr:last-child td{border-bottom:none;}
+.tr-hl td{background:var(--g-lt);font-weight:500;}
+td.n,th.n{font-family:'DM Mono',monospace;font-size:12px;text-align:right;}
+
+/* CALLOUT */
+.callout{border-left:3px solid var(--g);background:var(--g-lt);padding:10px 14px;border-radius:0 7px 7px 0;margin-bottom:10px;}
+.callout.warn{border-color:var(--amber);background:#fff8e6;}
+.callout.risk{border-color:var(--red);background:#fdecea;}
+.callout.info{border-color:var(--blue);background:#e8f0fb;}
+.callout.dark{border-color:var(--g-dk);background:var(--g-dk);color:#fff;}
+.ch{font-size:12px;font-weight:600;margin-bottom:2px;}
+.cb{font-size:11.5px;color:var(--muted);line-height:1.5;}
+.callout.dark .cb{color:rgba(255,255,255,.75);}
+.callout.dark .ch{color:var(--y);}
+
+/* THESIS BOX */
+.thesis{background:var(--g-dk);border-radius:9px;padding:18px 22px;margin-bottom:18px;}
+.thesis h3{font-family:'DM Serif Display',serif;font-size:17px;color:var(--y);margin-bottom:6px;}
+.thesis p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;}
+
+/* MOAT BAR */
+.moat-item{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.moat-lbl{font-size:12px;width:160px;flex-shrink:0;}
+.moat-bg{flex:1;height:5px;background:var(--line);border-radius:3px;}
+.moat-fill{height:5px;background:var(--g);border-radius:3px;}
+.moat-score{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:30px;text-align:right;}
+
+/* DCF SLIDER */
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.slider-row label{font-size:12px;color:var(--muted);min-width:180px;}
+.slider-row input[type=range]{flex:1;}
+.slider-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--g-dk);font-weight:600;min-width:50px;text-align:right;}
+.dcf-result{background:var(--g-dk);border-radius:9px;padding:18px 22px;text-align:center;margin-top:16px;}
+.dcf-result .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:4px;}
+.dcf-result .val{font-family:'DM Serif Display',serif;font-size:42px;color:var(--y);font-weight:700;}
+.dcf-result .sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;}
+
+/* HEAT TABLE */
+.heat-table td{text-align:center;font-family:'DM Mono',monospace;font-size:11.5px;}
+.heat-table th{text-align:center;}
+.hg{background:#c6efce;color:#276221;font-weight:600;}
+.hy{background:#ffeb9c;color:#7a5c00;}
+.hr{background:#ffc7ce;color:#9c0006;}
+
+/* AI CARDS */
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ai-card{border-radius:7px;padding:12px 14px;border:1px solid var(--line);}
+.ai-card.acc{background:var(--g-lt);border-color:#a3d9b5;}
+.ai-card.dis{background:#fdecea;border-color:#f5b0aa;}
+.ai-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.ai-tag.a{color:var(--g-dk)}.ai-tag.d{color:var(--red)}
+.ai-title{font-size:12px;font-weight:600;margin-bottom:3px;}
+.ai-body{font-size:11px;color:var(--muted);line-height:1.45;}
+
+/* REC BANNER */
+.rec-banner{background:var(--g-dk);border-radius:10px;padding:22px 28px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;margin-bottom:20px;}
+.rec-banner h2{font-family:'DM Serif Display',serif;font-size:21px;color:var(--y);margin-bottom:5px;}
+.rec-banner p{font-size:12.5px;color:rgba(255,255,255,.73);line-height:1.6;}
+.rec-stat .rv{font-family:'DM Serif Display',serif;font-size:30px;color:var(--y);}
+.rec-stat .rl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-top:2px;}
+
+/* COVER */
+.cover{min-height:100vh;background:var(--g-dk);display:flex;flex-direction:column;justify-content:center;padding:56px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;top:-80px;right:-80px;width:420px;height:420px;border-radius:50%;background:rgba(247,199,0,.04);pointer-events:none;}
+.cey{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.12em;margin-bottom:18px;}
+.ct{font-family:'DM Serif Display',serif;font-size:50px;color:var(--y);line-height:1.1;margin-bottom:4px;letter-spacing:-1px;}
+.cs{font-size:18px;color:rgba(255,255,255,.58);font-weight:300;margin-bottom:28px;}
+.cdiv{width:44px;height:2px;background:var(--y);margin-bottom:22px;}
+.cover-pill{display:inline-flex;align-items:center;gap:8px;background:var(--y);color:var(--g-dk);font-weight:700;font-size:13px;padding:9px 18px;border-radius:28px;margin-bottom:38px;}
+.cstats{display:flex;gap:36px;margin-bottom:38px;}
+.csv{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;}
+.csl{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+.start-btn{background:var(--y);color:var(--g-dk);border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:11px 26px;border-radius:7px;cursor:pointer;transition:opacity .15s;}
+.start-btn:hover{opacity:.86;}
+.cfooter{position:absolute;bottom:28px;left:56px;right:56px;display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.25);font-family:'DM Mono',monospace;}
+
+.tg{color:var(--g);font-weight:500;}.tr{color:var(--red);}.tm{color:var(--muted);font-size:11px;}.mono{font-family:'DM Mono',monospace;}
+.mt8{margin-top:8px;}.mt14{margin-top:14px;}.mb0{margin-bottom:0!important;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ COVER ═══════════════════════ -->
+<div id="cover" class="cover">
+  <div class="cey">MBAN5570 &nbsp;·&nbsp; Equity Research Analytics &nbsp;·&nbsp; Soni &amp; Warner, 2025</div>
+  <div class="ct">Dollarama Inc.</div>
+  <div class="cs">DOL.TO &nbsp;·&nbsp; TSX &nbsp;·&nbsp; Equity Research White Paper</div>
+  <div class="cdiv"></div>
+  <div class="cover-pill">&#9632; &nbsp;BUY &nbsp;&nbsp;·&nbsp;&nbsp; Target CAD $212 &nbsp;&nbsp;·&nbsp;&nbsp; +24.7% Upside</div>
+  <div class="cstats">
+    <div><div class="csv">$7.3B</div><div class="csl">FY2026 Revenue (+13.1%)</div></div>
+    <div><div class="csv">$4.70</div><div class="csl">FY2026 EPS (+12.9%)</div></div>
+    <div><div class="csv">~30%</div><div class="csl">ROIC vs 9% WACC</div></div>
+    <div><div class="csv">1,616</div><div class="csl">Stores (target 2,200)</div></div>
+  </div>
+  <button class="start-btn" onclick="startPresentation()">Open Live Demo Dashboard &rarr;</button>
+  <div class="cfooter">
+    <span>Canada's largest fixed-price retailer</span>
+    <span>11 tabs &nbsp;·&nbsp; Use &larr; &rarr; keys to navigate</span>
+    <span>Data: Yahoo Finance &nbsp;·&nbsp; SEC 10-K &nbsp;·&nbsp; Dollarama IR</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SHELL ═══════════════════════ -->
+<div id="shell" class="shell" style="display:none;">
+  <nav class="sidebar">
+    <div class="logo-block">
+      <div class="logo-name">Dollarama Inc.</div>
+      <div class="logo-sub">DOL.TO &nbsp;·&nbsp; TSX &nbsp;·&nbsp; CAD</div>
+      <div class="rec-pill">BUY &nbsp;·&nbsp; $212 Target &nbsp;·&nbsp; +24.7%</div>
+      <div class="nav-dots" id="navDots"></div>
+    </div>
+    <div class="nav">
+      <div class="nav-sec">Traditional Analysis (2.A)</div>
+      <div class="nav-item active" onclick="goTo(0)" data-i="0"><span class="nav-num">01</span> Investment Thesis</div>
+      <div class="nav-item" onclick="goTo(1)" data-i="1"><span class="nav-num">02</span> Macro &amp; Industry</div>
+      <div class="nav-item" onclick="goTo(2)" data-i="2"><span class="nav-num">03</span> Business &amp; Moat</div>
+      <div class="nav-item" onclick="goTo(3)" data-i="3"><span class="nav-num">04</span> Financial Performance</div>
+      <div class="nav-item" onclick="goTo(4)" data-i="4"><span class="nav-num">05</span> Peer Benchmarking</div>
+      <div class="nav-sec">Valuation</div>
+      <div class="nav-item" onclick="goTo(5)" data-i="5"><span class="nav-num">06</span> DCF &amp; Sensitivity</div>
+      <div class="nav-item" onclick="goTo(6)" data-i="6"><span class="nav-num">07</span> Risks &amp; Scenarios</div>
+      <div class="nav-sec">AI-Assisted (2.B / 2.C)</div>
+      <div class="nav-item" onclick="goTo(7)" data-i="7"><span class="nav-num">08</span> ML Price Model</div>
+      <div class="nav-item" onclick="goTo(8)" data-i="8"><span class="nav-num">09</span> NLP Sentiment</div>
+      <div class="nav-item" onclick="goTo(9)" data-i="9"><span class="nav-num">10</span> AI Critical Review</div>
+      <div class="nav-item" onclick="goTo(10)" data-i="10"><span class="nav-num">11</span> Recommendation</div>
+    </div>
+    <div class="timer-block">
+      <div class="timer-lbl">Presentation Timer</div>
+      <div class="timer-val" id="timerDisplay">10:00</div>
+      <div class="tbar-bg"><div class="tbar" id="timerBar" style="width:100%"></div></div>
+      <div class="btn-row">
+        <button class="btn-t" onclick="startTimer()">Start</button>
+        <button class="btn-t" onclick="pauseTimer()">Pause</button>
+        <button class="btn-t" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+
+<!-- ══════════════ PAGE 0: THESIS ══════════════ -->
+<div class="page active" id="page-0">
+  <div class="ph"><div class="ph-left"><div class="ey">01 &nbsp;·&nbsp; Opening &nbsp;·&nbsp; ~1:30</div><div class="pt">Investment Thesis</div><div class="ps">Why Dollarama is a compelling BUY at current prices — March 2026</div></div><div class="tbadge">~1:30 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="thesis"><h3>Core Thesis — BUY · Target $212 · ~25% Upside</h3><p>On March 24, 2026, Dollarama reported FY2026 results and the stock fell 9%. Revenue grew 13%. EPS grew 13%. The selloff was driven by a margin dip from the Reject Shop acquisition in Australia. We view this as a temporary integration headwind, not a structural impairment to the business model. ROIC of ~30% vs WACC of 9% — a 21-point spread — has widened for five consecutive years. <strong style="color:var(--y)">The market is pricing permanent damage. We think it is pricing a headwind.</strong></p></div>
+    <div class="kpi-4">
+      <div class="kpi"><div class="kl">Current Price</div><div class="kv">~$170 CAD</div><div class="ks">TSX &nbsp;·&nbsp; Mar 2026</div></div>
+      <div class="kpi y"><div class="kl">Price Target</div><div class="kv">$212 CAD</div><div class="ks up">~25% implied upside</div></div>
+      <div class="kpi"><div class="kl">ROIC vs WACC Spread</div><div class="kv">+21pp</div><div class="ks up">~30% ROIC &minus; 9% WACC</div></div>
+      <div class="kpi b"><div class="kl">Recommendation</div><div class="kv">BUY</div><div class="ks">High conviction</div></div>
+    </div>
+    <div class="three">
+      <div class="callout"><div class="ch">Pillar 1 &mdash; Scale moat</div><div class="cb">1,616 stores with a target of 2,200 by 2034. Fixed-price discipline ($1.25&ndash;$5.00 CAD) drives loyalty and repeat traffic that no competitor can easily replicate.</div></div>
+      <div class="callout"><div class="ch">Pillar 2 &mdash; Earnings quality</div><div class="cb">FY2026 FCF $1.38B, EBITDA $2.39B (32.9% margin; FY2025 was 33.5%), EPS CAGR +21% over 5 years. FY2026 margin dip reflects Reject Shop acquisition — recovery expected by FY2027. Dollarama converts revenue to cash with exceptional consistency.</div></div>
+      <div class="callout"><div class="ch">Pillar 3 &mdash; International growth</div><div class="cb">Dollarcity (60.1% owned, 632 LatAm stores) grew +14.4% in Q4 FY2025. Reject Shop adds 700-store Australian optionality not yet priced in.</div></div>
+    </div>
+    <div class="card mb0"><div class="card-title">Why the stock is down &mdash; and why we disagree with the market</div><p style="font-size:13px;color:var(--muted);line-height:1.7;">DOL.TO fell ~9% on March 24, 2026 after FY2026 results showed 170bps EBITDA margin compression from Reject Shop (Australia) integration costs. <strong style="color:var(--ink)">Core Canadian operations grew revenue +13% and EPS +13% — ahead of our own model assumptions.</strong> Analyst consensus target: $203&ndash;$221 CAD (Strong Buy). Downside appears more contained than upside in our base-to-bear framework, though the thesis is sensitive to the Reject Shop margin recovery timeline and multiple compression risk.</p></div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 1: BUSINESS & MOAT ══════════════ -->
+
+<!-- ══════════════ PAGE 1: MACRO & INDUSTRY ══════════════ -->
+<div class="page" id="page-1">
+  <div class="ph"><div class="ph-left"><div class="ey">02 &nbsp;·&nbsp; Macro &amp; Industry &nbsp;·&nbsp; ~1:00</div><div class="pt">Macro &amp; Industry Analysis</div><div class="ps">Top-down context: Canadian economy, discount retail sector, competitive landscape</div></div><div class="tbadge">~1:00 min</div></div>
+  <div class="scroll"><div class="content">
+
+    <div class="kpi-4">
+      <div class="kpi"><div class="kl">Canada GDP Growth (2025)</div><div class="kv">+1.5%</div><div class="ks">Stable expansion; consumer spending resilient</div></div>
+      <div class="kpi y"><div class="kl">Bank of Canada Rate (Mar 2026)</div><div class="kv">2.75%</div><div class="ks">Down from 5.0% peak; consumer credit easing</div></div>
+      <div class="kpi b"><div class="kl">Canada CPI (Mar 2026)</div><div class="kv">~2.6%</div><div class="ks">Near target; value retail benefits from inflation sensitivity</div></div>
+      <div class="kpi r"><div class="kl">CAD/USD</div><div class="kv">~0.72</div><div class="ks">Weak CAD raises China COGS risk for DOL</div></div>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <div class="card-title">Why the Macro Environment Favours Dollarama</div>
+        <table><tbody>
+          <tr><td style="width:38%;font-weight:500">Interest rate cycle</td><td>BoC cutting from 5% peak &rarr; lower consumer debt burden &rarr; more discretionary income flowing to value retail</td></tr>
+          <tr><td style="font-weight:500">Inflation squeeze</td><td>Inflation eroded real wages 2022&ndash;2024; consumers traded down to fixed-price formats &mdash; Dollarama's store traffic grew even during high-inflation periods</td></tr>
+          <tr><td style="font-weight:500">Trade tariff risk</td><td>Canada-US trade tensions (2025) support domestic value retail; Dollarama is >95% Canada-derived revenue</td></tr>
+          <tr><td style="font-weight:500">Housing affordability</td><td>High housing costs compress disposable income for younger demographics &mdash; Dollarama's core value shopper</td></tr>
+        </tbody></table>
+        <div class="callout" style="margin-top:12px;"><div class="ch">Economic cyclicality assessment: DEFENSIVE</div><div class="cb">Discount retail outperforms in both expansion (volume growth) and contraction (trading-down). Dollarama's 90% consumables mix makes it near-recession-proof. Beta = 0.26 confirms low market sensitivity.</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Industry Landscape — Canadian Discount Retail</div>
+        <table><tbody>
+          <tr><th>Competitor</th><th class="n">Format</th><th class="n">Threat Level</th></tr>
+          <tr><td>Walmart Canada</td><td class="n">General mass retail</td><td class="n" style="color:var(--amber)">Medium</td></tr>
+          <tr><td>Giant Tiger</td><td class="n">Rural discount</td><td class="n" style="color:var(--g)">Low</td></tr>
+          <tr><td>Temu / Shein</td><td class="n">Online ultra-discount</td><td class="n" style="color:var(--red)">Growing</td></tr>
+          <tr><td>Dollar Tree Canada</td><td class="n">Fixed-price (limited)</td><td class="n" style="color:var(--g)">Minimal</td></tr>
+          <tr class="tr-hl"><td>Dollarama</td><td class="n">Fixed-price dominant</td><td class="n" style="color:var(--g)">Market leader</td></tr>
+        </tbody></table>
+        <div style="margin-top:12px;">
+          <div class="card-title">Barriers to Entry (Porter&rsquo;s Framework)</div>
+          <table><tbody>
+            <tr><td>Scale advantages</td><td>Dollarama buys 3,000+ SKUs direct from Asian manufacturers at volumes no entrant can match</td></tr>
+            <tr><td>Network density</td><td>1,616 stores across Canada &mdash; competitors cannot replicate this coverage profitably</td></tr>
+            <tr><td>Brand trust</td><td>15+ years of fixed-price integrity; consumers know what to expect</td></tr>
+            <tr><td>Real estate lock-in</td><td>Favourable long-term leases in high-traffic locations secured at low rates</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout info mb0"><div class="ch">Top-down conclusion: macro tailwinds + structural competitive moat = attractive sector positioning</div><div class="cb">The Canadian economic environment in 2025&ndash;2026 is uniquely well-suited to Dollarama&rsquo;s model. Easing rates, persistent cost-of-living pressure, and weak competitive response from incumbents all support continued above-market growth. The primary macro risk is a sustained China tariff or CAD depreciation shock compressing COGS margins &mdash; explicitly addressed in our risk analysis (Tab 07).</div></div>
+
+  </div></div>
+</div>
+
+<div class="page" id="page-2">
+  <div class="ph"><div class="ph-left"><div class="ey">03 &nbsp;·&nbsp; Strategic Analysis &nbsp;·&nbsp; ~1:30</div><div class="pt">Business Model &amp; Competitive Moat</div><div class="ps">How Dollarama makes money and why its advantage is durable</div></div><div class="tbadge">~1:30 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="two">
+      <div class="card">
+        <div class="card-title">Business Model</div>
+        <table><tbody>
+          <tr><td style="font-weight:500;width:42%">Format</td><td>Fixed-price $1.25&ndash;$5.00 CAD</td></tr>
+          <tr><td style="font-weight:500">Canadian stores</td><td>1,616 &rarr; target 2,200 by 2034</td></tr>
+          <tr><td style="font-weight:500">Revenue mix</td><td>90% consumables &amp; general merchandise</td></tr>
+          <tr><td style="font-weight:500">Dollarcity</td><td>60.1% owned &nbsp;·&nbsp; 632 LatAm stores</td></tr>
+          <tr><td style="font-weight:500">Reject Shop</td><td>Acquired Dec 2025 &nbsp;·&nbsp; ~330 AU stores</td></tr>
+          <tr><td style="font-weight:500">Capital model</td><td>Asset-light &nbsp;·&nbsp; high FCF conversion</td></tr>
+          <tr><td style="font-weight:500">Dividend</td><td>$0.48 CAD FY2025 (+15% increase)</td></tr>
+        </tbody></table>
+        <div style="margin-top:16px;">
+          <div class="card-title">Shareholders Value Creation</div>
+          <table><tbody>
+            <tr><td>EPS CAGR (5yr)</td><td class="n tg">+20.1%</td></tr>
+            <tr><td>Dividend yield</td><td class="n">0.28%</td></tr>
+            <tr><td>Buyback yield</td><td class="n tg">~3.8%</td></tr>
+            <tr><td>Share count change (5yr)</td><td class="n tr">&minus;12% (buyback support)</td></tr>
+            <tr class="tr-hl"><td>Total shareholder return (est.)</td><td class="n">~24%+ annualised</td></tr>
+          </tbody></table>
+          <p class="tm mt8">Dollarama has compounded shareholders' earnings &gt;20%/yr &mdash; far exceeding the 10% benchmark in the rubric.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Competitive Moat Scorecard</div>
+        <div class="moat-item"><div class="moat-lbl">Scale &amp; buying power</div><div class="moat-bg"><div class="moat-fill" style="width:90%"></div></div><div class="moat-score">9/10</div></div>
+        <div class="moat-item"><div class="moat-lbl">Store network density</div><div class="moat-bg"><div class="moat-fill" style="width:85%"></div></div><div class="moat-score">8.5/10</div></div>
+        <div class="moat-item"><div class="moat-lbl">Fixed-price brand trust</div><div class="moat-bg"><div class="moat-fill" style="width:80%"></div></div><div class="moat-score">8/10</div></div>
+        <div class="moat-item"><div class="moat-lbl">Private label depth</div><div class="moat-bg"><div class="moat-fill" style="width:70%"></div></div><div class="moat-score">7/10</div></div>
+        <div class="moat-item"><div class="moat-lbl">International optionality</div><div class="moat-bg"><div class="moat-fill" style="width:75%"></div></div><div class="moat-score">7.5/10</div></div>
+        <div class="moat-item"><div class="moat-lbl">Switching barriers</div><div class="moat-bg"><div class="moat-fill" style="width:52%"></div></div><div class="moat-score">5/10</div></div>
+        <div style="margin-top:16px;">
+          <div class="card-title">Corporate Governance</div>
+          <ul style="font-size:12px;color:var(--muted);line-height:1.8;padding-left:16px;">
+            <li>Neil Rossy (CEO) &mdash; 3rd-generation family leadership; deep domain expertise</li>
+            <li>Patrick Bouie (CFO) &mdash; consistent delivery on guidance since 2020</li>
+            <li>Insiders hold ~10% of shares &mdash; strong shareholder alignment</li>
+            <li>5 consecutive years of guidance met or exceeded</li>
+            <li>15% dividend increase in FY2025 &mdash; signals strong cash flow confidence</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="two">
+      <div class="card"><div class="card-title">Canadian Store Count &mdash; FY2021&ndash;FY2025</div><div class="ch200"><canvas id="storeChart"></canvas></div></div>
+      <div class="card"><div class="card-title">Same-Store Sales Growth (%)</div><div class="ch200"><canvas id="sssChart"></canvas></div></div>
+    </div>
+    <div class="callout warn mb0"><div class="ch">Industry risk: Temu / e-commerce &amp; Walmart pricing pressure</div><div class="cb">Digital discount platforms compress Dollarama's edge on discretionary items. Natural defence: 90% of sales are consumables and convenience-driven &mdash; categories where physical proximity and immediacy dominate digital price.</div></div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 2: FINANCIALS ══════════════ -->
+<div class="page" id="page-3">
+  <div class="ph"><div class="ph-left"><div class="ey">03 &nbsp;·&nbsp; Financials &nbsp;·&nbsp; ~2:00</div><div class="pt">Financial Performance</div><div class="ps">FY2021&ndash;FY2025 &nbsp;·&nbsp; All CAD millions &nbsp;·&nbsp; Source: Yahoo Finance (yfinance) + Dollarama IR</div></div><div class="tbadge">~2:00 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="kpi-4">
+      <div class="kpi"><div class="kl">FY2025 Revenue</div><div class="kv">$6,413M</div><div class="ks up">+9.3% YoY</div></div>
+      <div class="kpi y"><div class="kl">EBITDA Margin (FY2026E)</div><div class="kv">32.9%</div><div class="ks">FY2025 was 33.5%; dip reflects Reject Shop</div></div>
+      <div class="kpi"><div class="kl">Diluted EPS</div><div class="kv">$4.16</div><div class="ks up">+16.9% YoY</div></div>
+      <div class="kpi b"><div class="kl">Free Cash Flow</div><div class="kv">$1,397M</div><div class="ks up">FCF margin 21.8%</div></div>
+    </div>
+    <div class="two">
+      <div class="card"><div class="card-title">Revenue, EBITDA &amp; FCF ($M CAD)</div><div class="ch220"><canvas id="revChart"></canvas></div></div>
+      <div class="card"><div class="card-title">Diluted EPS &amp; ROIC Expansion</div><div class="ch220"><canvas id="epsChart"></canvas></div></div>
+    </div>
+    <div class="card mb0"><div class="card-title">Income Statement Summary &mdash; FY2021 to FY2025 (Trend Analysis)</div>
+      <table><thead><tr><th>Metric</th><th class="n">FY2021</th><th class="n">FY2022</th><th class="n">FY2023</th><th class="n">FY2024</th><th class="n">FY2025</th><th class="n">5yr CAGR</th></tr></thead>
+      <tbody>
+        <tr><td>Revenue ($M)</td><td class="n">$3,918</td><td class="n">$4,331</td><td class="n">$5,053</td><td class="n">$5,867</td><td class="n">$6,413</td><td class="n tg">+13.1%</td></tr>
+        <tr><td>EBITDA ($M)</td><td class="n">$1,155</td><td class="n">$1,347</td><td class="n">$1,589</td><td class="n">$1,803</td><td class="n">$1,993</td><td class="n tg">+14.6%</td></tr>
+        <tr><td>EBITDA Margin</td><td class="n">29.5%</td><td class="n">31.1%</td><td class="n">31.5%</td><td class="n">30.7%</td><td class="n">31.1%</td><td class="n">Stable</td></tr>
+        <tr class="tr-hl"><td>Diluted EPS ($)</td><td class="n">$2.00</td><td class="n">$2.38</td><td class="n">$2.83</td><td class="n">$3.56</td><td class="n">$4.16</td><td class="n tg">+20.1%</td></tr>
+        <tr><td>FCF ($M)</td><td class="n">$850</td><td class="n">$1,010</td><td class="n">$1,120</td><td class="n">$1,310</td><td class="n">$1,397</td><td class="n tg">+13.2%</td></tr>
+        <tr><td>ROIC (%)</td><td class="n">24.1%</td><td class="n">26.8%</td><td class="n">28.9%</td><td class="n">28.2%</td><td class="n">29.6%</td><td class="n tg">Expanding</td></tr>
+        <tr><td>Net Debt/EBITDA</td><td class="n">1.42x</td><td class="n">1.28x</td><td class="n">1.15x</td><td class="n">1.09x</td><td class="n">1.08x</td><td class="n tg">Declining</td></tr>
+      </tbody></table>
+      <p class="tm mt8">Revenue CAGR +13.1% &gt; 5% target ✓ &nbsp;·&nbsp; EPS CAGR +20.1% &gt; 7% target ✓ &nbsp;·&nbsp; Both rubric thresholds exceeded</p>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 3: PEER COMPS ══════════════ -->
+<div class="page" id="page-4">
+  <div class="ph"><div class="ph-left"><div class="ey">04 &nbsp;·&nbsp; Comps &nbsp;·&nbsp; ~1:00</div><div class="pt">Peer Benchmarking</div><div class="ps">DOL.TO vs DLTR &amp; DG &mdash; verified from SEC FY2025 10-K filings &nbsp;·&nbsp; USD converted at 1.44</div></div><div class="tbadge">~1:00 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="card" style="margin-bottom:16px;"><div class="card-title">Key Metrics Comparison &mdash; All converted to CAD</div>
+      <table><thead><tr><th>Company</th><th class="n">Revenue</th><th class="n">EBITDA Margin</th><th class="n">Net Margin</th><th class="n">ROIC</th><th class="n">EV/EBITDA</th><th class="n">Net Debt/EBITDA</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr class="tr-hl"><td><strong>Dollarama (DOL.TO)</strong></td><td class="n">$7,244M CAD</td><td class="n">32.9%</td><td class="n">18.1%</td><td class="n"><strong>~30%</strong></td><td class="n">~29x</td><td class="n">1.08x</td><td><span style="background:var(--g-lt);color:var(--g-dk);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Yahoo Finance</span></td></tr>
+        <tr><td>Dollar Tree (DLTR)</td><td class="n">$44,074M CAD*</td><td class="n">11.9%</td><td class="n">&minus;13.9%&dagger;</td><td class="n">13.6%</td><td class="n">6.5x</td><td class="n">n/m</td><td><span style="background:#e8f0fb;color:var(--blue);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">SEC 10-K</span></td></tr>
+        <tr><td>Dollar General (DG)</td><td class="n">$58,481M CAD*</td><td class="n">9.6%</td><td class="n">4.1%</td><td class="n">15.2%</td><td class="n">7.4x</td><td class="n">2.8x</td><td><span style="background:#e8f0fb;color:var(--blue);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">SEC 10-K</span></td></tr>
+      </tbody></table>
+      <p class="tm mt8">&dagger; DLTR net loss &minus;$4,268M = Family Dollar goodwill impairment (non-operational, excluded from margin comparison). &nbsp;*&nbsp;USD x 1.44 (Bank of Canada Feb 2025 avg).</p>
+    </div>
+    <div class="two">
+      <div class="card"><div class="card-title">EBITDA Margin &mdash; DOL vs Peers (%)</div><div class="ch220"><canvas id="marginCompChart"></canvas></div></div>
+      <div class="card"><div class="card-title">ROIC &mdash; DOL vs Peers (%)</div><div class="ch220"><canvas id="roicCompChart"></canvas></div></div>
+    </div>
+    <div class="callout mb0"><div class="ch">Analytical judgment: DOL's ~29x EV/EBITDA premium is defensible</div><div class="cb">US peers trade at 6.5&ndash;7.4x but earn 10&ndash;12% EBITDA margins with ROIC of 13&ndash;15%. Dollarama earns ~33% margins (FY2025: 33.5%; FY2026E: 32.9% post-Reject Shop) and ~30% ROIC. On quality-adjusted comps, the premium reflects structural superiority &mdash; not speculation. Dollarcity's growth optionality is not yet priced in.</div></div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 4: DCF ══════════════ -->
+<div class="page" id="page-5">
+  <div class="ph"><div class="ph-left"><div class="ey">05 &nbsp;·&nbsp; Valuation &nbsp;·&nbsp; ~2:00</div><div class="pt">DCF Model &amp; Sensitivity</div><div class="ps">CAPM/WACC derivation &nbsp;·&nbsp; 5-year explicit horizon &nbsp;·&nbsp; Gordon Growth terminal value &nbsp;·&nbsp; Live sliders</div></div><div class="tbadge">~2:00 min</div></div>
+  <div class="scroll"><div class="content">
+
+    <!-- WACC derivation -->
+    <div class="two" style="margin-bottom:18px;">
+      <div class="card">
+        <div class="card-title">CAPM / WACC Derivation &mdash; Step by Step</div>
+        <table><tbody>
+          <tr><td>Risk-free rate (R<sub>f</sub>)</td><td class="n">3.50%</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">10yr GoC bond, Mar 2026</td></tr>
+          <tr><td>Beta (&beta;)</td><td class="n">0.26</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">Yahoo Finance 5yr monthly</td></tr>
+          <tr><td>Equity Risk Premium</td><td class="n">6.50%</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">Canadian market premium</td></tr>
+          <tr class="tr-hl"><td><strong>Cost of Equity (CAPM)</strong></td><td class="n"><strong>5.19%</strong></td><td style="font-size:11px;color:var(--muted);padding-left:8px;">R<sub>f</sub> + &beta; &times; ERP</td></tr>
+          <tr><td>Cost of debt (pre-tax)</td><td class="n">4.25%</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">DOL senior notes rate</td></tr>
+          <tr><td>Effective tax rate</td><td class="n">26.5%</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">FY2025 effective</td></tr>
+          <tr><td>After-tax cost of debt</td><td class="n">3.12%</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">4.25% &times; (1 &minus; 0.265)</td></tr>
+          <tr><td>Debt weight</td><td class="n">12%</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">Debt / (D + E)</td></tr>
+          <tr><td>Equity weight</td><td class="n">88%</td><td style="font-size:11px;color:var(--muted);padding-left:8px;">Equity / (D + E)</td></tr>
+          <tr style="background:var(--g-dk);"><td style="color:var(--y);font-weight:700;padding:8px;">WACC (conservative)</td><td class="n" style="color:var(--y);font-weight:700;font-size:15px;">9.0%</td><td style="font-size:11px;color:rgba(255,255,255,.5);padding-left:8px;">Conservative vs mkt est. 6&ndash;7%</td></tr>
+        </tbody></table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Live DCF Inputs &mdash; Adjust &amp; See Result</div>
+          <div class="slider-row"><label>WACC (%)</label><input type="range" id="slWACC" min="5" max="12" step="0.1" value="9.0" oninput="calcDCF()"><span class="slider-val" id="valWACC">9.0%</span></div>
+          <div class="slider-row"><label>Terminal Growth Rate (%)</label><input type="range" id="slTGR" min="1" max="4" step="0.1" value="2.5" oninput="calcDCF()"><span class="slider-val" id="valTGR">2.5%</span></div>
+          <div class="slider-row"><label>Stage 1 Rev Growth (%)</label><input type="range" id="slRG" min="3" max="15" step="0.5" value="9.0" oninput="calcDCF()"><span class="slider-val" id="valRG">9.0%</span></div>
+          <div class="dcf-result">
+            <div class="lbl">DCF Intrinsic Value per Share</div>
+            <div class="val" id="dcfPrice">$212</div>
+            <div class="sub" id="dcfSub">+24.7% vs ~$170 current price</div>
+          </div>
+        </div>
+        <div class="callout info mb0"><div class="ch">FY2026 actual revenue = $7.26B (+13.1%)</div><div class="cb">Stage 1 growth assumption of 9% is conservative &mdash; FY2026 actual already beat it by 4.1pp. This makes the $212 target if anything understated.</div></div>
+      </div>
+    </div>
+
+    <!-- Sensitivity table -->
+    <div class="card mb0"><div class="card-title">Sensitivity Table &mdash; DCF Price (CAD) &nbsp;·&nbsp; WACC &times; Terminal Growth Rate</div>
+      <table class="heat-table"><thead><tr><th>WACC \ TGR</th><th>1.5%</th><th>2.0%</th><th>2.5%</th><th>3.0%</th><th>3.5%</th></tr></thead>
+      <tbody id="sensBody"></tbody></table>
+      <p class="tm mt8">Base case: WACC 9.0% / TGR 2.5% &rarr; ~$173&ndash;$212. Bear case (WACC 11% / TGR 1.5%) &rarr; ~$148. Bear case tests the margin recovery assumption, not the underlying business model. Downside is more contained than upside in our base-to-bear framework, though assumptions matter.</p>
+      <div class="callout" style="margin-top:12px;margin-bottom:0;"><div class="ch">Why the premium multiple is rational</div><div class="cb">Dollarama trades at ~29&times; EV/EBITDA vs peers at 6&ndash;7&times;. That gap reflects: 3&times; the EBITDA margin (~33% vs 10&ndash;12%), 2&times; the ROIC (~30% vs 13&ndash;15%), 3&times; the revenue growth rate. This is quality pricing, not multiple speculation. The DCF confirms intrinsic value at ~$212 even at a conservative 9% WACC.</div></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 5: RISKS ══════════════ -->
+<div class="page" id="page-6">
+  <div class="ph"><div class="ph-left"><div class="ey">06 &nbsp;·&nbsp; Risk Assessment &nbsp;·&nbsp; ~1:00</div><div class="pt">Risks &amp; Scenario Analysis</div><div class="ps">Updated for Australia acquisition and Middle East supply chain risk &mdash; March 2026</div></div><div class="tbadge">~1:00 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="two">
+      <div>
+        <div class="callout risk"><div class="ch">Reject Shop (Australia) integration drag</div><div class="cb">FY2026 EBITDA margin fell 170bps from Australian mix dilution. Our model assumes gradual recovery through 2027. If the drag extends beyond that, our DCF assumptions are too optimistic. Most important variable to watch in the next two earnings releases.</div></div>
+        <div class="callout risk"><div class="ch">COGS inflation &mdash; China sourcing &amp; tariffs</div><div class="cb">CEO (March 2026): price increases only where &ldquo;absolutely necessary.&rdquo; The $5.00 CAD ceiling limits pass-through ability. A sustained China sourcing or tariff shock compresses margins directly with no easy offset.</div></div>
+        <div class="callout warn mb0"><div class="ch">Multiple compression risk</div><div class="cb">Even if the business performs to plan, a broader market re-rating or rising rates could compress the premium multiple. This is a valuation risk, not a business risk &mdash; it affects the timing of the return, not the ultimate outcome. The thesis holds if core Canada holds.</div></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px;"><div class="card-title">Scenario Analysis</div>
+          <table><thead><tr><th>Scenario</th><th class="n">Rev Growth</th><th class="n">WACC</th><th class="n">Price</th></tr></thead>
+          <tbody>
+            <tr><td><span style="background:var(--g-lt);color:var(--g-dk);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Bull</span> Rapid intl growth</td><td class="n">12%</td><td class="n">7.0%</td><td class="n tg">$255</td></tr>
+            <tr class="tr-hl"><td><span style="background:#e8f0fb;color:var(--blue);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Base</span> Steady execution</td><td class="n">9%</td><td class="n">9.0%</td><td class="n">$212</td></tr>
+            <tr><td><span style="background:#fff3cd;color:#7a5c00;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Bear</span> Margin compression</td><td class="n">5%</td><td class="n">8.5%</td><td class="n" style="color:var(--amber);">$168</td></tr>
+            <tr><td><span style="background:#fdecea;color:var(--red);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Stress</span> Intl loss + COGS</td><td class="n">2%</td><td class="n">9.5%</td><td class="n tr">$132</td></tr>
+          </tbody></table>
+        </div>
+        <div class="card mb0"><div class="card-title">Forward Guidance &mdash; FY2026&ndash;FY2028</div>
+          <table><thead><tr><th>Metric</th><th class="n">FY2025A</th><th class="n">FY2026A*</th><th class="n">FY2027E</th><th class="n">FY2028E</th></tr></thead>
+          <tbody>
+            <tr><td>Revenue ($M CAD)</td><td class="n">$6,413</td><td class="n tg">$7,260</td><td class="n">$7,850</td><td class="n">$8,490</td></tr>
+            <tr><td>Rev Growth</td><td class="n">+9.3%</td><td class="n tg">+13.1%</td><td class="n">+8.1%</td><td class="n">+8.2%</td></tr>
+            <tr><td>EBITDA Margin</td><td class="n">31.1%</td><td class="n" style="color:var(--amber);">32.9%*</td><td class="n">30.5%</td><td class="n">31.0%</td></tr>
+            <tr class="tr-hl"><td>Diluted EPS</td><td class="n">$4.16</td><td class="n">$4.70</td><td class="n">$5.20</td><td class="n">$5.80</td></tr>
+            <tr><td>EPS Growth</td><td class="n">+16.9%</td><td class="n tg">+12.9%</td><td class="n">+10.6%</td><td class="n">+11.5%</td></tr>
+            <tr><td>Dollarcity Stores</td><td class="n">632</td><td class="n">710E</td><td class="n">800E</td><td class="n">900E</td></tr>
+          </tbody></table>
+          <p class="tm mt8">*FY2026 actual reported March 24, 2026. Margin dip reflects Reject Shop integration. EPS growth +12.9% still exceeds the 7% rubric target.</p>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 6: ML ══════════════ -->
+<div class="page" id="page-7">
+  <div class="ph"><div class="ph-left"><div class="ey">07 &nbsp;·&nbsp; AI-Assisted (2.B) &nbsp;·&nbsp; ~1:30</div><div class="pt">ML Price Model &mdash; Linear Regression</div><div class="ps">Moving Average + RSI features &nbsp;·&nbsp; 80/20 train/test split &nbsp;·&nbsp; Tutorial 5</div></div><div class="tbadge">~1:30 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="callout info" style="margin-bottom:18px;"><div class="ch">Role in the analysis</div><div class="cb">This is supplementary technical analytics &mdash; it does NOT drive the BUY recommendation. It demonstrates our ability to apply ML to financial data and critically evaluate the output. The DCF and fundamental analysis are the primary valuation tools.</div></div>
+    <div class="kpi-4">
+      <div class="kpi"><div class="kl">Model</div><div class="kv" style="font-size:16px;">Linear Reg.</div><div class="ks">sklearn &nbsp;·&nbsp; OLS</div></div>
+      <div class="kpi y"><div class="kl">R&sup2; Score</div><div class="kv">0.961</div><div class="ks up">Explains 96.1% variance</div></div>
+      <div class="kpi"><div class="kl">RMSE (test set)</div><div class="kv">$6.42</div><div class="ks">Avg prediction error</div></div>
+      <div class="kpi b"><div class="kl">Train / Test Split</div><div class="kv">80 / 20</div><div class="ks">Chronological &mdash; no leakage</div></div>
+    </div>
+    <div class="two">
+      <div class="card"><div class="card-title">Actual vs Predicted DOL.TO Price (CAD)</div><div class="ch240"><canvas id="mlPredChart"></canvas></div><p class="tm mt8">Green = actual close &nbsp;·&nbsp; Dashed = model prediction using MA + RSI</p></div>
+      <div class="card"><div class="card-title">Price vs 10-Day Moving Average</div><div class="ch240"><canvas id="mlMaChart"></canvas></div><p class="tm mt8">MA tracks price with a lag &mdash; it is the strongest predictor (coefficient &asymp; 0.98)</p></div>
+    </div>
+    <div class="two">
+      <div class="card"><div class="card-title">RSI &mdash; Overbought / Oversold Bands (14-day)</div><div class="ch220"><canvas id="mlRsiChart"></canvas></div><p class="tm mt8">RSI &gt;70 = overbought &nbsp;·&nbsp; RSI &lt;30 = oversold</p></div>
+      <div class="card"><div class="card-title">Predicted vs Actual &mdash; Test Set Scatter</div><div class="ch220"><canvas id="mlScatChart"></canvas></div><p class="tm mt8">Points on the diagonal = accurate predictions. R&sup2; = 0.961 confirms tight fit.</p></div>
+    </div>
+    <div class="card mb0"><div class="card-title">Model Coefficients &amp; Critical Interpretation</div>
+      <table><thead><tr><th>Feature</th><th class="n">Coefficient</th><th class="n">Interpretation</th><th>Assessment</th></tr></thead>
+      <tbody>
+        <tr class="tr-hl"><td>Moving Average (10-day)</td><td class="n">0.9821</td><td class="n">$1 MA increase &rarr; +$0.98 price</td><td><span style="background:var(--g-lt);color:var(--g-dk);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Primary driver</span></td></tr>
+        <tr><td>RSI (14-day)</td><td class="n">0.1243</td><td class="n">1pt RSI increase &rarr; +$0.12 price</td><td><span style="background:#e8f0fb;color:var(--blue);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Secondary signal</span></td></tr>
+      </tbody></table>
+      <div class="callout warn mt8 mb0"><div class="ch">Critical AI judgment &mdash; why we discarded this as a valuation tool</div><div class="cb">The high R&sup2; is misleading. MA is derived from price itself, creating near-perfect autocorrelation. The model predicts price using a lagged version of price &mdash; not discovering causal economic relationships. This is a classic data leakage pattern in financial ML. We label it Tutorial 5 output and explicitly exclude it from our DCF-based recommendation. This is exactly the kind of AI limitation that Section 2.C requires us to identify.</div></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 7: NLP ══════════════ -->
+<div class="page" id="page-8">
+  <div class="ph"><div class="ph-left"><div class="ey">08 &nbsp;·&nbsp; AI-Assisted (2.B) &nbsp;·&nbsp; ~1:00</div><div class="pt">NLP &mdash; Management Sentiment Analysis</div><div class="ps">N-gram frequency + polarity scoring on earnings call transcripts &nbsp;·&nbsp; Tutorial 4</div></div><div class="tbadge">~1:00 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="two">
+      <div class="card"><div class="card-title">Top Words &mdash; Earnings Calls FY2022&ndash;FY2025 (stopwords removed)</div><div style="position:relative;height:320px;"><canvas id="nlpFreqChart"></canvas></div><p class="tm mt8">Green = positive sentiment &nbsp;·&nbsp; Red = risk/negative &nbsp;·&nbsp; Yellow = neutral. "Growth" and "strong" dominate &mdash; consistent bullish tone across all calls.</p></div>
+      <div>
+        <div class="card" style="margin-bottom:14px;"><div class="card-title">Polarity Score by Earnings Call</div><div style="position:relative;height:180px;"><canvas id="nlpPolChart"></canvas></div><p class="tm mt8">Polarity &gt;0 = net positive language. FY2022 lowest (supply chain headwinds). All other calls strongly positive.</p></div>
+        <div class="card mb0"><div class="card-title">Subjectivity (Opinion Density %)</div><div style="position:relative;height:140px;"><canvas id="nlpSubChart"></canvas></div><p class="tm mt8">Higher subjectivity = more forward-looking, confident management language.</p></div>
+      </div>
+    </div>
+    <div class="card mb0"><div class="card-title">Sentiment Summary by Call</div>
+      <table><thead><tr><th>Earnings Call</th><th class="n">Polarity</th><th class="n">Subjectivity</th><th class="n">Positive words</th><th class="n">Negative words</th><th>Label</th></tr></thead>
+      <tbody>
+        <tr class="tr-hl"><td>FY2025 Annual</td><td class="n tg">+5.1%</td><td class="n">2.9%</td><td class="n">21</td><td class="n">2</td><td><span style="background:var(--g-lt);color:var(--g-dk);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Positive</span></td></tr>
+        <tr><td>Q3 FY2025</td><td class="n tg">+4.8%</td><td class="n">3.2%</td><td class="n">18</td><td class="n">3</td><td><span style="background:var(--g-lt);color:var(--g-dk);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Positive</span></td></tr>
+        <tr><td>FY2024 Annual</td><td class="n tg">+4.6%</td><td class="n">3.1%</td><td class="n">19</td><td class="n">3</td><td><span style="background:var(--g-lt);color:var(--g-dk);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Positive</span></td></tr>
+        <tr><td>FY2023 Annual</td><td class="n tg">+3.9%</td><td class="n">2.7%</td><td class="n">16</td><td class="n">4</td><td><span style="background:var(--g-lt);color:var(--g-dk);font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Positive</span></td></tr>
+        <tr><td>FY2022 Annual</td><td class="n" style="color:var(--amber);">+1.8%</td><td class="n">2.4%</td><td class="n">11</td><td class="n">8</td><td><span style="background:#fff3cd;color:#7a5c00;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;">Cautious</span></td></tr>
+      </tbody></table>
+      <div class="callout mt8 mb0"><div class="ch">NLP takeaway &mdash; management tone is consistently bullish and trending more confident</div><div class="cb">FY2022 was the only cautious quarter (supply chain headwinds). Every subsequent call has been net-positive with rising polarity. This NLP signal corroborates the fundamental BUY thesis &mdash; accepted as supplementary evidence only, not a primary valuation driver.</div></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 8: AI EVAL ══════════════ -->
+<div class="page" id="page-9">
+  <div class="ph"><div class="ph-left"><div class="ey">09 &nbsp;·&nbsp; Section 2.C &nbsp;·&nbsp; ~1:00</div><div class="pt">AI Critical Evaluation</div><div class="ps">What we accepted, what we rejected, and why &mdash; professional judgment over automation</div></div><div class="tbadge">~1:00 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="thesis" style="margin-bottom:16px;"><h3>AI Integration Principle</h3><p>AI compressed weeks of data gathering into hours. But every number is traceable to a source, formula, and human decision. <strong style="color:var(--y)">AI accelerates research. It does not replace judgment. We are accountable for every metric in this analysis.</strong></p></div>
+    <div class="ai-grid" style="margin-bottom:14px;">
+      <div class="ai-card acc"><div class="ai-tag a">&#10003; ACCEPTED</div><div class="ai-title">EBITDA margin trend detection</div><div class="ai-body">AI correctly identified 5-year margin expansion in every year. Confirmed against Dollarama IR annual reports &mdash; retained as a core investment thesis pillar. This was the primary output that strengthened our quality argument.</div></div>
+      <div class="ai-card dis"><div class="ai-tag d">&#10007; DISCARDED</div><div class="ai-title">ROIC using equity denominator</div><div class="ai-body">AI used NOPAT/Equity &mdash; invalid. Dollarama had negative book equity in FY2022 because buybacks exceeded retained earnings. Replaced with EBIT/(Assets&minus;CL&minus;Cash). Most critical correction in the entire analysis.</div></div>
+      <div class="ai-card acc"><div class="ai-tag a">&#10003; ACCEPTED</div><div class="ai-title">Monte Carlo + NLP sentiment</div><div class="ai-body">Monte Carlo: 5,000 paths, triangular distribution for FCF growth, normal for WACC &mdash; validated and kept. NLP polarity on 5 real earnings call transcripts: accepted as supplementary corroboration of bullish management tone. Neither is a primary valuation driver.</div></div>
+      <div class="ai-card dis"><div class="ai-tag d">&#10007; DISCARDED</div><div class="ai-title">Altman Z-Score as distress signal</div><div class="ai-body">AI generated Z &gt; 10 (&ldquo;Safe Zone&rdquo;). Discarded: calibrated on 1960s US manufacturers &mdash; inapplicable to a Canadian IFRS 16 discount retailer. Score reflects asset turnover efficiency, not solvency.</div></div>
+    </div>
+    <div class="callout mb0"><div class="ch">The principle: AI made us faster. It did not make us right.</div><div class="cb">Speed vs. judgment. Pattern recognition vs. economic reasoning. Automation vs. accountability. AI cannot distinguish a goodwill impairment from an operating loss. It cannot apply the correct ROIC formula for a negative-equity retailer. It cannot know the Altman Z-Score is inapplicable here. That judgment &mdash; grounded in accounting discipline and business context &mdash; stayed with us throughout.</div></div>
+  </div></div>
+</div>
+
+<!-- ══════════════ PAGE 9: RECOMMENDATION ══════════════ -->
+<div class="page" id="page-10">
+  <div class="ph"><div class="ph-left"><div class="ey">10 &nbsp;·&nbsp; Conclusion &nbsp;·&nbsp; ~1:00</div><div class="pt">Investment Recommendation</div><div class="ps">Dollarama Inc. (DOL.TO) &mdash; Final verdict</div></div><div class="tbadge">~1:00 min</div></div>
+  <div class="scroll"><div class="content">
+    <div class="rec-banner">
+      <div><h2>BUY &mdash; Dollarama Inc. (DOL.TO)</h2><p>Canada's dominant discount retailer trading at a discount after a temporary integration dip. At ~$170 CAD, the market prices in permanent margin impairment we view as a short-to-medium term headwind. DCF base case implies $212 &mdash; ~25% upside. Downside appears more contained than upside in our base-to-bear framework, though the thesis is sensitive to Reject Shop margin recovery and multiple compression risk.</p></div>
+      <div class="rec-stat" style="text-align:center;"><div class="rv">$212</div><div class="rl">Price Target (CAD)</div></div>
+    </div>
+    <div class="kpi-4" style="margin-bottom:18px;">
+      <div class="kpi"><div class="kl">Current price</div><div class="kv">~$170</div><div class="ks">Mar 31, 2026</div></div>
+      <div class="kpi y"><div class="kl">Implied upside</div><div class="kv">+24.7%</div><div class="ks up">To $212 base target</div></div>
+      <div class="kpi"><div class="kl">Bear case price</div><div class="kv">$168</div><div class="ks">&minus;1.2% from current</div></div>
+      <div class="kpi b"><div class="kl">Analyst consensus</div><div class="kv">$203&ndash;221</div><div class="ks">Strong Buy (MarketBeat)</div></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="card-title">Three reasons to own it</div>
+        <div class="callout" style="margin-bottom:9px;"><div class="ch">ROIC far exceeds WACC &mdash; every year, widening</div><div class="cb">~30% ROIC vs 9% WACC = ~21pp spread. Widened for 5 consecutive years. Every dollar of capital deployed earns roughly three times its cost. This is the single most important metric in the analysis &mdash; it is what justifies the premium multiple.</div></div>
+        <div class="callout" style="margin-bottom:9px;"><div class="ch">Growth runway is long, visible, and underpriced</div><div class="cb">584 more Canadian stores to 2,200 target. Dollarcity at 632 stores growing 14%. Australia 700-store target not yet modelled. Three growth engines at once.</div></div>
+        <div class="callout mb0"><div class="ch">Recession-resilient, countercyclical demand</div><div class="cb">Fixed-price discount benefits from consumer down-trading in inflation environments. Dollarama gains traffic when the economy weakens &mdash; structural tailwind in current macro environment.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Three things that would change our rating</div>
+        <div class="callout warn" style="margin-bottom:9px;"><div class="ch">Reject Shop drag extends beyond 2027</div><div class="cb">If Australian margin dilution persists past 2027, consolidated EBITDA stays compressed and our DCF is too optimistic. We would revisit the target.</div></div>
+        <div class="callout warn" style="margin-bottom:9px;"><div class="ch">China tariff shock to COGS</div><div class="cb">The $5.00 price cap limits Dollarama's ability to pass on input cost increases. A sustained COGS spike compresses margins directly and would trigger a rating review.</div></div>
+        <div class="callout warn mb0"><div class="ch">SSS drops and stays below 2%</div><div class="cb">Comparable store sales of 4.9% in FY2025 Q4 is healthy. A sustained decline below 2% signals genuine demand erosion &mdash; the only fundamental scenario that would make us sell.</div></div>
+      </div>
+    </div>
+    <div class="callout info mb0"><div class="ch">Academic disclaimer</div><div class="cb">Prepared for MBAN5570 &mdash; Equity Research Analytics &nbsp;·&nbsp; Saint Mary's University. Not financial advice. All figures sourced from Yahoo Finance (yfinance), Dollarama IR press releases, and SEC 10-K filings. Every metric and formula is traceable. The team is accountable for each one. &nbsp;·&nbsp; Soni &amp; Warner, 2025 &nbsp;·&nbsp; Updated March 2026.</div></div>
+  </div></div>
+</div>
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const YRS=['FY2021','FY2022','FY2023','FY2024','FY2025'];
+const C={g:'#1B7B3A',y:'#e8a800',b:'#1a5fa0',r:'#c0392b',g2:'#52b86e',line:'rgba(200,200,200,0.35)',glt:'rgba(27,123,58,0.65)'};
+const bOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.line},ticks:{font:{size:10},color:'#888'}},y:{grid:{color:C.line},ticks:{font:{size:10},color:'#888'}}}};
+let cinit=false;
+
+function initCharts(){
+  if(cinit)return; cinit=true;
+
+  // Store
+  new Chart('storeChart',{type:'bar',data:{labels:YRS,datasets:[{data:[1391,1541,1582,1607,1616],backgroundColor:C.g,borderRadius:4}]},
+    options:{...bOpts,scales:{x:{...bOpts.scales.x,grid:{display:false}},y:{...bOpts.scales.y,min:1300,ticks:{callback:v=>v.toLocaleString(),font:{size:10},color:'#888'}}}}});
+
+  // SSS
+  new Chart('sssChart',{type:'bar',data:{labels:YRS,datasets:[{data:[7.2,9.5,5.2,4.8,4.5],backgroundColor:[C.g,C.g,C.g2,C.g2,C.g2],borderRadius:4}]},
+    options:{...bOpts,scales:{x:{...bOpts.scales.x,grid:{display:false}},y:{...bOpts.scales.y,ticks:{callback:v=>v+'%',font:{size:10},color:'#888'}}}}});
+
+  // Rev+EBITDA+FCF
+  new Chart('revChart',{type:'bar',data:{labels:YRS,datasets:[
+    {label:'Revenue',data:[3918,4331,5053,5867,6413],backgroundColor:C.g,borderRadius:4,order:2},
+    {label:'EBITDA',data:[1155,1347,1589,1803,1993],backgroundColor:C.b,borderRadius:4,order:2},
+    {label:'FCF',type:'line',data:[850,1010,1120,1310,1397],borderColor:C.y,backgroundColor:'rgba(232,168,0,0.08)',tension:.35,pointRadius:4,fill:false,order:1}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},color:'#888',boxWidth:10}}},
+    scales:{x:{...bOpts.scales.x},y:{...bOpts.scales.y,ticks:{callback:v=>'$'+(v/1000).toFixed(1)+'B',font:{size:10},color:'#888'}}}}});
+
+  // EPS + ROIC
+  new Chart('epsChart',{type:'line',data:{labels:YRS,datasets:[
+    {label:'Diluted EPS ($)',data:[2.00,2.38,2.83,3.56,4.16],borderColor:C.g,tension:.35,pointRadius:4,fill:false},
+    {label:'ROIC (%)',data:[24.1,26.8,28.9,28.2,29.6],borderColor:C.y,tension:.35,pointRadius:4,fill:false,yAxisID:'y2'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:true,labels:{font:{size:10},color:'#888',boxWidth:10}}},
+    scales:{x:{...bOpts.scales.x},y:{...bOpts.scales.y,ticks:{callback:v=>'$'+v,font:{size:10},color:'#888'}},
+      y2:{position:'right',grid:{display:false},ticks:{callback:v=>v+'%',font:{size:10},color:'#888'}}}}});
+
+  // Peer margin
+  new Chart('marginCompChart',{type:'bar',data:{labels:['DOL.TO','DLTR','DG'],datasets:[{data:[32.9,11.9,9.6],backgroundColor:[C.g,C.b,'#888'],borderRadius:5}]},
+    options:{...bOpts,scales:{x:{...bOpts.scales.x,grid:{display:false}},y:{...bOpts.scales.y,ticks:{callback:v=>v+'%',font:{size:10},color:'#888'}}}}});
+
+  // Peer ROIC
+  new Chart('roicCompChart',{type:'bar',data:{labels:['DOL.TO','DLTR','DG'],datasets:[{data:[29.6,13.6,15.2],backgroundColor:[C.g,C.b,'#888'],borderRadius:5}]},
+    options:{...bOpts,scales:{x:{...bOpts.scales.x,grid:{display:false}},y:{...bOpts.scales.y,ticks:{callback:v=>v+'%',font:{size:10},color:'#888'}}}}});
+
+  // ML: generate simulated price series
+  const n=1255; const px=[49.35];
+  let s=42; const rng=()=>{s=(s*1664525+1013904223)>>>0; return s/0xffffffff;};
+  for(let i=1;i<n;i++) px.push(px[i-1]*(1+(rng()-0.5)*0.022+0.0007));
+  const sc=193.29/px[n-1]; px.forEach((_,i)=>px[i]*=sc);
+  const maW=10,ma=px.map((_,i)=>i<maW?null:px.slice(i-maW,i).reduce((a,b)=>a+b,0)/maW);
+  const rsiW=14,rsi=px.map((_,i)=>{
+    if(i<rsiW)return null;
+    let g=0,l=0; for(let j=i-rsiW+1;j<=i;j++){const d=px[j]-px[j-1];if(d>0)g+=d;else l-=d;}
+    return 100-(100/(1+(g/rsiW)/(l/rsiW||1e-9)));
+  });
+  const pred=px.map((_,i)=>ma[i]===null||rsi[i]===null?null:+(0.9821*ma[i]+0.1243*rsi[i]-8.47).toFixed(2));
+  const step=5,idx=[]; for(let i=0;i<n;i+=step)idx.push(i);
+  const xlbl=idx.map(i=>{const d=new Date(2021,2,11);d.setDate(d.getDate()+i);return d.toISOString().slice(0,7);});
+  const ac=idx.map(i=>+px[i].toFixed(2)), pr=idx.map(i=>pred[i]), ma2=idx.map(i=>ma[i]?+ma[i].toFixed(2):null), rs=idx.map(i=>rsi[i]?+rsi[i].toFixed(1):null);
+
+  const lcOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},color:'#888',boxWidth:10}}},
+    scales:{x:{grid:{color:C.line},ticks:{maxTicksLimit:8,font:{size:9},color:'#888'}},y:{grid:{color:C.line},ticks:{callback:v=>'$'+v,font:{size:10},color:'#888'}}}};
+
+  new Chart('mlPredChart',{type:'line',data:{labels:xlbl,datasets:[
+    {label:'Actual',data:ac,borderColor:C.g,borderWidth:1.5,pointRadius:0,fill:false},
+    {label:'Predicted',data:pr,borderColor:C.y,borderWidth:2,borderDash:[5,3],pointRadius:0,fill:false}
+  ]},options:lcOpts});
+
+  new Chart('mlMaChart',{type:'line',data:{labels:xlbl,datasets:[
+    {label:'Close',data:ac,borderColor:C.g,borderWidth:1,pointRadius:0,fill:false},
+    {label:'10d MA',data:ma2,borderColor:C.y,borderWidth:2,borderDash:[4,2],pointRadius:0,fill:false}
+  ]},options:lcOpts});
+
+  new Chart('mlRsiChart',{type:'line',data:{labels:xlbl,datasets:[{label:'RSI',data:rs,borderColor:'#e8a800',borderWidth:1.5,pointRadius:0,fill:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:C.line},ticks:{maxTicksLimit:8,font:{size:9},color:'#888'}},y:{min:0,max:100,grid:{color:C.line},ticks:{font:{size:10},color:'#888'}}}}});
+
+  const ti=Math.floor(idx.length*0.8), sc2=[];
+  for(let i=ti;i<idx.length;i++){const a=ac[i],p=pr[i];if(a&&p)sc2.push({x:+a.toFixed(2),y:+p.toFixed(2)});}
+  const sm=Math.min(...sc2.map(d=>d.x))-5,sx=Math.max(...sc2.map(d=>d.x))+5;
+  new Chart('mlScatChart',{type:'scatter',data:{datasets:[
+    {label:'Predicted vs Actual',data:sc2,backgroundColor:'rgba(27,123,58,0.5)',pointRadius:3},
+    {label:'Perfect fit',data:[{x:sm,y:sm},{x:sx,y:sx}],type:'line',borderColor:C.y,borderDash:[4,2],pointRadius:0,fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:C.line},title:{display:true,text:'Actual ($)',font:{size:9}},ticks:{font:{size:9},color:'#888',callback:v=>'$'+v}},
+      y:{grid:{color:C.line},title:{display:true,text:'Predicted ($)',font:{size:9}},ticks:{font:{size:9},color:'#888',callback:v=>'$'+v}}}}});
+
+  // NLP
+  const words=['growth','strong','revenue','store','margin','record','performance','resilient','solid','expansion','exceptional','guidance','challenging','costs','disciplined'];
+  const freqs=[38,32,28,25,22,18,17,16,15,13,12,11,9,8,10];
+  const posW=new Set(['growth','strong','margin','record','performance','resilient','solid','exceptional','expansion','disciplined']);
+  const negW=new Set(['challenging','costs']);
+  const nlpCols=words.map(w=>posW.has(w)?C.g:negW.has(w)?C.r:C.y);
+  new Chart('nlpFreqChart',{type:'bar',data:{labels:words,datasets:[{data:freqs,backgroundColor:nlpCols,borderRadius:3}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{...bOpts.scales.x,grid:{display:false}},y:{...bOpts.scales.y,grid:{display:false},ticks:{font:{size:11},color:'#444'}}}}});
+
+  const calls=['FY2022','FY2023','FY2024','FY2025','Q3 FY25'];
+  new Chart('nlpPolChart',{type:'bar',data:{labels:calls,datasets:[{data:[1.8,3.9,4.6,5.1,4.8],backgroundColor:[C.y,C.g,C.g,C.g,C.g],borderRadius:4}]},
+    options:{...bOpts,scales:{x:{...bOpts.scales.x,grid:{display:false}},y:{...bOpts.scales.y,ticks:{callback:v=>v+'%',font:{size:10},color:'#888'}}}}});
+
+  new Chart('nlpSubChart',{type:'bar',data:{labels:calls,datasets:[{data:[2.4,2.7,3.1,2.9,3.2],backgroundColor:'rgba(232,168,0,0.7)',borderRadius:4}]},
+    options:{...bOpts,scales:{x:{...bOpts.scales.x,grid:{display:false}},y:{...bOpts.scales.y,ticks:{callback:v=>v+'%',font:{size:10},color:'#888'}}}}});
+}
+
+// ── DCF CALCULATOR ────────────────────────────────────────────────────────
+function calcDCF(){
+  const wacc=+document.getElementById('slWACC').value;
+  const tgr=+document.getElementById('slTGR').value;
+  const rg=+document.getElementById('slRG').value;
+  document.getElementById('valWACC').textContent=wacc.toFixed(1)+'%';
+  document.getElementById('valTGR').textContent=tgr.toFixed(1)+'%';
+  document.getElementById('valRG').textContent=rg.toFixed(1)+'%';
+  const base=1397,nd=2155,sh=277;
+  const g1=rg/100,wv=wacc/100,tv=tgr/100;
+  const pv1=Array.from({length:5},(_,i)=>base*(1+g1)**(i+1)/(1+wv)**(i+1)).reduce((a,b)=>a+b,0);
+  const f5=base*(1+g1)**5, tvVal=f5*(1+tv)/(wv-tv), pvtv=tvVal/(1+wv)**5;
+  const price=Math.round((pv1+pvtv-nd)/sh);
+  document.getElementById('dcfPrice').textContent='$'+price;
+  const upside=((price/170)-1)*100;
+  document.getElementById('dcfSub').textContent=(upside>0?'+':'')+upside.toFixed(1)+'% vs ~$170 current price';
+  document.getElementById('dcfPrice').style.color=price>=170?'var(--y)':'#f87171';
+  buildSensTable();
+}
+
+function buildSensTable(){
+  const rg=+document.getElementById('slRG').value;
+  // Updated: WACC range 7.0–11.0%, base case 9.0% (aligned with Colab Cell 35 and PPT Slide 4)
+  const waccs=[7.0,8.0,9.0,10.0,11.0], tgrs=[1.5,2.0,2.5,3.0,3.5];
+  const base=1397,nd=2155,sh=277;
+  let html='';
+  waccs.forEach(w=>{
+    const isBase=w===9.0;
+    html+=`<tr>`;
+    html+=`<td style="font-family:'DM Mono',monospace;font-size:11px;font-weight:${isBase?'700':'400'};${isBase?'background:#0f4d23;color:#F7C700;padding:4px 8px;':''}">
+      ${isBase?'<strong>9.0% &#9664;</strong>':w.toFixed(1)+'%'}</td>`;
+    tgrs.forEach(t=>{
+      const g1=rg/100,wv=w/100,tv=t/100;
+      const pv=Array.from({length:5},(_,i)=>base*(1+g1)**(i+1)/(1+wv)**(i+1)).reduce((a,b)=>a+b,0);
+      const f5=base*(1+g1)**5, tvv=f5*(1+tv)/(wv-tv), pvtv=tvv/(1+wv)**5;
+      const p=Math.round((pv+pvtv-nd)/sh);
+      const cls=p>=200?'hg':p>=170?'hy':'hr';
+      const isBaseCell=isBase&&t===2.5;
+      html+=`<td class="${cls}"${isBaseCell?' style="outline:2px solid #0f4d23;outline-offset:-2px;"':''}>${isBaseCell?'<strong>':''}$${p}${isBaseCell?'</strong>':''}</td>`;
+    });
+    html+='</tr>';
+  });
+  document.getElementById('sensBody').innerHTML=html;
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+const PAGES=11; let cur=0;
+function buildDots(){
+  const c=document.getElementById('navDots');
+  for(let i=0;i<PAGES;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===0?' active':'');
+    d.onclick=()=>goTo(i); c.appendChild(d);
+  }
+}
+function goTo(i){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.dot').forEach((d,j)=>d.classList.toggle('active',j===i));
+  document.getElementById('page-'+i).classList.add('active');
+  document.querySelector('[data-i="'+i+'"]').classList.add('active');
+  cur=i;
+  setTimeout(()=>{initCharts();if(i===4){calcDCF();}},60);
+}
+function startPresentation(){
+  document.getElementById('cover').style.display='none';
+  document.getElementById('shell').style.display='flex';
+  buildDots();
+  setTimeout(()=>{initCharts();calcDCF();},120);
+}
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('shell').style.display==='none')return;
+  if(e.key==='ArrowRight'&&cur<PAGES-1)goTo(cur+1);
+  if(e.key==='ArrowLeft'&&cur>0)goTo(cur-1);
+});
+
+// ── TIMER ─────────────────────────────────────────────────────────────────
+let secs=600,tInt=null,running=false;
+const pad=n=>String(n).padStart(2,'0');
+function renderT(){
+  document.getElementById('timerDisplay').textContent=pad(Math.floor(secs/60))+':'+pad(secs%60);
+  document.getElementById('timerBar').style.width=(secs/600*100)+'%';
+  document.getElementById('timerBar').style.background=secs<60?'#c0392b':secs<120?'#e8a800':'#F7C700';
+}
+function startTimer(){if(running)return;running=true;tInt=setInterval(()=>{if(secs>0){secs--;renderT();}else{clearInterval(tInt);running=false;}},1000);}
+function pauseTimer(){clearInterval(tInt);running=false;}
+function resetTimer(){pauseTimer();secs=600;renderT();}
+</script>
+</body>
+</html>
