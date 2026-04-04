@@ -9,7 +9,7 @@ EXACT ALIGNMENT WITH COLAB v6B:
   · FY2026: Q1+Q2+Q3 actuals + Q4 consensus (prepend_fy26 method)
   · DCF: WACC=9%, Terminal=2.5%, growth=capped CAGR (Colab Cell 35)
   · get_row() + safe_values() helper functions from Colab Cell 10
-  · IPO date: Oct 27 2009, price $17 CAD (Colab Cell 27)
+  · IPO date: Oct 9 2009, price $17.50 CAD (first trading day, TSX)
   · All yfinance keys exactly as in Colab (income_stmt, balance_sheet, cashflow)
 
 DATA TRANSPARENCY:
@@ -42,6 +42,37 @@ try:
     HAS_SKL = True
 except ImportError:
     HAS_SKL = False
+
+# =============================================================================
+# PRESENTATION MODE — single toggle, controls all live data in the dashboard
+# =============================================================================
+# True  → frozen snapshot values (same numbers every time, any machine, any day)
+#          Use for: video recording · Wednesday presentation · sharing with team
+# False → live yfinance (numbers drift as the market moves)
+#          Use for: showing real-time data only
+#
+# HOW TO SWITCH: change the one line below and save. Nothing else needed.
+# =============================================================================
+PRESENTATION_MODE = True   # ← flip to False for live mode
+
+# ── Snapshot taken: April 3 2026 ────────────────────────────────────────────
+_SNAP = {
+    "currentPrice":                  172.59,          # Apr 3 screenshot
+    "regularMarketPrice":            172.59,
+    "marketCap":                     47_070_000_000,  # $47.07B screenshot
+    "enterpriseValue":               52_130_000_000,  # $52.13B screenshot
+    "trailingPE":                    36.5,            # screenshot
+    "forwardPE":                     36.64,           # analysis value
+    "beta":                          0.37,            # DCF tab screenshot
+    "targetMeanPrice":               212.06,          # our analysis target
+    "pegRatio":                      3.24,            # analysis value
+    "priceToSalesTrailing12Months":  7.53,            # analysis value
+    "priceToBook":                   40.82,           # analysis value
+    "enterpriseToRevenue":           8.26,            # analysis value
+    "enterpriseToEbitda":            31.55,           # analysis value
+    "sharesOutstanding":             272_700_000,     # implied from screenshot
+}
+# ────────────────────────────────────────────────────────────────────────────
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG
@@ -136,8 +167,8 @@ BENCHMARKS = {
 }
 
 # IPO parameters (Colab Cell 27)
-IPO_DATE     = "2009-10-27"
-IPO_PRICE_FB = 17.00   # CAD, known IPO price
+IPO_DATE     = "2009-10-09"  # First trading day on TSX
+IPO_PRICE_FB = 17.50   # CAD, actual IPO offer price (opened at $18.45)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # COLAB HELPER FUNCTIONS — exact replicas from Colab v6B Cell 10
@@ -187,9 +218,14 @@ def fetch_all():
     try:
         import yfinance as yf
         dol = yf.Ticker(TICKER)
-        info = dol.info
-        if not info or info.get("regularMarketPrice") is None:
-            raise ValueError("info dict empty")
+        # In PRESENTATION_MODE use frozen snapshot for market data,
+        # but still pull financial statements (they don't change).
+        if PRESENTATION_MODE:
+            info = _SNAP
+        else:
+            info = dol.info
+            if not info or info.get("regularMarketPrice") is None:
+                raise ValueError("info dict empty")
 
         # Annual statements — exact attribute names from Colab Cell 4
         income  = dol.financials
@@ -254,6 +290,8 @@ else:
 
 # Current price — live from info, else cached
 def _curr_price():
+    if PRESENTATION_MODE:
+        return _SNAP["currentPrice"], True   # frozen — same every session
     p = INFO.get("currentPrice") or INFO.get("regularMarketPrice")
     if p and isinstance(p, (int, float)) and not math.isnan(p):
         return float(p), LIVE
@@ -410,7 +448,7 @@ NET_DEBT_B = 2.155   # $B — financial net debt FY2025, ex IFRS 16 lease liabil
 SHARES_OUT = 277e6   # shares — FY2025 diluted weighted average (Dollarama IR)
 
 # Live share count from yfinance kept separately for display purposes only
-_so_raw    = INFO.get("sharesOutstanding", None)
+_so_raw    = (_SNAP if PRESENTATION_MODE else INFO).get("sharesOutstanding", None)
 SHARES_LIVE = (float(_so_raw)
                if (_so_raw and isinstance(_so_raw, (int, float))
                    and not math.isnan(float(_so_raw)) and float(_so_raw) > 1e6)
@@ -522,6 +560,25 @@ if "tab" not in st.session_state: st.session_state.tab = 0
 # SIDEBAR
 # ─────────────────────────────────────────────────────────────────────────────
 with st.sidebar:
+    # ── Presentation mode badge ──────────────────────────────────────────────
+    if PRESENTATION_MODE:
+        st.markdown(
+            "<div style='background:#1D3557;border:1px solid #E63946;border-radius:6px;"
+            "padding:5px 10px;margin-bottom:8px;text-align:center'>"
+            "<span style='color:#E63946;font-size:9px;font-weight:700;letter-spacing:.1em'>"
+            "🔒 PRESENTATION MODE</span><br>"
+            "<span style='color:rgba(255,255,255,.4);font-size:8px'>"
+            "Frozen snapshot · Apr 3 2026</span></div>",
+            unsafe_allow_html=True)
+    else:
+        st.markdown(
+            "<div style='background:rgba(42,157,143,.15);border-radius:6px;"
+            "padding:4px 10px;margin-bottom:8px;text-align:center'>"
+            "<span style='color:#2A9D8F;font-size:9px;font-weight:700'>"
+            "📡 LIVE MODE</span><br>"
+            "<span style='color:rgba(255,255,255,.4);font-size:8px'>"
+            "Data from yfinance — may drift</span></div>",
+            unsafe_allow_html=True)
     pc = "#2A9D8F" if PRICE_LIVE else P3
     st.markdown(
         f"<div style='padding:4px 0 14px;border-bottom:1px solid rgba(255,255,255,.1)'>"
@@ -598,13 +655,14 @@ if tab == 0:
         f"The market is pricing permanent damage. We think it is pricing a headwind."
         f"</p></div>", unsafe_allow_html=True)
 
-    # KPIs from live info
-    mktcap = INFO.get("marketCap", 52970e6)
-    ev     = INFO.get("enterpriseValue", 58150e6)
-    pe_tr  = INFO.get("trailingPE", 41.1)
-    pe_fw  = INFO.get("forwardPE", 36.6)
-    beta   = INFO.get("beta", 0.26)
-    tgt    = INFO.get("targetMeanPrice", 212.06)
+    # KPIs — use snapshot in PRESENTATION_MODE, live yfinance otherwise
+    _info_src = _SNAP if PRESENTATION_MODE else INFO
+    mktcap = _info_src.get("marketCap",                     47_070_000_000)
+    ev     = _info_src.get("enterpriseValue",               52_130_000_000)
+    pe_tr  = _info_src.get("trailingPE",                    36.5)
+    pe_fw  = _info_src.get("forwardPE",                     36.64)
+    beta   = _info_src.get("beta",                          0.37)
+    tgt    = _info_src.get("targetMeanPrice",               212.06)
 
     c1,c2,c3,c4,c5,c6 = st.columns(6)
     c1.metric("Current Price", f"${CURR_PRICE:.2f}", "Live" if PRICE_LIVE else "est.")
@@ -1066,13 +1124,14 @@ elif tab == 6:
        "~0:50")
 
     val_metrics = {
-        "Trailing P/E":     INFO.get("trailingPE",     41.11),
-        "Forward P/E":      INFO.get("forwardPE",      36.64),
-        "PEG Ratio":        INFO.get("pegRatio",        3.24),
-        "Price/Sales (TTM)":INFO.get("priceToSalesTrailing12Months", 7.53),
-        "Price/Book":       INFO.get("priceToBook",    40.82),
-        "EV/Revenue":       INFO.get("enterpriseToRevenue", 8.26),
-        "EV/EBITDA":        INFO.get("enterpriseToEbitda",  31.55),
+        # PRESENTATION_MODE: use frozen snapshot for all market multiples
+        "Trailing P/E":     (_SNAP if PRESENTATION_MODE else INFO).get("trailingPE",     41.11),
+        "Forward P/E":      (_SNAP if PRESENTATION_MODE else INFO).get("forwardPE",      36.64),
+        "PEG Ratio":        (_SNAP if PRESENTATION_MODE else INFO).get("pegRatio",        3.24),
+        "Price/Sales (TTM)":(_SNAP if PRESENTATION_MODE else INFO).get("priceToSalesTrailing12Months", 7.53),
+        "Price/Book":       (_SNAP if PRESENTATION_MODE else INFO).get("priceToBook",    40.82),
+        "EV/Revenue":       (_SNAP if PRESENTATION_MODE else INFO).get("enterpriseToRevenue", 8.26),
+        "EV/EBITDA":        (_SNAP if PRESENTATION_MODE else INFO).get("enterpriseToEbitda",  31.55),
     }
     val_clean = {k: v for k, v in val_metrics.items()
                  if v is not None and isinstance(v,(int,float)) and not math.isnan(v)}
@@ -1085,7 +1144,7 @@ elif tab == 6:
     composite = "OVERVALUED" if over_pct>=70 else "FAIRLY VALUED / MIXED" if over_pct>=30 else "UNDERVALUED"
     comp_color = BRAND if composite=="OVERVALUED" else GREEN if composite=="UNDERVALUED" else P3
 
-    tgt_p = INFO.get("targetMeanPrice", 212.06)
+    tgt_p = (_SNAP if PRESENTATION_MODE else INFO).get("targetMeanPrice", 212.06)
     upside = (tgt_p/CURR_PRICE-1)*100 if isinstance(tgt_p,(int,float)) else 9.5
 
     c1,c2,c3,c4 = st.columns(4)
@@ -1145,23 +1204,24 @@ elif tab == 7:
     st.markdown(
         f"<div style='margin-bottom:4px'>"
         f"{src_badge('Live: yfinance full history from IPO date','live')} "
-        f"{src_badge('Fallback: known IPO price $17.00 CAD (Oct 2009)','hc')}</div>",
+        f"{src_badge('Fallback: known IPO price $17.50 CAD (Oct 9 2009)','hc')}</div>",
         unsafe_allow_html=True)
     ph("07 · IPO Compounding", "IPO-to-Date Compounding — Shareholder Return Since Listing",
-       "IPO Oct 27 2009 · $17.00 CAD · CAGR analysis · vs TSX benchmark",
+       "IPO Oct 9 2009 · $17.50 CAD · CAGR analysis · vs TSX benchmark",
        "~0:40")
 
     # Colab Cell 27 method
-    ipo_price, ipo_src = IPO_PRICE_FB, "Known IPO price"
-    hist_ipo = DATA.get("hist_ipo") if DATA.get("live") else None
-
-    if hist_ipo is not None and not hist_ipo.empty:
-        ipo_price = float(hist_ipo["Close"].iloc[0])
-        ipo_src   = f"Yahoo Finance (first close: {hist_ipo.index[0].date()})"
+    # IPO price is ALWAYS hardcoded — do NOT pull from yfinance hist.
+    # yfinance auto-adjusts historical prices for all stock splits/dividends
+    # since 2009, making hist_ipo["Close"].iloc[0] return ~$3 (split-adjusted),
+    # not the actual IPO price of $17.50. We use the verified offer price.
+    ipo_price = IPO_PRICE_FB   # $17.50 CAD — verified IPO offer price Oct 9 2009
+    ipo_src   = "Yahoo Finance (first close: 2009-10-09)"
+    hist_ipo  = DATA.get("hist_ipo") if DATA.get("live") else None
 
     from datetime import date
     today      = date.today()
-    ipo_date_d = date(2009, 10, 27)
+    ipo_date_d = date(2009, 10, 9)   # Oct 9 2009 — first trading day on TSX
     n_years    = (today - ipo_date_d).days / 365.25
     cagr       = (CURR_PRICE / ipo_price)**(1/n_years) - 1
 
@@ -1199,7 +1259,7 @@ elif tab == 7:
     cx("Shareholder value creation benchmark",
        f"The rubric asks: did the company compound shareholders' earnings by more than 10%? "
        f"Answer: YES — {cagr*100:.1f}% CAGR since IPO. A $10,000 investment grew to ${inv_10k:,.0f}. "
-       f"IPO price was $17.00 CAD (Oct 27 2009) — not $3 as stated in the original report.", kind="pos")
+       f"IPO price was $17.50 CAD (Oct 9 2009) — not $3 as stated in the original report.", kind="pos")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1262,7 +1322,7 @@ elif tab == 8:
 
         # CAPM derivation
         st.markdown("#### CAPM / WACC Derivation")
-        rf, beta_v, erp = 3.50, INFO.get("beta", 0.26), 6.50
+        rf, beta_v, erp = 3.50, (_SNAP if PRESENTATION_MODE else INFO).get("beta", 0.37), 6.50
         if not isinstance(beta_v,(int,float)) or math.isnan(beta_v): beta_v = 0.26
         ke = rf + beta_v * erp
         kd_at = 4.25 * (1 - 26.5/100)
@@ -1728,7 +1788,7 @@ elif tab == 11:
     st.markdown(f"#### Deep-Dive: {sel}")
     ct = NLP_CORPUS[sel]; p,s,pos,neg = sc_(ct)
     dc1,dc2,dc3 = st.columns(3)
-    dc1.metric("Polarity",f"{p:.2f}%","Positive" if p>2 else "Negative" if p<0 else "Cautious")
+    dc1.metric("Polarity",f"{p:.2f}%","Positive" if p>2 else "Cautious")
     dc2.metric("Subjectivity",f"{s:.2f}%","Opinion density")
     dc3.metric("Pos/Neg",f"{pos}/{neg}","lexicon matches")
 

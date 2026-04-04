@@ -1,365 +1,461 @@
 """
-dollarama_data_pull.py
-======================
-Pulls Dollarama Inc. (DOL.TO) financial data from Yahoo Finance
-and saves it as CSV files in the same folder as this script.
+=============================================================================
+DOLLARAMA DATA EXPORT — dollarama_data_export.py
+MBAN5570 · Soni & Warner, 2025
 
-Run this once, or whenever you want to refresh the data.
-The Streamlit dashboard reads these CSV files as its backup data source.
+PURPOSE:
+  Run this script ONCE to pull everything from Yahoo Finance and save it
+  as a single Excel workbook (dollarama_snapshot.xlsx) plus individual CSVs.
 
-USAGE
------
-    python dollarama_data_pull.py              # pull & save CSVs
-    python dollarama_data_pull.py --show       # print what is in the CSVs
-    python dollarama_data_pull.py --schedule   # auto-refresh every 24 hours
+  The Dashboard.py then reads from these files instead of calling yfinance
+  every time it starts — so your partner gets identical numbers on Wednesday
+  without needing an internet connection for market data.
 
-OUTPUT FILES
-------------
-    dollarama_financials.csv    -- annual income / balance / cash flow data
-    dollarama_prices.csv        -- monthly price history
+RUN (once, today):
+  python dollarama_data_export.py
 
-REQUIREMENTS
-------------
-    pip install yfinance pandas
+OUTPUT:
+  dollarama_snapshot.xlsx     ← all data in one Excel workbook (13 sheets)
+  csv/                        ← same data as individual CSV files
+
+DASHBOARD USAGE:
+  The dashboard automatically detects dollarama_snapshot.xlsx in the same
+  folder. When found, it loads from that file instead of yfinance.
+  When not found, it falls back to live yfinance as before.
+=============================================================================
 """
 
-import argparse, os, sys, time
-from datetime import datetime
+import os
+import json
+import math
+import warnings
+from datetime import datetime, timedelta
 
-try:
-    import pandas as pd
+import numpy as np
+import pandas as pd
+
+warnings.filterwarnings("ignore")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HARDCODED DATA (same as Dashboard.py — does not come from yfinance)
+# ─────────────────────────────────────────────────────────────────────────────
+TICKER   = "DOL.TO"
+IPO_DATE = "2009-10-09"  # First trading day on TSX (CBC News, Oct 9 2009)
+
+FY2026_INCOME = {
+    "Total Revenue":              7_244.4e6,
+    "Cost Of Revenue":            3_970.5e6,
+    "Gross Profit":               3_273.9e6,
+    "Operating Income":           1_913.6e6,
+    "EBIT":                       1_913.6e6,
+    "Interest Expense":            -205.0e6,
+    "Pretax Income":              1_735.0e6,
+    "Tax Provision":               378.7e6,
+    "Net Income":                 1_309.9e6,
+    "EBITDA":                     2_386.4e6,
+    "Normalized EBITDA":          2_386.4e6,
+    "Reconciled Depreciation":      472.8e6,
+    "Basic Average Shares":         274.0e6,
+    "Diluted Average Shares":       275.0e6,
+}
+
+FY2026_BALANCE = {
+    "Total Assets":               9_200.0e6,
+    "Stockholders Equity":        1_500.0e6,
+    "Current Assets":             2_100.0e6,
+    "Current Liabilities":        1_600.0e6,
+    "Cash And Cash Equivalents":    220.0e6,
+    "Total Debt":                 5_400.0e6,
+    "Long Term Debt":             5_100.0e6,
+    "Inventory":                    720.0e6,
+}
+
+FY2026_CASHFLOW = {
+    "Operating Cash Flow":        1_650.0e6,
+    "Capital Expenditure":         -270.0e6,
+    "Free Cash Flow":             1_380.0e6,
+}
+
+PEER_DATA = {
+    "Company":       ["Dollarama (DOL.TO)", "Dollar Tree (DLTR)", "Dollar General (DG)"],
+    "Revenue ($M)":  [7244, 30607, 40612],
+    "EBITDA Margin": ["32.9%", "11.9%", "9.6%"],
+    "ROIC":          ["~28%", "13.6%", "15.2%"],
+    "EV/EBITDA":     ["~29x", "6.5x", "7.4x"],
+    "Source":        ["Dollarama IR Mar 2026", "SEC 10-K FY2025", "SEC 10-K FY2025"],
+    "Note":          ["FY2026 actuals", "Net loss = $4.27B goodwill impairment", ""],
+}
+
+DCF_PARAMS = {
+    "Parameter":     ["Base FCF ($B)", "Net Debt ($B)", "Shares (M)",
+                      "WACC — base case", "WACC — stress test",
+                      "Terminal Growth Rate", "Stage 1 FCF Growth",
+                      "Forecast Horizon", "DCF Price — base", "DCF Price — stress",
+                      "Rf (GoC 10yr)", "Beta (yfinance live)", "ERP (Damodaran CA)",
+                      "IPO Price (CAD)", "IPO Date"],
+    "Value":         ["1.397", "2.155", "277",
+                      "5.5%", "9.0%",
+                      "2.5%", "8.0%",
+                      "5 years", "~$213", "~$93",
+                      "3.5%", "0.37", "6.5%",
+                      "$17.50", "Oct 9 2009"],
+    "Source":        ["Dollarama IR (FY2025 actual)", "FY2025 balance sheet ex IFRS 16",
+                      "Dollarama IR diluted WA",
+                      "CAPM calculated (5.57%) rounded", "Stress test — ~2x CAPM",
+                      "Mid-point long-run Canada GDP", "Half of 14% historical CAGR",
+                      "Colab Cell 35", "At WACC 5.5%", "At WACC 9.0%",
+                      "Bank of Canada Mar 2026", "Yahoo Finance 5yr monthly", "Damodaran 2026",
+                      "TSX / Dollarama IR", "Dollarama IR"],
+}
+
+FB_FINANCIALS = {
+    "Metric":           ["Revenue ($B)", "Gross Profit ($B)", "EBIT ($B)",
+                         "Net Income ($B)", "EBITDA ($B)", "EPS (CAD)",
+                         "Operating CF ($B)", "CapEx ($B)", "FCF ($B)",
+                         "Total Assets ($B)", "Total Debt ($B)", "Equity ($B)", "Cash ($B)",
+                         "Gross Margin %", "Net Margin %", "EBITDA Margin %"],
+    "FY2022":           [4.331, 1.904, 0.983, 0.663, 1.283, 2.18,
+                         1.164, 0.160, 1.004, 4.060, 3.607, -0.066, 0.093,
+                         44.0, 15.3, 29.6],
+    "FY2023":           [5.053, 2.207, 1.190, 0.802, 1.530, 2.76,
+                         0.870, 0.157, 0.713, 4.722, 3.721,  0.237, 0.088,
+                         43.6, 15.9, 30.3],
+    "FY2024":           [5.867, 2.610, 1.520, 1.010, 1.882, 3.56,
+                         1.530, 0.279, 1.251, 5.455, 4.047,  0.713, 0.099,
+                         44.5, 17.2, 32.1],
+    "FY2025":           [6.413, 2.902, 1.713, 1.169, 2.149, 4.16,
+                         1.640, 0.247, 1.397, 6.479, 4.714,  1.191, 0.090,
+                         45.1, 18.2, 33.5],
+    "FY2026A":          [7.244, 3.274, 1.914, 1.310, 2.386, 4.76,
+                         1.650, 0.270, 1.380, 9.200, 5.400,  1.500, 0.220,
+                         45.2, 18.1, 32.9],
+    "CAGR / Trend":     ["+14% ✓", "", "+18%", "+19%", "+17%", "+21% ✓",
+                         "", "3-4% rev", "", "", "Elevated post-TRS", "Improving", "",
+                         "Stable", "Expanding", "Expanding"],
+    "Source":           ["yfinance (FY22-25) / Dollarama IR (FY26)"] * 16,
+}
+
+NLP_RESULTS = {
+    "Earnings Call":   ["FY2022 Annual", "FY2023 Annual", "FY2024 Annual",
+                        "FY2025 Annual", "FY2026 Q3"],
+    "Polarity Score":  ["-8.6%", "+10.0%", "+14.6%", "+14.8%", "+12.6%"],
+    "Positive Words":  [11, 19, 24, 26, 24],
+    "Negative Words":  [26,  2,  0,  0,  1],
+    "Subjectivity %":  ["2.3%", "4.7%", "3.7%", "4.0%", "5.5%"],
+    "Signal":          ["Negative", "Positive", "Positive", "Positive ↑ (peak)", "Positive"],
+    "Source":          ["Dollarama IR / Seeking Alpha"] * 5,
+}
+
+MC_RESULTS = {
+    "Parameter":  ["WACC mean", "TGR mean", "FCF Growth mean", "Paths",
+                   "P5", "P25", "P50 (Median)", "P75", "P95",
+                   "Prob > $212 target", "Prob > $173 (profitable)", "Prob < $130 (stress)"],
+    "Value":      ["9.0%", "2.5%", "8.0%", "5,000",
+                   "$70", "$84", "$95", "$109", "$134",
+                   "0.1%", "0.4%", "93.6%"],
+    "Note":       ["Deliberately pessimistic risk lens (not base case)",
+                   "Consistent with DCF", "Consistent with DCF", "Speed/precision balance",
+                   "5th percentile scenario", "25th percentile scenario",
+                   "Median of all 5,000 simulations",
+                   "75th percentile scenario", "95th percentile scenario",
+                   "Model-dependent — scenario output not forecast",
+                   "At 9% WACC mean", "At 9% WACC mean"],
+}
+
+ML_RESULTS = {
+    "Parameter":  ["Model type", "Features", "Train/test split", "Data",
+                   "R² (test set)", "RMSE (test set)", "MA coefficient",
+                   "Interpretation", "Used in valuation?"],
+    "Value":      ["Linear Regression (sklearn OLS)", "10-day MA + 14-day RSI",
+                   "80/20 chronological", "1,255 trading days (DOL.TO live)",
+                   "0.884", "$3.84", "1.0027",
+                   "Data leakage — MA derived from price itself. "
+                   "Coefficient ≈ 1.0 confirms model predicts price "
+                   "using a lagged copy of price.",
+                   "NO — Tutorial 5 deliverable only. Explicitly excluded."],
+}
+
+SNAPSHOT_INFO = {
+    "Field":       ["currentPrice", "marketCap", "enterpriseValue",
+                    "trailingPE", "forwardPE", "beta",
+                    "targetMeanPrice",
+                    "pegRatio", "priceToSalesTrailing12Months",
+                    "priceToBook", "enterpriseToRevenue", "enterpriseToEbitda",
+                    "sharesOutstanding",
+                    "Snapshot date", "Source"],
+    "Value":       [172.59, 47_070_000_000, 52_130_000_000,
+                    36.5, 36.64, 0.37,
+                    212.06,
+                    3.24, 7.53,
+                    40.82, 8.26, 31.55,
+                    272_700_000,
+                    "April 3, 2026", "Yahoo Finance / Dashboard screenshots"],
+    "Note":        ["Live price at time of analysis", "$47.07B", "$52.13B",
+                    "From screenshot", "Analysis fallback", "Live yfinance (DCF tab screenshot)",
+                    "Our analysis target — hardcoded",
+                    "Analysis fallback", "Analysis fallback",
+                    "Analysis fallback", "Analysis fallback", "Analysis fallback",
+                    "Implied from market cap / price",
+                    "", ""],
+}
+
+
+def pull_yfinance():
+    """Pull live data from Yahoo Finance. Returns dict of DataFrames + info."""
+    print("  Connecting to Yahoo Finance...")
     import yfinance as yf
-except ImportError as e:
-    print(f"\n  Missing package: {e}")
-    print("    Fix:  pip install yfinance pandas\n")
-    sys.exit(1)
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-TICKER         = "DOL.TO"
-PEER_TICKERS   = ["DLTR", "DG"]
-N_YEARS        = 5
-PRICE_PERIOD   = "10y"
-PRICE_FREQ     = "1mo"
-SCHEDULE_HOURS = 24
+    dol = yf.Ticker(TICKER)
 
-_HERE          = os.path.dirname(os.path.abspath(__file__))
-FINANCIALS_CSV = os.path.join(_HERE, "dollarama_financials.csv")
-PRICES_CSV     = os.path.join(_HERE, "dollarama_prices.csv")
+    print("  Pulling info dict...")
+    info = dol.info
+    curr_price = (info.get("currentPrice") or info.get("regularMarketPrice") or 172.59)
+    print(f"  Current price: ${curr_price:.2f}")
 
-STORE_DATA = {2021: 1391, 2022: 1541, 2023: 1582, 2024: 1607, 2025: 1616}
-SSS_DATA   = {2021:  7.2, 2022:  9.5, 2023:  5.2, 2024:  4.8, 2025:  4.5}
+    print("  Pulling annual financial statements (FY2022-FY2025)...")
+    income  = dol.financials
+    balance = dol.balance_sheet
+    cashflow = dol.cashflow
 
+    print("  Pulling 5-year daily price history...")
+    end   = datetime.today()
+    start = end - timedelta(days=5 * 365)
+    hist  = dol.history(start=start.strftime("%Y-%m-%d"),
+                        end=end.strftime("%Y-%m-%d"), interval="1d")
 
-# ============================================================
-# YAHOO FINANCE HELPERS
-# ============================================================
-def _safe(df, key, yr, divisor=1e6, default=0.0):
+    print("  Pulling IPO-to-date price history...")
     try:
-        cols = [c for c in df.columns if c.year == yr]
-        if not cols:
-            return default
-        val = df.loc[key, cols[0]] if key in df.index else default
-        return float(val / divisor) if pd.notna(val) else default
+        hist_ipo = dol.history(start=IPO_DATE, auto_adjust=True)
     except Exception:
-        return default
+        hist_ipo = hist.copy()
+        print("  (IPO history failed — using 5yr history as fallback)")
 
+    # Snapshot the info dict as a tidy DataFrame
+    info_keys = [
+        "currentPrice", "regularMarketPrice", "marketCap", "enterpriseValue",
+        "trailingPE", "forwardPE", "pegRatio", "beta", "targetMeanPrice",
+        "priceToSalesTrailing12Months", "priceToBook",
+        "enterpriseToRevenue", "enterpriseToEbitda", "sharesOutstanding",
+        "fiftyTwoWeekHigh", "fiftyTwoWeekLow",
+    ]
+    info_df = pd.DataFrame({
+        "Field": info_keys,
+        "Value": [info.get(k, "") for k in info_keys],
+        "Pulled at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    })
 
-def _statements(t):
-    try:
-        fin = t.income_stmt
-        if fin is None or fin.empty:
-            fin = t.financials
-    except Exception:
-        fin = t.financials
-    try:
-        bal = t.balance_sheet
-    except Exception:
-        bal = pd.DataFrame()
-    try:
-        cf = t.cash_flow
-        if cf is None or cf.empty:
-            cf = t.cashflow
-    except Exception:
-        cf = pd.DataFrame()
-    return fin, bal, cf
-
-
-def fetch_financials(symbol, n_years=N_YEARS, currency="CAD"):
-    print(f"  [{symbol}] fetching financials...", end="", flush=True)
-    t = yf.Ticker(symbol)
-    fin, bal, cf = _statements(t)
-    if fin is None or fin.empty:
-        raise ValueError(f"No income statement for {symbol}")
-    years = sorted(c.year for c in fin.columns)[-n_years:]
-    print(f" years {years}", flush=True)
-    rows = []
-    for yr in years:
-        revt  = _safe(fin, "Total Revenue", yr)
-        cogs  = _safe(fin, "Cost Of Revenue", yr)
-        xsga  = _safe(fin, "Selling General And Administrative", yr)
-        if xsga == 0:
-            xsga = _safe(fin, "Operating Expense", yr)
-        dp    = _safe(cf,  "Reconciled Depreciation", yr)
-        if dp == 0:
-            dp = _safe(fin, "Reconciled Depreciation", yr)
-        xint  = _safe(fin, "Interest Expense", yr)
-        if xint == 0:
-            xint = max(0.0, -_safe(fin, "Net Interest Income", yr))
-        txt   = _safe(fin, "Tax Provision", yr)
-        ni    = _safe(fin, "Net Income", yr)
-        epspx = _safe(fin, "Diluted EPS", yr, divisor=1)
-        che   = _safe(bal, "Cash And Cash Equivalents", yr)
-        if che == 0:
-            che = _safe(bal, "Cash Cash Equivalents And Short Term Investments", yr)
-        invt  = _safe(bal, "Inventory", yr)
-        at_v  = _safe(bal, "Total Assets", yr)
-        lct   = _safe(bal, "Current Liabilities", yr)
-        dltt  = _safe(bal, "Long Term Debt", yr)
-        dlc   = _safe(bal, "Current Debt", yr)
-        ceq   = _safe(bal, "Stockholders Equity", yr)
-        csho  = _safe(bal, "Diluted Average Shares", yr, divisor=1e6)
-        if csho == 0:
-            csho = _safe(bal, "Share Issued", yr, divisor=1e6)
-        oancf  = _safe(cf, "Operating Cash Flow", yr)
-        capx   = abs(_safe(cf, "Capital Expenditure", yr))
-        prstkc = abs(_safe(cf, "Repurchase Of Capital Stock", yr))
-        rows.append({
-            "ticker": symbol, "fyear": yr, "currency": currency,
-            "revt": round(revt,2), "cogs": round(cogs,2), "xsga": round(xsga,2),
-            "dp": round(dp,2), "xint": round(xint,2), "txt": round(txt,2),
-            "ni": round(ni,2), "epspx": round(epspx,4),
-            "che": round(che,2), "invt": round(invt,2), "at": round(at_v,2),
-            "lct": round(lct,2), "dltt": round(dltt,2), "dlc": round(dlc,2),
-            "ceq": round(ceq,2), "oancf": round(oancf,2), "capx": round(capx,2),
-            "prstkc": round(prstkc,2), "csho": round(csho,4), "prcc_f": 0.0,
-            "store_count": STORE_DATA.get(yr,0) if symbol==TICKER else 0,
-            "sss_growth":  SSS_DATA.get(yr,0.0) if symbol==TICKER else 0.0,
-            "pulled_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        })
-    df = pd.DataFrame(rows)
-    df = df[df["revt"] > 0].reset_index(drop=True)
-    try:
-        hist = t.history(period=PRICE_PERIOD, interval=PRICE_FREQ)
-        if not hist.empty:
-            for idx, row in df.iterrows():
-                sub = hist[hist.index.year == int(row["fyear"])]
-                if not sub.empty:
-                    df.at[idx, "prcc_f"] = round(float(sub["Close"].iloc[-1]), 2)
-    except Exception:
-        pass
-    print(f"  [{symbol}] done  {len(df)} rows")
-    return df
-
-
-def fetch_prices(symbol):
-    print(f"  [{symbol}] fetching prices...", end="", flush=True)
-    t    = yf.Ticker(symbol)
-    hist = t.history(period=PRICE_PERIOD, interval=PRICE_FREQ)
-    if hist.empty:
-        raise ValueError(f"No price history for {symbol}")
-    df = hist.reset_index()[["Date","Open","High","Low","Close","Volume"]].copy()
-    df.columns = ["date","open","high","low","close","volume"]
-    df["date"]      = df["date"].dt.strftime("%Y-%m-%d")
-    df["ticker"]    = symbol
-    df["pulled_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f" {len(df)} rows")
-    return df
-
-
-# ============================================================
-# CSV READ HELPERS  (imported by dashboard)
-# ============================================================
-def load_financials_csv(path=FINANCIALS_CSV, ticker=TICKER):
-    """
-    Read the financials CSV and return a DataFrame for one ticker.
-    Returns None if not found or empty.
-    Drops metadata columns so the result is ready for process_dol().
-    """
-    if not os.path.exists(path):
-        return None
-    try:
-        df = pd.read_csv(path)
-        df = df[df["ticker"] == ticker].sort_values("fyear").reset_index(drop=True)
-        if df.empty:
-            return None
-        return df.drop(columns=["ticker","currency","pulled_at"], errors="ignore")
-    except Exception:
-        return None
-
-
-def csv_age_hours(path=FINANCIALS_CSV):
-    """Hours since the CSV was last written. Returns inf if not found."""
-    if not os.path.exists(path):
-        return float("inf")
-    try:
-        return (datetime.now().timestamp() - os.path.getmtime(path)) / 3600
-    except Exception:
-        return float("inf")
-
-
-def csv_status(path=FINANCIALS_CSV):
-    """Status dict about the CSV backup for use in the dashboard."""
-    if not os.path.exists(path):
-        return {"exists": False, "stale": True, "age_hours": float("inf"),
-                "message": "No CSV found — run:  python dollarama_data_pull.py"}
-    age   = csv_age_hours(path)
-    stale = age > 24
-    try:
-        df  = pd.read_csv(path)
-        dol = df[df["ticker"] == TICKER]
-        n   = len(dol)
-        yrs = sorted(dol["fyear"].astype(int).tolist()) if not dol.empty else []
-    except Exception:
-        n, yrs = 0, []
     return {
-        "exists":    True,
-        "age_hours": round(age, 1),
-        "stale":     stale,
-        "n_rows":    n,
-        "years":     yrs,
-        "path":      path,
-        "message": (
-            f"CSV backup  {n} years {yrs}  saved {age:.0f}h ago"
-            if not stale else
-            f"CSV is {age:.0f}h old  run dollarama_data_pull.py to refresh"
-        ),
+        "info":       info,
+        "info_df":    info_df,
+        "income":     income,
+        "balance":    balance,
+        "cashflow":   cashflow,
+        "hist":       hist,
+        "hist_ipo":   hist_ipo,
+        "curr_price": curr_price,
     }
 
 
-# ============================================================
-# DISPLAY
-# ============================================================
-def show_csvs():
-    W = 72
-    print("\n" + "=" * W)
-    print("  CSV CONTENTS")
-    print("=" * W)
-    if not os.path.exists(FINANCIALS_CSV):
-        print(f"\n  Not found: {FINANCIALS_CSV}")
-    else:
-        df  = pd.read_csv(FINANCIALS_CSV)
-        age = csv_age_hours(FINANCIALS_CSV)
-        print(f"\n  {FINANCIALS_CSV}")
-        print(f"  Saved {age:.0f}h ago  |  {len(df)} rows")
-        print("  " + "-" * (W - 2))
-        hdr = (f"  {'Ticker':<8} {'Year':<6} {'Curr':<5} "
-               f"{'Revenue':>10} {'EBITDA':>10} {'NI':>9} "
-               f"{'EPS':>7} {'FCF':>9} {'Price':>8}")
-        print(hdr)
-        print("  " + "-" * (W - 2))
-        for _, r in df.sort_values(["ticker","fyear"]).iterrows():
-            ebitda = r.get("revt",0)-r.get("cogs",0)-r.get("xsga",0)+r.get("dp",0)
-            fcf    = r.get("oancf",0) - r.get("capx",0)
-            print(f"  {str(r.get('ticker','')):<8} {int(r.get('fyear',0)):<6} "
-                  f"{str(r.get('currency','')):<5} "
-                  f"${r.get('revt',0):>8,.0f}M  ${ebitda:>8,.0f}M  "
-                  f"${r.get('ni',0):>7,.0f}M  ${r.get('epspx',0):>5.2f}  "
-                  f"${fcf:>7,.0f}M  ${r.get('prcc_f',0):>7.2f}")
-    if not os.path.exists(PRICES_CSV):
-        print(f"\n  Not found: {PRICES_CSV}")
-    else:
-        dp  = pd.read_csv(PRICES_CSV)
-        age = csv_age_hours(PRICES_CSV)
-        print(f"\n  {PRICES_CSV}")
-        print(f"  Saved {age:.0f}h ago  |  {len(dp)} rows")
-        for tkr, grp in dp.groupby("ticker"):
-            print(f"    {tkr}: {len(grp)} months "
-                  f"({grp['date'].min()} to {grp['date'].max()})  "
-                  f"${grp['close'].min():.2f} - ${grp['close'].max():.2f}")
-    print()
+def save_xlsx(data, path="dollarama_snapshot.xlsx"):
+    """Write everything to a single Excel workbook."""
+    print(f"\nWriting {path}...")
+
+    with pd.ExcelWriter(path, engine="openpyxl") as writer:
+
+        # ── Sheet 1: README ────────────────────────────────────────────────
+        readme = pd.DataFrame({
+            "Item": [
+                "File",
+                "Generated",
+                "Ticker",
+                "Purpose",
+                "",
+                "HOW DASHBOARD USES THIS FILE",
+                "1. Place dollarama_snapshot.xlsx in same folder as Dashboard.py",
+                "2. Set PRESENTATION_MODE = True in Dashboard.py",
+                "3. Run: streamlit run Dashboard.py",
+                "4. All tabs load from this file — no yfinance calls needed",
+                "",
+                "SHEETS IN THIS FILE",
+                "01_live_info        — Market data snapshot (price, beta, P/E, etc.)",
+                "02_income           — Annual income statements FY2022-FY2025 (yfinance)",
+                "03_balance          — Balance sheets FY2022-FY2025 (yfinance)",
+                "04_cashflow         — Cash flow statements FY2022-FY2025 (yfinance)",
+                "05_fy2026_hardcoded — FY2026 data (Dollarama IR Q1-Q3 + Q4 consensus)",
+                "06_financials_fb    — Full FY2022-FY2026 verified summary table",
+                "07_peers            — DLTR / DG peer data (SEC FY2025 10-K)",
+                "08_dcf_params       — DCF model parameters and outputs",
+                "09_monte_carlo      — Monte Carlo simulation results",
+                "10_ml_model         — ML price model results",
+                "11_nlp_sentiment    — NLP polarity scoring results",
+                "12_price_history    — 5-year daily price history (DOL.TO)",
+                "13_price_ipo        — IPO-to-date price history (since Oct 2009)",
+            ],
+        })
+        readme.to_excel(writer, sheet_name="00_README", index=False)
+
+        # ── Sheet 2: Live info snapshot ────────────────────────────────────
+        snap_df = pd.DataFrame(SNAPSHOT_INFO)
+        if data and "info_df" in data:
+            # Merge live values on top of our snapshot
+            live_df = data["info_df"]
+            snap_df.to_excel(writer, sheet_name="01_live_info_snap", index=False)
+            live_df.to_excel(writer, sheet_name="01_live_info_live", index=False)
+        else:
+            snap_df.to_excel(writer, sheet_name="01_live_info_snap", index=False)
+
+        # ── Sheets 3-5: Annual statements ─────────────────────────────────
+        if data:
+            for name, df in [("02_income",   data["income"]),
+                             ("03_balance",  data["balance"]),
+                             ("04_cashflow", data["cashflow"])]:
+                if df is not None and not df.empty:
+                    df.to_excel(writer, sheet_name=name)
+                else:
+                    pd.DataFrame({"Note": ["yfinance unavailable — using hardcoded FB values"]}).to_excel(
+                        writer, sheet_name=name, index=False)
+
+        # ── Sheet 6: FY2026 hardcoded ──────────────────────────────────────
+        fy26 = pd.DataFrame({
+            "Statement": (["Income"] * len(FY2026_INCOME) +
+                          ["Balance"] * len(FY2026_BALANCE) +
+                          ["Cash Flow"] * len(FY2026_CASHFLOW)),
+            "Line Item":  (list(FY2026_INCOME.keys()) +
+                           list(FY2026_BALANCE.keys()) +
+                           list(FY2026_CASHFLOW.keys())),
+            "Value ($)":  (list(FY2026_INCOME.values()) +
+                           list(FY2026_BALANCE.values()) +
+                           list(FY2026_CASHFLOW.values())),
+            "Source":     ["Dollarama IR Q1-Q3 actuals + Q4 consensus"] * (
+                           len(FY2026_INCOME) + len(FY2026_BALANCE) + len(FY2026_CASHFLOW)),
+        })
+        fy26.to_excel(writer, sheet_name="05_fy2026_hardcoded", index=False)
+
+        # ── Sheet 7: Full financials summary ──────────────────────────────
+        fin_df = pd.DataFrame(FB_FINANCIALS)
+        fin_df.to_excel(writer, sheet_name="06_financials_fb", index=False)
+
+        # ── Sheet 8: Peers ─────────────────────────────────────────────────
+        peers_df = pd.DataFrame(PEER_DATA)
+        peers_df.to_excel(writer, sheet_name="07_peers", index=False)
+
+        # ── Sheet 9: DCF params ───────────────────────────────────────────
+        dcf_df = pd.DataFrame(DCF_PARAMS)
+        dcf_df.to_excel(writer, sheet_name="08_dcf_params", index=False)
+
+        # ── Sheet 10: Monte Carlo ─────────────────────────────────────────
+        mc_df = pd.DataFrame(MC_RESULTS)
+        mc_df.to_excel(writer, sheet_name="09_monte_carlo", index=False)
+
+        # ── Sheet 11: ML model ────────────────────────────────────────────
+        ml_df = pd.DataFrame(ML_RESULTS)
+        ml_df.to_excel(writer, sheet_name="10_ml_model", index=False)
+
+        # ── Sheet 12: NLP ─────────────────────────────────────────────────
+        nlp_df = pd.DataFrame(NLP_RESULTS)
+        nlp_df.to_excel(writer, sheet_name="11_nlp_sentiment", index=False)
+
+        # ── Sheets 13-14: Price history ───────────────────────────────────
+        if data:
+            for name, df in [("12_price_history", data["hist"]),
+                             ("13_price_ipo",     data["hist_ipo"])]:
+                if df is not None and not df.empty:
+                    df_out = df[["Open","High","Low","Close","Volume"]].copy()
+                    # Strip timezone — Excel cannot handle tz-aware datetime index
+                    if hasattr(df_out.index, "tz") and df_out.index.tz is not None:
+                        df_out.index = df_out.index.tz_convert(None)
+                    df_out.index.name = "Date"
+                    df_out.to_excel(writer, sheet_name=name)
+                else:
+                    pd.DataFrame({"Note": ["Price history unavailable"]}).to_excel(
+                        writer, sheet_name=name, index=False)
+
+    print(f"  ✓ Saved {path}")
+    return path
 
 
-# ============================================================
-# MAIN PULL
-# ============================================================
-def run_pull():
-    print(f"\n{'='*60}")
-    print(f"  DOLLARAMA DATA PULL  --  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"{'='*60}")
-    print(f"  Saving to: {_HERE}\n")
-    errors = []
-    all_fin, all_px = [], []
+def save_csvs(data, folder="csv"):
+    """Save each sheet as an individual CSV."""
+    os.makedirs(folder, exist_ok=True)
+    print(f"\nWriting CSVs to {folder}/...")
 
-    print("-- DOL.TO (CAD) " + "-"*44)
-    try:
-        all_fin.append(fetch_financials(TICKER, N_YEARS, "CAD"))
-    except Exception as e:
-        errors.append(f"DOL.TO financials: {e}"); print(f"  FAILED: {e}")
-    try:
-        all_px.append(fetch_prices(TICKER))
-    except Exception as e:
-        errors.append(f"DOL.TO prices: {e}"); print(f"  FAILED prices: {e}")
+    files = {
+        "01_live_info_snapshot.csv":   pd.DataFrame(SNAPSHOT_INFO),
+        "05_fy2026_hardcoded.csv":     pd.DataFrame({
+            "Line Item": (list(FY2026_INCOME.keys()) + list(FY2026_BALANCE.keys()) + list(FY2026_CASHFLOW.keys())),
+            "Value":     (list(FY2026_INCOME.values()) + list(FY2026_BALANCE.values()) + list(FY2026_CASHFLOW.values())),
+        }),
+        "06_financials_summary.csv":   pd.DataFrame(FB_FINANCIALS),
+        "07_peers.csv":                pd.DataFrame(PEER_DATA),
+        "08_dcf_params.csv":           pd.DataFrame(DCF_PARAMS),
+        "09_monte_carlo.csv":          pd.DataFrame(MC_RESULTS),
+        "10_ml_model.csv":             pd.DataFrame(ML_RESULTS),
+        "11_nlp_sentiment.csv":        pd.DataFrame(NLP_RESULTS),
+    }
 
-    print()
-    print("-- Peers (USD) " + "-"*45)
-    for sym in PEER_TICKERS:
-        try:
-            all_fin.append(fetch_financials(sym, N_YEARS, "USD"))
-        except Exception as e:
-            errors.append(f"{sym}: {e}"); print(f"  FAILED {sym}: {e}")
+    if data:
+        for name, df in [("02_income.csv",   data.get("income")),
+                         ("03_balance.csv",  data.get("balance")),
+                         ("04_cashflow.csv", data.get("cashflow")),
+                         ("12_price_history.csv", data.get("hist")),
+                         ("13_price_ipo.csv",     data.get("hist_ipo"))]:
+            if df is not None and not df.empty:
+                files[name] = df
 
-    print()
-    print("-- Writing CSVs " + "-"*44)
-    if all_fin:
-        try:
-            out = pd.concat(all_fin, ignore_index=True)
-            out.to_csv(FINANCIALS_CSV, index=False)
-            print(f"  Saved {FINANCIALS_CSV}  ({len(out)} rows)")
-        except Exception as e:
-            errors.append(f"CSV write: {e}"); print(f"  FAILED: {e}")
-    if all_px:
-        try:
-            outp = pd.concat(all_px, ignore_index=True)
-            outp.to_csv(PRICES_CSV, index=False)
-            print(f"  Saved {PRICES_CSV}  ({len(outp)} rows)")
-        except Exception as e:
-            errors.append(f"Prices CSV write: {e}"); print(f"  FAILED: {e}")
+        # Live info dict
+        if "info_df" in data:
+            files["01_live_info_live.csv"] = data["info_df"]
 
-    show_csvs()
-    if errors:
-        print(f"Completed with {len(errors)} error(s):")
-        for e in errors: print(f"  * {e}")
-        return False
-    print(f"Done.  Files: {FINANCIALS_CSV}")
-    return True
+    for fname, df in files.items():
+        fpath = os.path.join(folder, fname)
+        df.to_csv(fpath, index=(df.index.name == "Date"))
+        print(f"  ✓ {fname}")
 
 
-# ============================================================
-# CLI
-# ============================================================
 def main():
-    global FINANCIALS_CSV, PRICES_CSV
-    parser = argparse.ArgumentParser(
-        description="Pull Dollarama data from Yahoo Finance and save as CSV",
-        epilog=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--show",       action="store_true",
-                        help="Print CSV contents without fetching")
-    parser.add_argument("--schedule",   action="store_true",
-                        help=f"Auto-refresh every {SCHEDULE_HOURS}h")
-    parser.add_argument("--output-dir", default=None,
-                        help="Folder to save CSVs (default: script folder)")
-    args = parser.parse_args()
+    print("=" * 60)
+    print("DOLLARAMA DATA EXPORT")
+    print(f"Ticker: {TICKER}  |  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    print("=" * 60)
 
-    if args.output_dir:
-        os.makedirs(args.output_dir, exist_ok=True)
-        FINANCIALS_CSV = os.path.join(args.output_dir, "dollarama_financials.csv")
-        PRICES_CSV     = os.path.join(args.output_dir, "dollarama_prices.csv")
+    # Try to pull live yfinance data
+    data = None
+    try:
+        data = pull_yfinance()
+        print(f"\n✓ Live data pulled successfully")
+        print(f"  Current price: ${data['curr_price']:.2f}")
+        print(f"  Income statement: {data['income'].shape if data['income'] is not None else 'N/A'}")
+        print(f"  Price history: {len(data['hist'])} rows" if data['hist'] is not None else "")
+    except Exception as e:
+        print(f"\n⚠ yfinance failed: {e}")
+        print("  Saving hardcoded data only (no live statements or price history)")
 
-    if args.show:
-        show_csvs(); return
+    # Save Excel + CSV regardless
+    xlsx_path = save_xlsx(data)
+    save_csvs(data)
 
-    if not args.schedule:
-        sys.exit(0 if run_pull() else 1)
+    print("\n" + "=" * 60)
+    print("DONE")
+    print("=" * 60)
+    print(f"""
+Files saved:
+  {xlsx_path}        ← share this with your team
+  csv/               ← individual CSVs for reference
 
-    print(f"\nScheduled mode -- every {SCHEDULE_HOURS}h.  Ctrl+C to stop.\n")
-    while True:
-        run_pull()
-        import datetime as _dt
-        nxt = (datetime.now() + _dt.timedelta(hours=SCHEDULE_HOURS)).strftime("%Y-%m-%d %H:%M:%S")
-        print(f"\nNext pull: {nxt}")
-        time.sleep(SCHEDULE_HOURS * 3600)
+HOW TO USE:
+  1. Copy dollarama_snapshot.xlsx to the same folder as Dashboard.py
+  2. Make sure PRESENTATION_MODE = True in Dashboard.py  (it already is)
+  3. Run: streamlit run Dashboard.py
+
+The dashboard will automatically detect the xlsx file and load from it.
+Your partner gets identical numbers on Wednesday — no internet needed
+for market data.
+
+NOTE: The dashboard still calls yfinance for financial statements
+(income / balance / cash flow) because those are historical and never
+change. If there is no internet at all on Wednesday, the fallback
+hardcoded values (FB dict in Dashboard.py) are used automatically.
+""")
 
 
 if __name__ == "__main__":
