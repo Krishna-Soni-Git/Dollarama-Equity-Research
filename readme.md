@@ -10,7 +10,7 @@
 **MBAN5570 — Equity Research Analytics**  
 Sobey School of Business · Saint Mary's University · 2025  
 **Soni & Warner**
-**THIS IS A SCHOOL PROJECT NOT MEANT FOR FINANCIAL ADVICE**
+***THIS IS A SCHOOL PROJECT NOT MEANT FOR FINANCIAL ADVICE***
 
 </div>
 
