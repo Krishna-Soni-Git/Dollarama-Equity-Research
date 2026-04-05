@@ -1861,7 +1861,7 @@ elif tab == 12:
            "AI cut weeks of data work into hours. But speed without judgment produces "
            "noise — exactly as the ROIC denominator error shows. The analyst must set the "
            "analytical frame before AI can execute usefully within it.")
-    with hc2:
+    with hc3:
         cx("Pattern Recognition vs. Economic Reasoning",
            "AI detected the EBITDA margin expansion. It cannot explain why: Dollarama's "
            "scale-driven buying power, fixed-price discipline, and capital-light model are "
