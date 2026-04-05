@@ -1,7 +1,7 @@
 # Dollarama Inc. (DOL.TO) — Equity Research Dashboard
 
 > **Course:** MBAN5570 — Equity Research Analytics
-> **Authors:** Soni & Warner (2025)
+> **Authors:** Soni & Warner (2026)
 > **Version:** v6B — Aligned with Google Colab v6B
 > **Recommendation:** 🟢 **BUY** | Target: **CAD $212** | Upside: **~25%** (live vs ~$173)
 > **Data:** Live from Yahoo Finance — auto-loads on startup, no files needed
@@ -79,8 +79,8 @@ git pull origin main
 pip install -r requirements.txt
 
 # Run
-streamlit run Dashboard.py         # full dashboard
-streamlit run dollarama_research.py # live demo only
+streamlit run Dashboard.py         # Full 13-tab dashboard (recommended for complete presentation)
+streamlit run dollarama_research.py # 4-tab live demo only (DCF, Monte Carlo, ML, NLP — for the 4-minute AI tools section)
 ```
 
 ### If you have local changes to keep
