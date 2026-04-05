@@ -1817,8 +1817,8 @@ elif tab == 12:
         f"<div class='brand-box'><h3>AI Integration Principle</h3><p>"
         f"AI compressed weeks of data gathering into hours. But every number in this dashboard "
         f"is traceable to a source, formula, and human decision. "
-        f"<strong style='color:{BRAND}'>AI helped produce it — we verified it. "
-        f"We are accountable for every metric. AI accelerates. It does not replace judgment.</strong>"
+        f"<strong style='color:{BRAND}'>AI helped formatting the idea. "
+        f"AI helped us accelerate the idea. It does not replace our judgment.</strong>"
         f"</p></div>",
         unsafe_allow_html=True)
 
@@ -1832,9 +1832,8 @@ elif tab == 12:
          "AI used NOPAT/Equity — invalid. Dollarama had negative book equity in FY2022 because "
          "buybacks exceeded retained earnings. That formula produces a meaningless or negative "
          "ROIC. Replaced with EBIT/(Assets−CL−Cash). Most critical correction in the analysis."),
-        ("acc","ACCEPTED","Monte Carlo + NLP sentiment",
-         "Monte Carlo: 5,000 paths, triangular distribution for FCF growth, normal for WACC. "
-         "Methodologically sound — validated bounds and kept. NLP polarity scoring on 5 real "
+        ("acc","ACCEPTED","NLP sentiment",
+         "NLP polarity scoring on 5 real "
          "earnings call transcripts: accepted as supplementary corroboration of bullish management "
          "tone. Neither is a primary valuation driver."),
         ("dis","DISCARDED","Altman Z-Score as distress signal",
@@ -1867,11 +1866,6 @@ elif tab == 12:
            "AI detected the EBITDA margin expansion. It cannot explain why: Dollarama's "
            "scale-driven buying power, fixed-price discipline, and capital-light model are "
            "domain knowledge the AI does not possess. Detection ≠ understanding.")
-    with hc3:
-        cx("Automation vs. Accountability",
-           "AI generated 20+ charts and 5 valuation scenarios automatically. But every "
-           "number is traceable to a source and formula. We are accountable for each one. "
-           "The dashboard is a tool. The judgment is ours.")
 
     st.markdown("---")
     _up = f"{(212/CURR_PRICE-1)*100:.1f}%"
