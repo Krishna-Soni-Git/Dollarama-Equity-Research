@@ -1,354 +1,314 @@
 # Dollarama Inc. (DOL.TO) — Equity Research Dashboard
 
-> **Course:** MBAN5570 — Equity Research Analytics
-> **Authors:** Soni & Warner (2026)
-> **Version:** v6B — Aligned with Google Colab v6B
-> **Recommendation:** 🟢 **BUY** | Target: **CAD $212** | Upside: **~25%** (live vs ~$173)
-> **Data:** Live from Yahoo Finance — auto-loads on startup, no files needed
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.40%2B-FF4B4B?logo=streamlit&logoColor=white)
+![License](https://img.shields.io/badge/License-Academic-green)
+![Status](https://img.shields.io/badge/Status-Presentation%20Ready-brightgreen)
+
+**MBAN5570 — Equity Research Analytics**  
+Sobey School of Business · Saint Mary's University · 2025  
+**Soni & Warner**
+
+</div>
 
 ---
 
-## What This Is
+## Investment Thesis
 
-A fully interactive equity research dashboard for Dollarama Inc. (DOL.TO) built with Python and Streamlit. It covers the complete MBAN5570 assignment across **13 sidebar-navigated tabs** with three clearly labelled sections:
+> **BUY · DOL.TO · Target $212 CAD · ~23% upside from $172.59**
 
-| Section | Coverage | Tabs |
-|---------|----------|------|
-| 2.A Traditional Analysis | Business model, financials, valuation, risk, IPO compounding | 01–08 |
-| Live Valuation Demo | DCF live model + Monte Carlo simulation | 09–10 |
-| 2.B / 2.C AI-Assisted & Critical Evaluation | ML price model, NLP sentiment, AI critical review | 11–13 |
+On March 24, 2026, Dollarama reported that revenue grew 13.1% and EPS grew 12.1% — and the stock fell 9%. The selloff was driven by a single factor: a 170 basis-point EBITDA margin dip from integrating The Reject Shop acquisition in Australia. We view this as a temporary headwind, not a structural impairment. ROIC of ~38% versus WACC of 9% — a 29 percentage-point value-creation spread — has widened for five consecutive years. Our DCF at the CAPM-calculated WACC of 5.5% produces **$213 intrinsic value**. The analyst consensus is **$212.06**. Two independent methods within $1 of each other.
+
+---
+
+## Live Dashboard
+
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dollarama-equity-research.streamlit.app)
+
+> If deploying yourself, see [Quick Start](#quick-start) below.
+
+---
+
+## What the Dashboard Contains
+
+The dashboard is built in Streamlit and organised into **13 interactive tabs** across three analytical layers, matching the MBAN5570 course structure exactly.
+
+### Traditional Analysis (Section 2.A) — Tabs 01–08
+
+| Tab | Title | What It Shows |
+|-----|-------|---------------|
+| **01** | Company Overview | Investment thesis, 6 KPI cards, 5-year price chart with 50/200-day MAs, daily volume |
+| **02** | Macro & Industry | Top-down framework: BoC rate cycle, Canada-US trade context, peer revenue growth comparison |
+| **03** | Income Statement | Revenue, EBITDA, net income, EPS and margins FY2022–FY2026 with CAGR analysis |
+| **04** | Balance Sheet | Asset composition, equity recovery, debt structure, current ratio, net debt/EBITDA trends |
+| **05** | Cash Flow | OCF, CapEx, FCF, financing activities FY2022–FY2026; FCF conversion analysis |
+| **06** | Financial Ratios | Profitability, leverage, liquidity, efficiency heatmap; ROIC methodology note |
+| **07** | Valuation Multiples | 7 live multiples vs sector benchmarks; peer comparison (DLTR, DG); composite signal |
+| **08** | IPO Compounding | Stock compounding since Oct 9, 2009 ($17.50 IPO); $10k investment calculator; CAGR vs TSX |
+
+### Live Valuation Demo — Tabs 09–10
+
+| Tab | Title | What It Shows |
+|-----|-------|---------------|
+| **09** | DCF Live Model | CAPM/WACC derivation table; 5-year FCF projection; 10×5 sensitivity matrix; real-time price update on slider change |
+| **10** | Monte Carlo | 5,000-path simulation; histogram + CDF; P5/P25/P50/P75/P95 percentiles; probability analysis |
+
+### AI-Assisted Analysis (Sections 2.B & 2.C) — Tabs 11–13
+
+| Tab | Title | What It Shows |
+|-----|-------|---------------|
+| **11** | ML Price Model | Linear regression (Tutorial 5): 10-day MA + 14-day RSI; R²=0.884, RMSE=$3.84, MA coeff=1.0027; data leakage explanation |
+| **12** | NLP Sentiment | Earnings call polarity scoring (Tutorial 4): 5 real transcripts FY2022–FY2026 Q3; custom lexicon; trend chart |
+| **13** | AI Critical Review | Section 2.C: what AI got right, wrong, accepted, discarded; ROIC error correction; ML leakage proof |
 
 ---
 
 ## Quick Start
 
-### 1 — Clone the Repository
+### Prerequisites
+
+- Python 3.9 or higher
+- pip
+
+### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/Krishna-Soni-Git/dollarama-equity-research.git
 cd dollarama-equity-research
-```
 
-### 2 — Create a Virtual Environment
-
-```bash
-# macOS / Linux
-python3 -m venv venv
-source venv/bin/activate
-
-# Windows
-python -m venv venv
-venv\Scripts\activate
-```
-
-### 3 — Install Dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### 4 — Run the Dashboard
-
-**Full 13-tab dashboard (recommended for complete presentation):**
-```bash
+# Run the dashboard
 streamlit run Dashboard.py
 ```
 
-**4-tab live demo only (DCF, Monte Carlo, ML, NLP — for the 4-minute AI tools section):**
+The dashboard opens at `http://localhost:8501`
+
+### Optional — Export data to Excel first
+
 ```bash
-streamlit run dollarama_research.py
+# Pull live data from Yahoo Finance and save to dollarama_snapshot.xlsx
+python dollarama_data_export.py
 ```
 
-**No Python? Open the static HTML companion directly in any browser:**
-```
-dollarama_dashboard_alternative.html
-```
-
-Open **http://localhost:8501** in your browser (Streamlit files only).
+This creates a 13-sheet Excel workbook and a `csv/` folder with individual files. Run this once before a presentation to have the data cached locally.
 
 ---
 
-## Pulling the Latest Code After Cloning
+## Presentation Mode
 
-```bash
-# Pull latest changes
-git checkout main
-git pull origin main
+The dashboard ships with **`PRESENTATION_MODE = True`** hardcoded near the top of `Dashboard.py`. This is the most important setting.
 
-# Reinstall if dependencies changed
-pip install -r requirements.txt
-
-# Run
-streamlit run Dashboard.py         # Full 13-tab dashboard (recommended for complete presentation)
-streamlit run dollarama_research.py # 4-tab live demo only (DCF, Monte Carlo, ML, NLP — for the 4-minute AI tools section)
+```python
+# Line ~56 in Dashboard.py
+PRESENTATION_MODE = True   # ← True = frozen snapshot | False = live yfinance
 ```
 
-### If you have local changes to keep
+| Mode | Behaviour | When to Use |
+|------|-----------|-------------|
+| `True` (default) | All market data frozen to **April 3, 2026 snapshot** — identical numbers on any machine, any day, forever | Recording, presentation, submission, sharing |
+| `False` | Pulls live from Yahoo Finance — price, beta, P/E, analyst target all drift | Live demo only, with awareness numbers will change |
 
-```bash
-git stash          # save your changes
-git pull origin main
-git stash pop      # restore your changes on top
-```
+The sidebar shows a **🔒 PRESENTATION MODE** badge (red) or **📡 LIVE MODE** badge (green) so it is always clear which mode is active.
 
-### Preview what changed before pulling
+### What is frozen in Presentation Mode
 
-```bash
-git fetch origin
-git log HEAD..origin/main --oneline
-git pull origin main
-```
+| Value | Frozen To |
+|-------|-----------|
+| Current price | $172.59 CAD |
+| Market cap | $47.07B |
+| Enterprise value | $52.13B |
+| Trailing P/E | 36.5× |
+| Beta | 0.37 |
+| Analyst consensus target | **$212.06** |
+| All 7 valuation multiples | Analysis values |
+| DCF price | **$213** (computed from hardcoded FCF/debt/shares) |
+| Monte Carlo | Same every run (fixed random seed + hardcoded inputs) |
+| NLP scores | Hardcoded transcripts — never changes |
+| Financial statements | Historical data — never changes |
 
 ---
 
-## Project Structure
+## Key Verified Numbers
+
+All numbers below match the dashboard exactly (PRESENTATION_MODE=True, April 3, 2026).
+
+### Investment Summary
+
+| Metric | Value | Source |
+|--------|-------|--------|
+| Current price | $172.59 CAD | Yahoo Finance snapshot |
+| Price target | $212 CAD | EV/EBITDA + DCF convergence |
+| Analyst consensus | $212.06 | Yahoo Finance (16 analysts) |
+| Implied upside | ~23% | ($212 / $172.59 − 1) |
+| Market cap | $47.07B | Yahoo Finance snapshot |
+| Enterprise value | $52.13B | Yahoo Finance snapshot |
+
+### CAPM / WACC Derivation (Tab 09)
+
+| Input | Value | Source |
+|-------|-------|--------|
+| Risk-free rate (Rf) | 3.50% | Bank of Canada, 10yr GoC bond, March 2026 |
+| Beta (β) | 0.37 | Yahoo Finance, 5-year monthly |
+| Equity risk premium | 6.50% | Damodaran (NYU), Canada 2026 |
+| Cost of equity (Ke) | **5.92%** | Rf + β × ERP = 3.5 + 0.37×6.5 |
+| Cost of debt (Kd) | 3.12% | 4.25% × (1 − 26.5%) |
+| Weights | 12% / 88% | FY2025 balance sheet |
+| **WACC calculated** | **5.57% → 5.5%** | Blended; slider rounded to 5.5% |
+
+### DCF Model (Tab 09)
+
+| Input | Value | Source |
+|-------|-------|--------|
+| Base FCF | $1.397B | FY2025 actual (Yahoo Finance) |
+| FCF growth (Stage 1) | 8.0%/yr | Half of 14% historical CAGR — conservative |
+| Forecast horizon | 5 years | Colab Cell 35 methodology |
+| Terminal growth rate | 2.5% | Canada long-run GDP |
+| Net debt | $2.155B | FY2025, ex IFRS 16 leases |
+| Diluted shares | 277M | FY2025 weighted average |
+| **DCF at WACC 5.5%** | **$213** | PV FCFs $7.50B + PV terminal $53.66B |
+| DCF at WACC 9% (stress) | ~$93 | Stress floor |
+
+### Monte Carlo (Tab 10)
+
+| Statistic | Value |
+|-----------|-------|
+| Paths | 5,000 |
+| WACC mean (stress) | 9.0% (normal, SD 0.8%) |
+| P5 / P25 / P50 / P75 / P95 | $70 / $84 / $95 / $109 / $134 |
+| Prob. > $212 target | 0.1% |
+| Prob. > $172.59 (profitable) | 0.4% |
+| Prob. < $130 (stress) | 93.6% |
+
+### ML Price Model (Tab 11)
+
+| Metric | Value |
+|--------|-------|
+| Features | 10-day MA + 14-day RSI |
+| Training data | 1,255 trading days (DOL.TO daily) |
+| Train / test split | 80% / 20% chronological |
+| R² (test set) | **0.884** |
+| RMSE (test set) | **$3.84** |
+| MA coefficient | **1.0027** ← ≈1.0 = data leakage |
+| Used in valuation? | **No** — excluded |
+
+### NLP Sentiment (Tab 12)
+
+| Earnings Call | Polarity | Positive | Negative | Signal |
+|---------------|----------|----------|----------|--------|
+| FY2022 Annual | −8.6% | 11 | 26 | Negative |
+| FY2023 Annual | +10.0% | 19 | 2 | Positive |
+| FY2024 Annual | +14.6% | 24 | 0 | Positive |
+| FY2025 Annual | **+14.8%** | **26** | **0** | **Positive ↑ (peak)** |
+| FY2026 Q3 | +12.6% | 24 | 1 | Positive |
+
+### Financial Performance (FY2022–FY2026)
+
+| Metric | FY2022 | FY2023 | FY2024 | FY2025 | FY2026A | CAGR |
+|--------|--------|--------|--------|--------|---------|------|
+| Revenue ($B) | $4.331 | $5.053 | $5.867 | $6.413 | $7.244 | **14% ✓** |
+| EBITDA Margin | 29.6% | 30.3% | 32.1% | 33.5% | 32.9%† | Expanding |
+| Diluted EPS ($) | $2.18 | $2.76 | $3.56 | $4.16 | $4.76 | **22% ✓** |
+| FCF ($B) | $1.004 | $0.713 | $1.251 | $1.397 | $1.380 | Strong |
+| ROIC | ~40% | ~39% | ~43% | ~38% | ~28%† | vs WACC 9% |
+
+† FY2026 dip reflects Reject Shop acquisition integration. Recovery to ~33% modelled FY2027.  
+✓ Exceeds rubric threshold (>5% revenue, >7% EPS).
+
+---
+
+## Repository Structure
 
 ```
 dollarama-equity-research/
 │
-├── Dashboard.py                       # Full 13-tab Streamlit dashboard (main file)
-├── dollarama_research.py              # Condensed 4-tab live demo (DCF, Monte Carlo, ML, NLP)
-├── dollarama_data_pull.py             # Optional: exports Yahoo Finance data to CSV
-├── dollarama_dashboard_alternative.html  # Static HTML companion dashboard
-├── requirements.txt                   # Python dependencies
-├── readme.md                          # This file
-├── .env                               # Local environment variables (not committed)
-├── .gitignore                         # Excludes venv, .env, __pycache__, etc.
-├── config.toml                        # Streamlit theme config (light/dark default)
-│
-├── Output/                            # Generated outputs (reports, exports)
-│
-├── Paper/
-│   ├── dollarama_report_v6b.docx      # Full equity research white paper (v6B)
-│   └── dollarama_whitepaper.docx      # Final submission white paper
-│
-└── PPT/
-    └── dollarama_updated.pptx         # Presentation slide deck
+├── Dashboard.py                 # Main Streamlit app — 13 tabs, all analysis
+├── dollarama_data_export.py     # Optional: export live data to Excel + CSV
+├── requirements.txt             # Python dependencies (pip install -r)
+├── README.md                    # This file
+└── .gitignore                   # Keeps secrets and temp files out of repo
 ```
 
-### Which file to run
+---
 
-| File | Purpose | Command |
-|------|---------|---------|
-| `Dashboard.py` | Full 13-tab dashboard — use for **complete presentation** | `streamlit run Dashboard.py` |
-| `dollarama_research.py` | 4-tab live demo — use for **4-minute AI tools demo** (DCF, Monte Carlo, ML, NLP) | `streamlit run dollarama_research.py` |
-| `dollarama_dashboard_alternative.html` | Static HTML — opens in any browser, **no Python required** | Open in browser directly |
+## Data Sources
+
+| Data | Source | Notes |
+|------|--------|-------|
+| FY2022–FY2025 financials | Yahoo Finance (yfinance) | Live pull via DOL.TO ticker |
+| FY2026 income statement | Dollarama Investor Relations | Q1–Q3 actuals + Q4 consensus (March 24, 2026) |
+| Current market data | Yahoo Finance info dict | Frozen to April 3, 2026 in presentation mode |
+| Peer data (DLTR, DG) | SEC EDGAR FY2025 10-K | DLTR: Feb 1 2025 · DG: Jan 31 2025 · USD |
+| Risk-free rate (3.50%) | Bank of Canada | 10yr GoC bond, March 2026 |
+| Equity risk premium (6.50%) | Damodaran, NYU (2026) | Canada market ERP |
+| IPO price ($17.50 CAD) | CBC News / TSX / Dollarama IR | First trading day: October 9, 2009 |
+| Earnings call transcripts | Dollarama IR / Seeking Alpha | FY2022–FY2026 Q3 (NLP Tutorial 4) |
+| Daily price history | Yahoo Finance (yfinance) | 1,255 trading days (ML Tutorial 5) |
 
 ---
 
-## Dashboard Tabs
+## Course Context
 
-Navigate using the **sidebar buttons** on the left. The sidebar also shows the live price pulled from Yahoo Finance and the BUY / $212 Target badge.
+This project was built for **MBAN5570 — Equity Research Analytics** at Saint Mary's University. The dashboard directly supports all required analytical components:
 
-### Traditional Analysis (2.A)
+- **Section 2.A** — Traditional equity research (all 12 professor-required subsections)
+- **Section 2.B** — AI-assisted analysis: DCF/MC (Colab Cell 35), ML (Tutorial 5), NLP (Tutorial 4)
+- **Section 2.C** — Critical evaluation of AI outputs with explicit accounting justification
 
-| # | Tab | What It Shows |
-|---|-----|--------------|
-| 01 | Company Overview | Investment thesis, live KPIs, 5-year price chart with MA50/MA200, volume |
-| 02 | Macro & Industry | BoC rate, CPI, CAD/USD, Porter's Five Forces, competitive landscape, peer revenue growth |
-| 03 | Income Statement | Revenue, gross profit, EBIT, net income, EBITDA, margins, EPS, per-$100 breakdown FY2022–FY2026 |
-| 04 | Balance Sheet | Assets, equity, debt, working capital, current ratio, asset composition FY2022–FY2026 |
-| 05 | Cash Flow | Operating / investing / financing CF, FCF waterfall, CapEx intensity, FCF conversion |
-| 06 | Financial Ratios | Profitability, ROA, liquidity, leverage heatmap, comprehensive ratio table |
-| 07 | Valuation Multiples | Live P/E, EV/EBITDA vs sector benchmarks, peer comparison (DLTR, DG), composite signal |
-| 08 | IPO Compounding | IPO-to-date CAGR since Oct 2009 at $17.00 CAD, $10K investment growth, 10% benchmark check |
-
-### Live Valuation Demo
-
-| # | Tab | What It Shows |
-|---|-----|--------------|
-| 09 | DCF Live Model | CAPM/WACC derivation table, 5-year FCF projection, Gordon Growth terminal value, dynamic sensitivity table centred on slider position |
-| 10 | Monte Carlo | 5,000-path stochastic DCF simulation, histogram, CDF, probability boxes |
-
-### AI-Assisted Analysis (2.B / 2.C)
-
-| # | Tab | What It Shows |
-|---|-----|--------------|
-| 11 | ML Price Model | Linear regression on MA + RSI features, chronological 80/20 split, R², RMSE, data leakage critique (Tutorial 5) |
-| 12 | NLP Sentiment | N-gram frequency, polarity & subjectivity by earnings call, deep-dive transcript highlighting (Tutorial 4) |
-| 13 | AI Critical Review | Section 2.C — what AI got right, wrong, accepted, discarded, and the three integration principles |
+The rubric thresholds assessed: Revenue CAGR >5% ✓ (14%), EPS CAGR >7% ✓ (22%), Shareholder earnings >10% ✓ (~23%/yr), IPO compounding >10% ✓ (~15%/yr from $17.50).
 
 ---
 
-## Interactive Sliders
-
-All charts and valuations update live as you move the sliders.
-
-### Tab 09 — DCF Live Model
-
-| Slider | Default | Range |
-|--------|---------|-------|
-| WACC (%) | **5.5%** | 3.0% – 12.0% |
-| Terminal Growth Rate (%) | **2.5%** | 1.0% – 4.0% |
-| Stage 1 FCF Growth (%) | **8.0%** | 3.0% – 15.0% |
-
-At defaults → **~$213 CAD** (+23% upside). Sensitivity table recentres on your slider position dynamically.
-
-### Tab 10 — Monte Carlo
-
-| Slider | Default | Range |
-|--------|---------|-------|
-| WACC mean (%) | **9.0%** | 5.0% – 12.0% |
-| Terminal Growth mean (%) | **2.5%** | 1.0% – 4.0% |
-| FCF Growth mean (%) | **8.0%** | 3.0% – 15.0% |
-| Simulation Paths | **5,000** | 1,000 / 2,500 / 5,000 / 10,000 |
-
-### Tab 11 — ML Price Model
-
-| Slider | Default | Range |
-|--------|---------|-------|
-| MA window (days) | **10** | 5 – 30 |
-| RSI window (days) | **14** | 7 – 21 |
-| Test set (%) | **20%** | 10% – 40% |
-
-### Tab 12 — NLP Sentiment
-
-| Control | Default |
-|---------|---------|
-| Earnings call selector | FY2025 Annual |
-| Min word frequency | 3 |
-
----
-
-## Key Numbers
-
-| Metric | Value | Source |
-|--------|-------|--------|
-| FY range | FY2022 – FY2026 | yfinance (FY2022–FY2025) + Dollarama IR (FY2026) |
-| FY2026 Revenue | $7.24B CAD | Dollarama IR Q1–Q3 actuals + Q4 consensus |
-| FY2026 EPS | $4.76 CAD | Dollarama IR (verified) |
-| FY2026 EBITDA Margin | 32.9% | Integration dip from Reject Shop acquisition |
-| FY2025 FCF | $1.40B CAD | Dollarama IR (DCF base FCF) |
-| FY2025 ROIC | ~30% | EBIT×(1−tax)÷(Assets−CL−Cash) |
-| Revenue CAGR (FY2022–2026) | +14% | Exceeds >5% rubric threshold ✓ |
-| EPS CAGR (FY2022–2026) | +21% | Exceeds >7% rubric threshold ✓ |
-| Shareholder earnings | ~22%/yr | EPS growth +21% + dividend ~1% |
-| IPO price | $17.00 CAD | Oct 27, 2009 |
-| IPO CAGR | ~27%/yr | $10K → ~$100K |
-| DCF target (WACC 5.5%) | **$212–$213 CAD** | Hardcoded: FCF $1.397B, Net debt $2.155B, 277M shares |
-| Price target | **CAD $212** | EV/EBITDA multiple approach (~29×) |
-
----
-
-## Data Architecture
+## Technical Requirements
 
 ```
-Data Source         Coverage                    Tab(s)
-────────────────────────────────────────────────────────────────
-yfinance LIVE       FY2022–FY2025 financials    01–08, 11
-                    Current price + multiples   01, 07
-                    5-yr daily price history    01, 11
-                    IPO-to-date history         08
-HARDCODED           FY2026 (Q1–Q3 IR actuals +  02–08
-(Dollarama IR)      Q4 consensus, Mar 24 2026)
-HARDCODED           DLTR / DG SEC FY2025 10-K   07
-(SEC filings)
-COMPUTED LIVE       DCF, Monte Carlo            09, 10
-                    ML regression               11
-                    NLP polarity scoring        12
+streamlit >= 1.40.0
+plotly >= 5.20.0
+pandas >= 2.2.0
+numpy >= 1.26.0
+yfinance >= 0.2.50, < 1.0.0
+scikit-learn >= 1.3.0
+openpyxl >= 3.1.0   # for data export only
 ```
 
-**Why FY2026 is hardcoded:** Dollarama's FY2026 results were reported March 24, 2026. yfinance annual data for FY2026 is not yet available via the API. The hardcoded values come from Dollarama Q1–Q3 press releases (actuals) plus Q4 analyst consensus.
+**Python 3.9+ required.** Tested on Python 3.10, 3.11, 3.12 across Windows, macOS, and Linux.
 
-**Why peer data is hardcoded:** yfinance returns partial/incorrect annual data for DLTR and DG. The dashboard uses verified figures from SEC 10-K filings (DLTR Feb 1 2025, DG Jan 31 2025) as fallback regardless of live data availability.
-
----
-
-## Colour Palette (Colab v6B)
-
-| Name | Hex | Used For |
-|------|-----|---------|
-| `BRAND` | `#E63946` | Dollarama red — primary accent, positive words in NLP |
-| `ACCENT` | `#1D3557` | Dark navy — sidebar background, headings |
-| `P1` | `#457B9D` | Mid blue — chart series, callout borders |
-| `P2` | `#A8DADC` | Light teal — chart series, subjectivity bars |
-| `P3` | `#F4A261` | Orange — warning callouts |
-| `GREEN` | `#2A9D8F` | Teal green — positive signals, profitable MC paths |
+> **Note on yfinance:** Pinned below 1.0.0 because yfinance 1.x requires a C compiler for installation (`curl_cffi` dependency). Version 0.2.x installs cleanly on all platforms with no compilation step.
 
 ---
 
-## Peer Comparison Data
+## Deployment
 
-Peer company data uses **verified FY2025 SEC 10-K filings** — not Yahoo Finance's live peer feed.
+### Streamlit Community Cloud (recommended — free)
 
-| | DLTR (USD) | DG (USD) |
-|--|--|--|
-| Revenue | $30,607M | $40,612M |
-| EBITDA Margin | 11.9% | 9.6% |
-| ROIC | 13.6% | 15.2% |
-| EV/EBITDA | 6.5× | 7.4× |
+1. Push this repo to GitHub (already done)
+2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
+3. Click **New app** → select this repo → branch `main` → main file: `Dashboard.py`
+4. Click **Deploy**
 
-> **Note on DLTR:** FY2025 net income of −$4,268M reflects a one-time Family Dollar goodwill impairment write-down — not an operational loss. Always flag this when presenting the peer comparison. DLTR is excluded from net income / net margin comparisons.
+Streamlit reads `requirements.txt` automatically. The app will be live at a public URL you can share directly in your presentation.
 
----
+### Local
 
-## Theme Configuration
-
-The `config.toml` file in the project root controls which theme loads by default:
-
-```toml
-# config.toml
-
-[theme]
-base = "light"               # Change to "dark" for dark mode default
-primaryColor = "#E63946"     # Dollarama red
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F1F3F5"
-textColor = "#111827"
-font = "sans serif"
+```bash
+pip install -r requirements.txt
+streamlit run Dashboard.py
 ```
 
-To switch to dark by default, change `base = "light"` to `base = "dark"`. Users can also toggle at any time via ☰ → Settings in the Streamlit interface.
+---
+
+## Disclaimer
+
+Academic project prepared for MBAN5570 — Equity Research Analytics at Saint Mary's University. This dashboard and all associated documents do not constitute financial advice. All data is sourced from public platforms and verified against Dollarama Investor Relations disclosures. Every metric and formula is traceable to a verified source.
+
+**Soni & Warner · Saint Mary's University · 2025**
 
 ---
 
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| `ModuleNotFoundError: No module named 'X'` | Run `pip install -r requirements.txt` |
-| `streamlit: command not found` | Run `python -m streamlit run Dashboard.py` |
-| Yahoo Finance timeout or empty data | Restart the app — Yahoo rate-limits repeated requests. Dashboard falls back to hardcoded FY2022–FY2026 values automatically. |
-| `sklearn` not found | Run `pip install scikit-learn>=1.3.0` |
-| `yfinance` install fails (C compiler error) | Run `pip install "yfinance>=0.2.50,<1.0.0"` — avoids curl_cffi |
-| Port already in use | Run `streamlit run Dashboard.py --server.port 8502` |
-| Peer data looks wrong | Expected — DLTR/DG always use verified 10-K fallback, not live Yahoo data |
-| DCF price is not ~$212 | Check WACC slider is at 5.5%, FCF Growth at 8.0%, TGR at 2.5% |
-| Beta in CAPM table changes between sessions | Correct — Beta is pulled live from yfinance and will vary with market data |
-
----
-
-## Dependencies
-
-| Package | Min Version | Used For |
-|---------|------------|---------|
-| streamlit | 1.40.0 | Dashboard framework, sidebar nav, widgets, sliders |
-| plotly | 5.20.0 | All interactive charts (bar, scatter, heatmap, histogram) |
-| pandas | 2.2.0 | Data loading, transformation, tables, styling |
-| numpy | 1.26.0 | Numerical computing, Monte Carlo simulation |
-| yfinance | 0.2.50 (`<1.0.0`) | Live DOL.TO financial data — see note below |
-| scikit-learn | 1.3.0 | Linear Regression, R², RMSE (Tab 11 — Tutorial 5) |
-
-> **Why `yfinance<1.0.0`?** yfinance 1.x introduced `curl_cffi` as a mandatory dependency which requires a C compiler. This fails on Windows without Visual Studio Build Tools and on macOS without Xcode Command Line Tools. Version 0.2.x installs cleanly everywhere with no compilation step.
-
-> **Note:** `matplotlib` is **not required** by this dashboard. All charts use Plotly exclusively.
-
----
-
-## Known Data Notes
-
-1. **FY2026 EBITDA margin dip** — The 170bps dip from 33.5% (FY2025) to 32.9% (FY2026) is entirely attributable to Reject Shop integration costs from the December 2025 acquisition. The core Canadian business margins are intact. Recovery to ~33% is modelled by FY2027.
-
-2. **Negative equity in FY2022** — Dollarama carried −$66M shareholders' equity in FY2022 because share buybacks exceeded retained earnings. This is capital efficiency, not distress. This is why ROIC is computed as `EBIT×(1−tax)÷(Assets−CL−Cash)` rather than the conventional NOPAT/Equity formula.
-
-3. **DCF vs target price** — The $212 target is primarily driven by the EV/EBITDA multiple approach (29× FY2026 EBITDA of $2.39B). The DCF at WACC 5.5% (CAPM-calculated rate) corroborates this at ~$213. At a conservative stress-test WACC of 9%, the DCF gives ~$93 — a floor, not a base case.
-
-4. **Beta changes between sessions** — Beta is pulled live from Yahoo Finance on each session load. It was ~0.26 at the time of the initial analysis and is currently ~0.37. This changes the displayed Ke and calculated WACC in the CAPM table, but does not affect the DCF output because the slider is hardcoded at 5.5%.
-
-5. **Sensitivity table is dynamic** — Unlike a static heatmap, the sensitivity table in Tab 09 recentres on your slider values every time you move a slider. The ▶ marker indicates your current WACC row.
-
----
-
-> ⚠️ This is an academic project for MBAN5570 — Equity Research Analytics at Saint Mary's University. Nothing here constitutes financial advice. All data is sourced from Yahoo Finance (yfinance), Dollarama Investor Relations press releases, and SEC 10-K filings.
-
-*March 2026 · Soni & Warner · MBAN5570 · Saint Mary's University*
+<div align="center">
+<sub>Built with Streamlit · Data from Yahoo Finance, Dollarama IR, SEC EDGAR · Analysis verified April 2026</sub>
+</div>
