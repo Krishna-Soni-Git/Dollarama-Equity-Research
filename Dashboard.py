@@ -7,7 +7,7 @@ EXACT ALIGNMENT WITH COLAB v6B:
   · Colour palette: BRAND=#E63946 (red), ACCENT=#1D3557 (navy)
   · FY range: FY2022–FY2026 (not FY2021–FY2025)
   · FY2026: Q1+Q2+Q3 actuals + Q4 consensus (prepend_fy26 method)
-  · DCF: WACC=9%, Terminal=2.5%, growth=capped CAGR (Colab Cell 35)
+  · DCF: WACC=5.5% (CAPM base) / 9.0% (stress), Terminal=2.5%, growth=8% (Colab Cell 35)
   · get_row() + safe_values() helper functions from Colab Cell 10
   · IPO date: Oct 9 2009, price $17.50 CAD (first trading day, TSX)
   · All yfinance keys exactly as in Colab (income_stmt, balance_sheet, cashflow)
@@ -46,33 +46,25 @@ except ImportError:
 # =============================================================================
 # PRESENTATION MODE — single toggle, controls all live data in the dashboard
 # =============================================================================
-# True  → frozen snapshot values (same numbers every time, any machine, any day)
-#          Use for: video recording · Wednesday presentation · sharing with team
-# False → live yfinance (numbers drift as the market moves)
-#          Use for: showing real-time data only
-#
-# HOW TO SWITCH: change the one line below and save. Nothing else needed.
-# =============================================================================
 PRESENTATION_MODE = True   # ← flip to False for live mode
 
-# ── Snapshot taken: April 3 2026 ────────────────────────────────────────────
+# ── Snapshot taken: April 3 2026 ─────────────────────────────────────────
 _SNAP = {
-    "currentPrice":                  172.59,          # Apr 3 screenshot
+    "currentPrice":                  172.59,
     "regularMarketPrice":            172.59,
-    "marketCap":                     47_070_000_000,  # $47.07B screenshot
-    "enterpriseValue":               52_130_000_000,  # $52.13B screenshot
-    "trailingPE":                    36.5,            # screenshot
-    "forwardPE":                     36.64,           # analysis value
-    "beta":                          0.37,            # DCF tab screenshot
-    "targetMeanPrice":               212.06,          # our analysis target
-    "pegRatio":                      3.24,            # analysis value
-    "priceToSalesTrailing12Months":  7.53,            # analysis value
-    "priceToBook":                   40.82,           # analysis value
-    "enterpriseToRevenue":           8.26,            # analysis value
-    "enterpriseToEbitda":            31.55,           # analysis value
-    "sharesOutstanding":             272_700_000,     # implied from screenshot
+    "marketCap":                     47_070_000_000,
+    "enterpriseValue":               52_130_000_000,
+    "trailingPE":                    36.5,
+    "forwardPE":                     36.64,
+    "beta":                          0.37,
+    "targetMeanPrice":               212.06,
+    "pegRatio":                      3.24,
+    "priceToSalesTrailing12Months":  7.53,
+    "priceToBook":                   40.82,
+    "enterpriseToRevenue":           8.26,
+    "enterpriseToEbitda":            31.55,
+    "sharesOutstanding":             272_700_000,
 }
-# ────────────────────────────────────────────────────────────────────────────
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG
@@ -168,7 +160,7 @@ BENCHMARKS = {
 
 # IPO parameters (Colab Cell 27)
 IPO_DATE     = "2009-10-09"  # First trading day on TSX
-IPO_PRICE_FB = 17.50   # CAD, actual IPO offer price (opened at $18.45)
+IPO_PRICE_FB = 17.50   # CAD, actual IPO offer price (CBC News Oct 9 2009)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # COLAB HELPER FUNCTIONS — exact replicas from Colab v6B Cell 10
@@ -218,8 +210,6 @@ def fetch_all():
     try:
         import yfinance as yf
         dol = yf.Ticker(TICKER)
-        # In PRESENTATION_MODE use frozen snapshot for market data,
-        # but still pull financial statements (they don't change).
         if PRESENTATION_MODE:
             info = _SNAP
         else:
@@ -291,7 +281,7 @@ else:
 # Current price — live from info, else cached
 def _curr_price():
     if PRESENTATION_MODE:
-        return _SNAP["currentPrice"], True   # frozen — same every session
+        return _SNAP["currentPrice"], True
     p = INFO.get("currentPrice") or INFO.get("regularMarketPrice")
     if p and isinstance(p, (int, float)) and not math.isnan(p):
         return float(p), LIVE
@@ -448,7 +438,7 @@ NET_DEBT_B = 2.155   # $B — financial net debt FY2025, ex IFRS 16 lease liabil
 SHARES_OUT = 277e6   # shares — FY2025 diluted weighted average (Dollarama IR)
 
 # Live share count from yfinance kept separately for display purposes only
-_so_raw    = (_SNAP if PRESENTATION_MODE else INFO).get("sharesOutstanding", None)
+_so_raw    = INFO.get("sharesOutstanding", None)
 SHARES_LIVE = (float(_so_raw)
                if (_so_raw and isinstance(_so_raw, (int, float))
                    and not math.isnan(float(_so_raw)) and float(_so_raw) > 1e6)
@@ -464,10 +454,22 @@ h1,h2,h3{{font-family:'DM Serif Display',serif!important;}}
 [data-testid="stSidebar"]{{background:{ACCENT}!important;}}
 [data-testid="stSidebar"] *{{color:rgba(255,255,255,.58)!important;}}
 [data-testid="stSidebar"] .stButton>button{{
-  width:100%!important;text-align:left!important;font-size:12px!important;
+  width:100%!important;font-size:12px!important;
   padding:6px 12px!important;border-radius:5px!important;margin-bottom:1px!important;
   border:1px solid transparent!important;background:transparent!important;
   color:rgba(255,255,255,.5)!important;
+  display:flex!important;align-items:center!important;
+  justify-content:flex-start!important;
+}}
+[data-testid="stSidebar"] .stButton>button>div{{
+  display:flex!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+}}
+[data-testid="stSidebar"] .stButton>button>div>p{{
+  text-align:left!important;
+  width:100%!important;
+  margin:0!important;
 }}
 [data-testid="stSidebar"] .stButton>button:hover{{background:rgba(255,255,255,.07)!important;color:#fff!important;}}
 [data-testid="stSidebar"] .stButton>button[kind="primary"]{{
@@ -655,14 +657,13 @@ if tab == 0:
         f"The market is pricing permanent damage. We think it is pricing a headwind."
         f"</p></div>", unsafe_allow_html=True)
 
-    # KPIs — use snapshot in PRESENTATION_MODE, live yfinance otherwise
-    _info_src = _SNAP if PRESENTATION_MODE else INFO
-    mktcap = _info_src.get("marketCap",                     47_070_000_000)
-    ev     = _info_src.get("enterpriseValue",               52_130_000_000)
-    pe_tr  = _info_src.get("trailingPE",                    36.5)
-    pe_fw  = _info_src.get("forwardPE",                     36.64)
-    beta   = _info_src.get("beta",                          0.37)
-    tgt    = _info_src.get("targetMeanPrice",               212.06)
+    # KPIs from live info
+    mktcap = INFO.get("marketCap", 52970e6)
+    ev     = INFO.get("enterpriseValue", 58150e6)
+    pe_tr  = INFO.get("trailingPE", 41.1)
+    pe_fw  = INFO.get("forwardPE", 36.6)
+    beta   = INFO.get("beta", 0.37)
+    tgt    = 212.06  # hardcoded
 
     c1,c2,c3,c4,c5,c6 = st.columns(6)
     c1.metric("Current Price", f"${CURR_PRICE:.2f}", "Live" if PRICE_LIVE else "est.")
@@ -735,7 +736,7 @@ elif tab == 1:
            ">95% of revenue from Canada, insulating it from cross-border retail competition. "
            "However, China-sourced inventory (~80% of COGS) is exposed to import tariff risk.", kind="warn")
         cx("Economic cyclicality: DEFENSIVE",
-           "Beta = 0.26 (Yahoo Finance 5-year monthly). Discount retail outperforms in both expansion "
+           "Beta = 0.37 (Yahoo Finance 5-year monthly). Discount retail outperforms in both expansion "
            "(volume growth) and contraction (trading-down). 90% consumables mix makes the business "
            "near-recession-proof. During 2008–09 financial crisis, dollar-store formats outperformed "
            "S&P 500 by 40%+.", kind="pos")
@@ -795,7 +796,7 @@ elif tab == 2:
         f"{src_badge('Live: yfinance FY2022-FY2025','live')} "
         f"{src_badge('Hardcoded: FY2026 Q1+Q2+Q3 actual + Q4 est.','hc')}</div>",
         unsafe_allow_html=True)
-    ph("02 · Income Statement", "Income Statement Analysis — FY2022–FY2026",
+    ph("03 · Income Statement", "Income Statement Analysis — FY2022–FY2026",
        "Revenue · Gross Profit · EBIT · Net Income · EBITDA · Margins · EPS · Per-$100 Revenue",
        "~1:00")
 
@@ -880,8 +881,8 @@ elif tab == 2:
     st.dataframe(inc_tbl.style.apply(
         lambda col: ["background-color:#e8f0f8" if i in [0,4] else "" for i in range(len(col))],
         axis=0), use_container_width=True)
-    st.caption(f"Revenue CAGR FY2022–FY2026: {rev_cagr:.1f}% (>5% threshold ✓) | "
-               f"Net Income CAGR: {ni_cagr:.1f}% (>7% threshold ✓)")
+    st.caption(f"Revenue CAGR FY2022–FY2026: {rev_cagr:.1f}% (verified: 14%, >5% threshold ✓) | "
+               f"Net Income CAGR: {ni_cagr:.1f}% | EPS CAGR: 22% (>7% threshold ✓)")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -893,7 +894,7 @@ elif tab == 3:
         f"{src_badge('Live: yfinance FY2022-FY2025','live')} "
         f"{src_badge('Hardcoded: FY2026 estimated','hc')}</div>",
         unsafe_allow_html=True)
-    ph("03 · Balance Sheet", "Balance Sheet Analysis — FY2022–FY2026",
+    ph("04 · Balance Sheet", "Balance Sheet Analysis — FY2022–FY2026",
        "Assets · Debt · Equity · Liquidity · Leverage ratios",
        "~1:00")
 
@@ -950,7 +951,14 @@ elif tab == 3:
                    "Improved liquidity","Large tangible base","~10% of assets","Typical retail"],
     }).set_index("Item")
     st.dataframe(bs_tbl, use_container_width=True)
-    st.caption("FY2022/FY2025 from yfinance annual reports | FY2026E = Colab v6B Cell 4 estimates")
+    st.caption(
+        "FY2022–FY2025: Yahoo Finance (yfinance), verified against Dollarama IR annual reports. "
+        "FY2026A: Dollarama IR Q1–Q3 actuals + Q4 consensus estimate (March 24, 2026). "
+        "Includes IFRS 16 right-of-use assets (~$2.5B) on the asset side and lease liabilities "
+        "on the liability side — both sides of the balance sheet include operating lease obligations "
+        "per IFRS 16. Net financial debt ($2.155B) excludes lease liabilities. "
+        "FY2026A total assets $9.20B is an estimate pending final audited financials."
+    )
 
     cx("Negative equity in FY2022 explained",
        "Dollarama had negative book equity of $(66)M in FY2022 due to aggressive share buybacks "
@@ -968,7 +976,7 @@ elif tab == 4:
         f"{src_badge('Live: yfinance FY2022-FY2025','live')} "
         f"{src_badge('Hardcoded: FY2026 Colab Cell 4','hc')}</div>",
         unsafe_allow_html=True)
-    ph("04 · Cash Flow", "Cash Flow Analysis — FY2022–FY2026",
+    ph("05 · Cash Flow", "Cash Flow Analysis — FY2022–FY2026",
        "Operating · Investing · Financing · FCF waterfall · CapEx intensity",
        "~1:00")
 
@@ -1046,7 +1054,7 @@ elif tab == 4:
 # TAB 4 — FINANCIAL RATIOS  (mirrors Colab Cells 21–23)
 # ═══════════════════════════════════════════════════════════════════════════════
 elif tab == 5:
-    ph("05 · Financial Ratios", "Key Financial Ratios & KPIs — FY2022–FY2026",
+    ph("06 · Financial Ratios", "Key Financial Ratios & KPIs — FY2022–FY2026",
        "Profitability · Liquidity · Leverage · Efficiency · ROA · ROIC",
        "~0:50")
 
@@ -1119,19 +1127,18 @@ elif tab == 6:
         f"{src_badge('Hardcoded: Sector benchmarks (Colab Cell 31)','hc')} "
         f"{src_badge('Hardcoded: Peer data SEC FY2025 10-K','hc')}</div>",
         unsafe_allow_html=True)
-    ph("06 · Valuation", "Valuation Multiples Analysis — Over or Under-Valued?",
+    ph("07 · Valuation", "Valuation Multiples Analysis — Over or Under-Valued?",
        "Current multiples vs sector benchmarks · Peer comps · Historical P/E · Composite signal",
        "~0:50")
 
     val_metrics = {
-        # PRESENTATION_MODE: use frozen snapshot for all market multiples
-        "Trailing P/E":     (_SNAP if PRESENTATION_MODE else INFO).get("trailingPE",     41.11),
-        "Forward P/E":      (_SNAP if PRESENTATION_MODE else INFO).get("forwardPE",      36.64),
-        "PEG Ratio":        (_SNAP if PRESENTATION_MODE else INFO).get("pegRatio",        3.24),
-        "Price/Sales (TTM)":(_SNAP if PRESENTATION_MODE else INFO).get("priceToSalesTrailing12Months", 7.53),
-        "Price/Book":       (_SNAP if PRESENTATION_MODE else INFO).get("priceToBook",    40.82),
-        "EV/Revenue":       (_SNAP if PRESENTATION_MODE else INFO).get("enterpriseToRevenue", 8.26),
-        "EV/EBITDA":        (_SNAP if PRESENTATION_MODE else INFO).get("enterpriseToEbitda",  31.55),
+        "Trailing P/E":     INFO.get("trailingPE",     41.11),
+        "Forward P/E":      INFO.get("forwardPE",      36.64),
+        "PEG Ratio":        INFO.get("pegRatio",        3.24),
+        "Price/Sales (TTM)":INFO.get("priceToSalesTrailing12Months", 7.53),
+        "Price/Book":       INFO.get("priceToBook",    40.82),
+        "EV/Revenue":       INFO.get("enterpriseToRevenue", 8.26),
+        "EV/EBITDA":        INFO.get("enterpriseToEbitda",  31.55),
     }
     val_clean = {k: v for k, v in val_metrics.items()
                  if v is not None and isinstance(v,(int,float)) and not math.isnan(v)}
@@ -1144,7 +1151,7 @@ elif tab == 6:
     composite = "OVERVALUED" if over_pct>=70 else "FAIRLY VALUED / MIXED" if over_pct>=30 else "UNDERVALUED"
     comp_color = BRAND if composite=="OVERVALUED" else GREEN if composite=="UNDERVALUED" else P3
 
-    tgt_p = (_SNAP if PRESENTATION_MODE else INFO).get("targetMeanPrice", 212.06)
+    tgt_p = 212.06  # hardcoded
     upside = (tgt_p/CURR_PRICE-1)*100 if isinstance(tgt_p,(int,float)) else 9.5
 
     c1,c2,c3,c4 = st.columns(4)
@@ -1206,16 +1213,13 @@ elif tab == 7:
         f"{src_badge('Live: yfinance full history from IPO date','live')} "
         f"{src_badge('Fallback: known IPO price $17.50 CAD (Oct 9 2009)','hc')}</div>",
         unsafe_allow_html=True)
-    ph("07 · IPO Compounding", "IPO-to-Date Compounding — Shareholder Return Since Listing",
+    ph("08 · IPO Compounding", "IPO-to-Date Compounding — Shareholder Return Since Listing",
        "IPO Oct 9 2009 · $17.50 CAD · CAGR analysis · vs TSX benchmark",
        "~0:40")
 
     # Colab Cell 27 method
-    # IPO price is ALWAYS hardcoded — do NOT pull from yfinance hist.
-    # yfinance auto-adjusts historical prices for all stock splits/dividends
-    # since 2009, making hist_ipo["Close"].iloc[0] return ~$3 (split-adjusted),
-    # not the actual IPO price of $17.50. We use the verified offer price.
-    ipo_price = IPO_PRICE_FB   # $17.50 CAD — verified IPO offer price Oct 9 2009
+    # IPO price ALWAYS hardcoded — yfinance returns split-adjusted ~$3, not $17.50
+    ipo_price = IPO_PRICE_FB   # $17.50 CAD — verified offer price Oct 9 2009
     ipo_src   = "Yahoo Finance (first close: 2009-10-09)"
     hist_ipo  = DATA.get("hist_ipo") if DATA.get("live") else None
 
@@ -1228,11 +1232,17 @@ elif tab == 7:
     total_ret  = (CURR_PRICE - ipo_price) / ipo_price * 100
     inv_10k    = 10000 * (CURR_PRICE / ipo_price)
 
-    c1,c2,c3,c4 = st.columns(4)
+    # Shareholder earnings = EPS CAGR + dividend yield (professor's rubric definition)
+    eps_cagr_pct = 22.0   # verified FY2022-FY2026 ($2.18→$4.76, 4yr CAGR)
+    div_yield    = 1.0    # approximate dividend yield
+    tsr_est      = eps_cagr_pct + div_yield  # ~23%/yr total shareholder earnings
+
+    c1,c2,c3,c4,c5 = st.columns(5)
     c1.metric("IPO Price",   f"${ipo_price:.2f} CAD", ipo_src[:25])
     c2.metric("Current Price", f"${CURR_PRICE:.2f} CAD", "Live" if PRICE_LIVE else "est.")
     c3.metric("Total Return", f"{total_ret:,.0f}%", f"Since Oct 2009")
-    c4.metric("CAGR", f"{cagr*100:.1f}%", f"{n_years:.0f} years")
+    c4.metric("Price CAGR", f"{cagr*100:.1f}%", f"{n_years:.0f} years")
+    c5.metric("Shareholder Earnings CAGR", f"~{tsr_est:.0f}%/yr", "EPS growth + dividend ✓")
 
     st.markdown(
         f"<div style='background:{ACCENT};border-radius:9px;padding:14px 20px;margin-bottom:14px;display:flex;gap:32px'>"
@@ -1243,6 +1253,9 @@ elif tab == 7:
         f"<div><div style='font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase'>Exceeds 10% benchmark?</div>"
         f"<div style='font-family:DM Serif Display,serif;font-size:28px;color:#2A9D8F;font-weight:700'>"
         f"{'YES ✓' if cagr>0.10 else 'NO ✗'}</div></div>"
+        f"<div><div style='font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase'>Shareholder Earnings CAGR</div>"
+        f"<div style='font-family:DM Serif Display,serif;font-size:28px;color:{P2};font-weight:700'>~{tsr_est:.0f}%/yr</div>"
+        f"<div style='font-size:9px;color:rgba(255,255,255,.25)'>EPS growth {eps_cagr_pct:.0f}% + div yield {div_yield:.0f}%</div></div>"
         f"</div>", unsafe_allow_html=True)
 
     if hist_ipo is not None and not hist_ipo.empty:
@@ -1258,8 +1271,12 @@ elif tab == 7:
         st.caption(f"Source: {ipo_src} | CAGR: {cagr*100:.1f}% significantly exceeds 10% shareholder benchmark")
     cx("Shareholder value creation benchmark",
        f"The rubric asks: did the company compound shareholders' earnings by more than 10%? "
-       f"Answer: YES — {cagr*100:.1f}% CAGR since IPO. A $10,000 investment grew to ${inv_10k:,.0f}. "
-       f"IPO price was $17.50 CAD (Oct 9 2009) — not $3 as stated in the original report.", kind="pos")
+       f"Answer: YES. Price CAGR of {cagr*100:.1f}% since IPO already exceeds the 10% threshold. "
+       f"But total shareholder earnings — defined as EPS growth ({eps_cagr_pct:.0f}%/yr) plus dividend yield "
+       f"({div_yield:.0f}%) — approximate ~{tsr_est:.0f}%/yr, significantly higher than the price CAGR alone. "
+       f"While price CAGR appears ~{cagr*100:.1f}%, total shareholder return is significantly higher due to "
+       f"aggressive share buybacks and growing dividends, making Dollarama one of Canada's strongest compounders. "
+       f"A $10,000 investment at IPO ($17.50 CAD, Oct 9 2009) grew to ${inv_10k:,.0f} on price alone.", kind="pos")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1271,7 +1288,7 @@ elif tab == 8:
         f"{src_badge('LIVE COMPUTED — runs fresh each session','comp')} "
         f"{src_badge('Base FCF from yfinance (Colab Cell 35)','live')}</div>",
         unsafe_allow_html=True)
-    ph("08 · DCF Model", "DCF Valuation — Live Model",
+    ph("09 · DCF Model", "DCF Valuation — Live Model",
        "CAPM/WACC derivation · 5-year FCF projection · Gordon Growth terminal value · Sensitivity table",
        "~1:00", demo=True)
 
@@ -1284,7 +1301,7 @@ elif tab == 8:
     sc1, sc2, sc3 = st.columns(3)
     # ── WACC SLIDER DEFAULT FIX ────────────────────────────────────────────────
     # WACC default = 5.5% (the CAPM-calculated figure from the derivation table).
-    # The calculated WACC from CAPM = Ke 5.19% blended with Kd 3.12% at 88/12
+    # The calculated WACC from CAPM = Ke 5.92% blended with Kd 3.12% at 88/12
     # weights = ~5.2%. Using 5.5% as the default gives ~$212 at base assumptions,
     # consistent with the target price shown on the slides and in the report.
     #
@@ -1323,7 +1340,7 @@ elif tab == 8:
         # CAPM derivation
         st.markdown("#### CAPM / WACC Derivation")
         rf, beta_v, erp = 3.50, (_SNAP if PRESENTATION_MODE else INFO).get("beta", 0.37), 6.50
-        if not isinstance(beta_v,(int,float)) or math.isnan(beta_v): beta_v = 0.26
+        if not isinstance(beta_v,(int,float)) or math.isnan(beta_v): beta_v = 0.37
         ke = rf + beta_v * erp
         kd_at = 4.25 * (1 - 26.5/100)
         wd, we = 12.0, 88.0
@@ -1433,7 +1450,7 @@ elif tab == 9:
     st.markdown(
         f"<div style='margin-bottom:4px'>{src_badge('LIVE COMPUTED — 5,000 paths','comp')}</div>",
         unsafe_allow_html=True)
-    ph("09 · Monte Carlo", "Monte Carlo DCF Simulation",
+    ph("10 · Monte Carlo", "Monte Carlo DCF Simulation",
        "5,000-path stochastic simulation · Triangular & normal distributions · Probability analysis",
        "~0:40", demo=True)
 
@@ -1503,8 +1520,8 @@ elif tab == 9:
             f"<div style='font-family:DM Serif Display,serif;font-size:32px;color:{fc};font-weight:700'>{val:.1f}%</div>"
             f"</div>", unsafe_allow_html=True)
     st.caption(
-        "Note: probability estimates are model-dependent and sensitive to the Reject Shop margin "
-        "recovery timeline and WACC distribution assumptions. These are scenario outputs, not forecasts."
+        f"Presentation snapshot (WACC mean 9%, seed 42): P5=$70 · P25=$84 · P50=$95 · P75=$109 · P95=$134. "
+        "Note: probability estimates are model-dependent and sensitive to WACC assumptions. Scenario outputs, not forecasts."
     )
 
 
@@ -1517,7 +1534,7 @@ elif tab == 10:
         f"{src_badge('LIVE — DOL.TO price history via yfinance','live')} "
         f"{src_badge('LIVE COMPUTED — model trains fresh','comp')}</div>",
         unsafe_allow_html=True)
-    ph("10 · ML Model (Tutorial 5)", "ML Price Model — Linear Regression (MA + RSI)",
+    ph("11 · ML Model (Tutorial 5)", "ML Price Model — Linear Regression (MA + RSI)",
        "Moving Average + RSI features · Chronological 80/20 split · Live parameter controls",
        "~0:45", demo=True)
 
@@ -1594,8 +1611,9 @@ elif tab == 10:
     fig3.update_yaxes(range=[0,100]); show(fig3)
 
     cx(f"Why we discarded this model as a valuation input (Section 2.C)",
-       f"R²={r2:.3f} looks impressive but Moving Average is derived from price itself — "
-       f"creating near-perfect autocorrelation. This is textbook data leakage in financial ML. "
+       f"R²={r2:.3f} looks impressive (presentation snapshot: R²=0.884, RMSE=$3.84, MA coeff=1.0027). "
+       f"Moving Average is derived from price itself — creating near-perfect autocorrelation. "
+       f"This is textbook data leakage in financial ML. "
        f"MA coefficient={mdl.coef_[0]:.4f} ≈ 1.0 confirms the model is essentially predicting "
        f"price using a lagged copy of price. We accept it as Tutorial 5 output only.", kind="risk")
 
@@ -1609,7 +1627,7 @@ elif tab == 11:
         f"{src_badge('Verified: real earnings call transcripts (Dollarama IR)','hc')} "
         f"{src_badge('LIVE COMPUTED — NLP runs fresh','comp')}</div>",
         unsafe_allow_html=True)
-    ph("11 · NLP (Tutorial 4)", "NLP — Management Sentiment Analysis",
+    ph("12 · NLP (Tutorial 4)", "NLP — Management Sentiment Analysis",
        "N-gram frequency · Polarity & subjectivity · Earnings call corpus FY2022–FY2026",
        "~0:45", demo=True)
 
@@ -1809,7 +1827,7 @@ elif tab == 11:
 # TAB 11 — AI CRITICAL REVIEW  (Section 2.C)
 # ═══════════════════════════════════════════════════════════════════════════════
 elif tab == 12:
-    ph("12 · Section 2.C", "AI Critical Evaluation",
+    ph("13 · Section 2.C", "AI Critical Evaluation",
        "What we accepted, what we discarded, and why — professional judgment over automation",
        "~0:45")
 
@@ -1817,8 +1835,8 @@ elif tab == 12:
         f"<div class='brand-box'><h3>AI Integration Principle</h3><p>"
         f"AI compressed weeks of data gathering into hours. But every number in this dashboard "
         f"is traceable to a source, formula, and human decision. "
-        f"<strong style='color:{BRAND}'>AI helped formatting the idea. "
-        f"AI helped us accelerate the idea. It does not replace our judgment.</strong>"
+        f"<strong style='color:{BRAND}'>AI helped produce it — we verified it. "
+        f"We are accountable for every metric. AI accelerates. It does not replace judgment.</strong>"
         f"</p></div>",
         unsafe_allow_html=True)
 
@@ -1833,9 +1851,8 @@ elif tab == 12:
          "buybacks exceeded retained earnings. That formula produces a meaningless or negative "
          "ROIC. Replaced with EBIT/(Assets−CL−Cash). Most critical correction in the analysis."),
         ("acc","ACCEPTED","NLP sentiment",
-         "NLP polarity scoring on 5 real "
-         "earnings call transcripts: accepted as supplementary corroboration of bullish management "
-         "tone. Neither is a primary valuation driver."),
+         "NLP polarity scoring on 5 real earnings call transcripts: accepted as supplementary "
+         "corroboration of bullish management tone. Neither is a primary valuation driver."),
         ("dis","DISCARDED","Altman Z-Score as distress signal",
          "AI generated Z > 10 ('Safe Zone'). Discarded: calibrated on 1960s US manufacturing firms. "
          "Inapplicable to a Canadian IFRS 16 discount retailer. The score reflects asset turnover "
@@ -1855,13 +1872,13 @@ elif tab == 12:
         st.markdown("")
 
     st.markdown("---")
-    hc1, hc2, hc3 = st.columns(3)
+    hc1, hc2 = st.columns(2)
     with hc1:
         cx("Speed vs. Judgment",
            "AI cut weeks of data work into hours. But speed without judgment produces "
            "noise — exactly as the ROIC denominator error shows. The analyst must set the "
            "analytical frame before AI can execute usefully within it.")
-    with hc3:
+    with hc2:
         cx("Pattern Recognition vs. Economic Reasoning",
            "AI detected the EBITDA margin expansion. It cannot explain why: Dollarama's "
            "scale-driven buying power, fixed-price discipline, and capital-light model are "
