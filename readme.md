@@ -27,9 +27,8 @@ On March 24, 2026, Dollarama reported that revenue grew 13.1% and EPS grew 12.1%
 
 ## Live Dashboard
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dollarama-equity-research.streamlit.app)
-
-> If deploying yourself, see [Quick Start](#quick-start) below.
+### 🌐 Live Demo
+👉 https://dollarama-equity-research.streamlit.app/
 
 ---
 
