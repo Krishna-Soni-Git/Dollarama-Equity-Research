@@ -10,7 +10,7 @@
 **MBAN5570 — Equity Research Analytics**  
 **Soni & Warner · Saint Mary's University · 2025**
 
-***THIS IS A SCHOOL PROJECT NOT MEANT FOR FINANCIAL ADVICE***
+***THIS IS A UNIVERSITY PROJECT NOT MEANT FOR FINANCIAL ADVICE***
 
 
 </div>
