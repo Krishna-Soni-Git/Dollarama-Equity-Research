@@ -8,8 +8,8 @@
 ![Status](https://img.shields.io/badge/Status-Presentation%20Ready-brightgreen)
 
 **MBAN5570 — Equity Research Analytics**  
-Sobey School of Business · Saint Mary's University · 2025  
-**Soni & Warner**
+**Soni & Warner · Saint Mary's University · 2025**
+
 ***THIS IS A SCHOOL PROJECT NOT MEANT FOR FINANCIAL ADVICE***
 
 
