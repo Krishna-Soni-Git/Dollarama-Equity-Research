@@ -1520,7 +1520,8 @@ elif tab == 9:
             f"<div style='font-family:DM Serif Display,serif;font-size:32px;color:{fc};font-weight:700'>{val:.1f}%</div>"
             f"</div>", unsafe_allow_html=True)
     st.caption(
-        f"Presentation snapshot (WACC mean 9%, seed 42): P5=$72 · P25=$85 · P50=$97 · P75=$112 · P95=$139. "
+        f"Presentation snapshot (WACC mean 9%, FCF growth 8%, TGR 2.5%, seed 42): "
+        f"P5=$70 · P25=$83 · P50=$95 · P75=$108 · P95=$133 · Prob>$212: 0.1% · Prob>$173: 0.4% · Prob<$130: 93.8%. "
         "Note: probability estimates are model-dependent and sensitive to WACC assumptions. Scenario outputs, not forecasts."
     )
 
