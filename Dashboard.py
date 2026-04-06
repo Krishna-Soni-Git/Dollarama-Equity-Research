@@ -17,7 +17,7 @@ DATA TRANSPARENCY:
   LIVE via yfinance — current price, valuation multiples, info dict
   LIVE via yfinance — 5yr daily price history (ML model, stock chart)
   LIVE via yfinance — IPO-to-date price history (Colab Cell 27 method)
-  HARDCODED (verified) — FY2026 Q1+Q2+Q3 actuals + Q4 consensus (Colab Cell 4)
+  HARDCODED (verified) — FY2026 actual reported results (March 24, 2026 press release)
   HARDCODED (verified) — Peer data DLTR/DG from SEC FY2025 10-K
   COMPUTED LIVE — DCF, Monte Carlo, ML regression, NLP scoring
 
@@ -89,56 +89,55 @@ TICKER  = "DOL.TO"
 COMPANY = "Dollarama Inc."
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FY2026 HARDCODED DATA — exact from Colab v6B Cell 4
-# Sources: Q1 press release Jun 11 2025, Q2 Aug 27 2025, Q3 Dec 11 2025,
-#          Q4 analyst consensus (Investing.com), reported March 24 2026
+# FY2026 HARDCODED DATA — updated to actual reported Fiscal 2026 values
+# Source: Dollarama Q4 and Fiscal 2026 results press release dated March 24, 2026
 # ─────────────────────────────────────────────────────────────────────────────
 FY2026_TS = pd.Timestamp("2026-02-01")
 
 FY2026_INCOME = {
-    "Total Revenue":              7_244.4e6,
-    "Cost Of Revenue":            3_970.5e6,
-    "Gross Profit":               3_273.9e6,
-    "Operating Income":           1_913.6e6,
-    "EBIT":                       1_913.6e6,
-    "Interest Expense":            -205.0e6,
-    "Pretax Income":              1_735.0e6,
-    "Tax Provision":               378.7e6,
-    "Net Income":                 1_309.9e6,
-    "EBITDA":                     2_386.4e6,
-    "Normalized EBITDA":          2_386.4e6,
-    "Reconciled Depreciation":      472.8e6,
-    "Basic Average Shares":         274.0e6,
-    "Diluted Average Shares":       275.0e6,
+    "Total Revenue":              7_255.754e6,
+    "Cost Of Revenue":            3_987.089e6,
+    "Gross Profit":               3_268.665e6,
+    "Operating Income":           1_937.859e6,
+    "EBIT":                       1_937.859e6,
+    "Interest Expense":            -184.020e6,
+    "Pretax Income":              1_764.187e6,
+    "Tax Provision":               454.749e6,
+    "Net Income":                 1_309.438e6,
+    "EBITDA":                     2_408.226e6,
+    "Normalized EBITDA":          2_397.878e6,
+    "Reconciled Depreciation":      460.019e6,
+    "Basic Average Shares":         273.780e6,
+    "Diluted Average Shares":       276.684e6,
 }
 
 FY2026_BALANCE = {
-    "Total Assets":               9_200.0e6,
-    "Total Liabilities Net Minority Interest": 7_700.0e6,
-    "Stockholders Equity":        1_500.0e6,
-    "Common Stockholders' Equity": 1_500.0e6,
-    "Total Equity":               1_500.0e6,
-    "Current Assets":             2_100.0e6,
-    "Total Current Assets":       2_100.0e6,
-    "Current Liabilities":        1_600.0e6,
-    "Total Current Liabilities":  1_600.0e6,
-    "Cash And Cash Equivalents":    220.0e6,
-    "Total Debt":                 5_400.0e6,
-    "Long Term Debt":             5_100.0e6,
-    "Inventory":                    720.0e6,
+    "Total Assets":               7_558.352e6,
+    "Total Liabilities Net Minority Interest": 6_102.464e6,
+    "Stockholders Equity":        1_455.888e6,
+    "Common Stockholders' Equity": 1_455.888e6,
+    "Total Equity":               1_455.888e6,
+    "Current Assets":             1_521.989e6,
+    "Total Current Assets":       1_521.989e6,
+    "Current Liabilities":        1_348.179e6,
+    "Total Current Liabilities":  1_348.179e6,
+    "Cash And Cash Equivalents":    331.569e6,
+    "Total Debt":                 2_625.121e6,
+    "Long Term Debt":             2_625.121e6,
+    "Inventory":                  1_103.175e6,
 }
 
 FY2026_CASHFLOW = {
     "Operating Cash Flow":        1_650.0e6,
-    "Capital Expenditure":         -270.0e6,
+    "Capital Expenditure":         -272.781e6,
     "Free Cash Flow":             1_380.0e6,
     "Investing Cash Flow":         -480.0e6,
     "Financing Cash Flow":        -1_350.0e6,
-    "Net Income From Continuing Operations": 1_309.9e6,
-    "Depreciation Amortization Depletion":    472.8e6,
-    "Repurchase Of Capital Stock":           -700.0e6,
-    "Cash Dividends Paid":                   -105.0e6,
-    "Repayment Of Debt":                     -400.0e6,
+    "Net Income From Continuing Operations": 1_309.438e6,
+    "Depreciation Amortization Depletion":    460.019e6,
+    "Repurchase Of Capital Stock":           -834.2e6,
+    "Cash Dividends Paid":                   -117.2e6,
+    "Repayment Of Debt":                     -250.0e6,
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -268,13 +267,13 @@ if DATA["income"] is not None:
     CF    = DATA["cashflow"]
     YEARS = [str(c.year) for c in INC.columns]
     FY_LBL    = [f"FY{y}" for y in YEARS]
-    FY_CHART  = [f"{l} (est.)" if l == "FY2026" else l for l in FY_LBL]
+    FY_CHART  = FY_LBL.copy()
     N = len(FY_LBL)
 else:
     # Full fallback dataset — exact values from Colab FY2022–FY2026
     YEARS    = ["2022","2023","2024","2025","2026"]
     FY_LBL   = [f"FY{y}" for y in YEARS]
-    FY_CHART = ["FY2022","FY2023","FY2024","FY2025","FY2026 (est.)"]
+    FY_CHART = ["FY2022","FY2023","FY2024","FY2025","FY2026"]
     N = 5
     INC = BAL = CF = None
 
@@ -295,37 +294,37 @@ CURR_PRICE, PRICE_LIVE = _curr_price()
 # ─────────────────────────────────────────────────────────────────────────────
 FB = {
     # Revenue $B
-    "rev":    [4.331, 5.053, 5.867, 6.413, 7.244],
+    "rev":    [4.331, 5.053, 5.867, 6.413, 7.256],
     # Gross Profit $B
-    "gross":  [1.904, 2.207, 2.610, 2.902, 3.274],
+    "gross":  [1.904, 2.207, 2.610, 2.902, 3.269],
     # EBIT $B
     "ebit":   [0.983, 1.190, 1.520, 1.713, 1.914],
     # Net Income $B
-    "ni":     [0.663, 0.802, 1.010, 1.169, 1.310],
+    "ni":     [0.663, 0.802, 1.010, 1.169, 1.309],
     # EBITDA $B
-    "ebitda": [1.283, 1.530, 1.882, 2.149, 2.386],
+    "ebitda": [1.283, 1.530, 1.882, 2.149, 2.408],
     # Diluted EPS
-    "eps":    [2.18,  2.76,  3.56,  4.16,  4.76],
+    "eps":    [2.18,  2.76,  3.56,  4.16,  4.73],
     # Operating CF $B
     "cfo":    [1.164, 0.870, 1.530, 1.640, 1.650],
     # CapEx $B (absolute)
-    "capex":  [0.160, 0.157, 0.279, 0.247, 0.270],
+    "capex":  [0.160, 0.157, 0.279, 0.247, 0.273],
     # FCF $B
     "fcf":    [1.004, 0.713, 1.251, 1.397, 1.380],
     # Total Assets $B
-    "assets": [4.060, 4.722, 5.455, 6.479, 9.200],
+    "assets": [4.060, 4.722, 5.455, 6.479, 7.558],
     # Total Debt $B
-    "debt":   [3.607, 3.721, 4.047, 4.714, 5.400],
+    "debt":   [3.607, 3.721, 4.047, 4.714, 2.625],
     # Equity $B
-    "equity": [-0.066, 0.237, 0.713, 1.191, 1.500],
+    "equity": [-0.066, 0.237, 0.713, 1.191, 1.456],
     # Cash $B
-    "cash":   [0.093, 0.088, 0.099, 0.090, 0.220],
+    "cash":   [0.093, 0.088, 0.099, 0.090, 0.332],
     # Gross Margin %
-    "gm":     [44.0, 43.6, 44.5, 45.1, 45.2],
+    "gm":     [44.0, 43.6, 44.5, 45.1, 45.0],
     # Net Margin %
-    "nm":     [15.3, 15.9, 17.2, 18.2, 18.1],
+    "nm":     [15.3, 15.9, 17.2, 18.2, 18.0],
     # EBITDA Margin %
-    "em":     [29.6, 30.3, 32.1, 33.5, 32.9],
+    "em":     [29.6, 30.3, 32.1, 33.1, 33.2],   # PR confirmed: FY2025=33.1%, FY2026=33.2%
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -336,7 +335,7 @@ FB = {
 # ─────────────────────────────────────────────────────────────────────────────
 N = 5  # always 5: FY2022, FY2023, FY2024, FY2025, FY2026
 FY_LBL   = ["FY2022","FY2023","FY2024","FY2025","FY2026"]
-FY_CHART = ["FY2022","FY2023","FY2024","FY2025","FY2026 (est.)"]
+FY_CHART = ["FY2022","FY2023","FY2024","FY2025","FY2026"]
 
 def _get_series(key_candidates, df, fallback_key, scale=1.0):
     """
@@ -414,7 +413,7 @@ ni_cagr  = _safe_cagr(net_inc, 18.6)
 
 # G_DEFAULT: Stage 1 FCF growth slider default.
 # HARDCODED to 8.0% — the verified parameter that produces the $212 target price
-# at WACC=5.5%, TGR=2.5%, Base FCF=$1.397B, Net Debt=$2.155B.
+# at WACC=5.5%, TGR=2.5%, Base FCF=$1.397B, Net Debt=$2.294B (FY2026 actual, PR Mar 24 2026).
 # DO NOT derive this from rev_cagr. The revenue CAGR (~13.7%) is higher than
 # FCF CAGR because of CapEx and working capital. Using rev_cagr * any multiplier
 # produces inconsistent results when live yfinance data changes the CAGR base.
@@ -434,7 +433,7 @@ G_DEFAULT = 8.0
 # ALL THREE ARE LOCKED. Live data feeds the charts. The DCF uses verified inputs.
 
 BASE_FCF   = 1.397   # $B — FY2025 actual FCF (Dollarama IR, verified)
-NET_DEBT_B = 2.155   # $B — financial net debt FY2025, ex IFRS 16 lease liabilities
+NET_DEBT_B = 2.294   # $B — financial net debt FY2026, based on March 24 2026 reported results
 SHARES_OUT = 277e6   # shares — FY2025 diluted weighted average (Dollarama IR)
 
 # Live share count from yfinance kept separately for display purposes only
@@ -628,7 +627,7 @@ with st.sidebar:
         f"<div style='font-size:8.5px;color:rgba(255,255,255,.2);line-height:1.8'>"
         f"Colab v6B palette: {BRAND} / {ACCENT}<br>"
         f"FY range: FY2022–FY2026<br>"
-        f"FY2026: Q1+Q2+Q3 actual + Q4 est.<br><br>"
+        f"FY2026: actual reported results<br><br>"
         f"<span style='color:#2A9D8F'>&#9679;</span> LIVE — yfinance FY2022-FY2025<br>"
         f"<span style='color:{BRAND}'>&#9679;</span> HARDCODED — FY2026 (Colab Cell 4)<br>"
         f"<span style='color:{P1}'>&#9679;</span> COMPUTED — DCF, MC, ML, NLP</div>",
@@ -650,8 +649,9 @@ if tab == 0:
         f"<div class='brand-box'><h3>Investment Thesis — BUY · Target $212 · ~{_upside_str} upside</h3><p>"
         f"On March 24, 2026 Dollarama reported FY2026 results and the stock fell 9%. "
         f"Revenue grew 13%. EPS grew 13%. The selloff was driven by a margin dip from the "
-        f"Reject Shop (Australia) acquisition — EBITDA came in at $2.39B (32.9% margin vs "
-        f"33.5% in FY2025; -170bps). We view this as a temporary integration headwind, "
+        f"Reject Shop (Australia) acquisition — EBITDA came in at $2.41B (33.2% margin, PR March 24 2026). "
+        f"FY2025 baseline was 33.1% (PR confirmed) — margins were essentially flat YoY. "
+        f"Australia added 140bps of intra-year dilution but did not cause a full-year dip. We view the integration as a temporary headwind, "
         f"not a structural impairment to the business model. "
         f"ROIC of ~30% vs WACC of 9% — a 21-point spread — has widened every year for five years. "
         f"The market is pricing permanent damage. We think it is pricing a headwind."
@@ -784,7 +784,7 @@ elif tab == 1:
        "Dollarama's structural competitive advantages. Macro tailwinds (rate cuts, value-seeking "
        "consumers) are additive, not necessary, to the bull case. The primary macro risk — "
        "sustained China tariff or CAD depreciation shock compressing COGS — is explicitly "
-       "modelled in our bear case DCF scenario (Tab 09, WACC 11% / TGR 1.5% → $148).", kind="pos")
+       "modelled in our bear case DCF scenario (Tab 09, WACC 11% / TGR 1.5% → $62).", kind="pos")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -794,17 +794,17 @@ elif tab == 2:
     st.markdown(
         f"<div style='margin-bottom:4px'>"
         f"{src_badge('Live: yfinance FY2022-FY2025','live')} "
-        f"{src_badge('Hardcoded: FY2026 Q1+Q2+Q3 actual + Q4 est.','hc')}</div>",
+        f"{src_badge('Hardcoded: FY2026 actual reported results','hc')}</div>",
         unsafe_allow_html=True)
     ph("03 · Income Statement", "Income Statement Analysis — FY2022–FY2026",
        "Revenue · Gross Profit · EBIT · Net Income · EBITDA · Margins · EPS · Per-$100 Revenue",
        "~1:00")
 
     c1,c2,c3,c4 = st.columns(4)
-    c1.metric("FY2026 Revenue",  f"${revenue[4]:.2f}B", f"{(revenue[4]/revenue[3]-1)*100:+.1f}% YoY (est.)")
+    c1.metric("FY2026 Revenue",  f"${revenue[4]:.2f}B", f"{(revenue[4]/revenue[3]-1)*100:+.1f}% YoY")
     c2.metric("Gross Margin",    f"{gm[4]:.1f}%", f"{gm[4]-gm[3]:+.1f}pp vs FY2025")
     c3.metric("Net Margin",      f"{nm[4]:.1f}%", f"{nm[4]-nm[3]:+.1f}pp vs FY2025")
-    c4.metric("EPS (diluted)",   f"${eps_arr[4]:.2f}", f"{(eps_arr[4]/eps_arr[3]-1)*100:+.1f}% YoY (est.)")
+    c4.metric("EPS (diluted)",   f"${eps_arr[4]:.2f}", f"{(eps_arr[4]/eps_arr[3]-1)*100:+.1f}% YoY")
 
     # Panel 1: Revenue waterfall (Colab Cell 14 ax1)
     cc1, cc2 = st.columns(2)
@@ -854,7 +854,7 @@ elif tab == 2:
         fig3.update_layout(**_lay("Per-$100 Revenue Breakdown", h=260, cat_x=True), barmode="stack")
         fig3.update_yaxes(ticksuffix="%")
         show(fig3)
-        st.caption(f"FY2026 est.: ${net_inc[4]/revenue[4]*100:.2f} net profit per $100 revenue")
+        st.caption(f"FY2026 actual: ${net_inc[4]/revenue[4]*100:.2f} net profit per $100 revenue")
 
     with cc4:
         # EPS trend (Colab Cell 14 ax4)
@@ -865,7 +865,7 @@ elif tab == 2:
         fig4.update_yaxes(tickprefix="$")
         show(fig4)
         cagr_txt = f"{(eps_arr[4]/eps_arr[0])**(1/(N-1))-1:.1%}" if eps_arr[0]>0 else "N/A"
-        st.caption(f"EPS CAGR FY2022–FY2026: {cagr_txt} | FY2026 = estimated")
+        st.caption(f"EPS CAGR FY2022–FY2026: {cagr_txt} | FY2026 = actual reported")
 
     # Summary table
     st.markdown("#### Income Statement Summary Table")
@@ -892,25 +892,25 @@ elif tab == 3:
     st.markdown(
         f"<div style='margin-bottom:4px'>"
         f"{src_badge('Live: yfinance FY2022-FY2025','live')} "
-        f"{src_badge('Hardcoded: FY2026 estimated','hc')}</div>",
+        f"{src_badge('Hardcoded: FY2026 actual reported results','hc')}</div>",
         unsafe_allow_html=True)
     ph("04 · Balance Sheet", "Balance Sheet Analysis — FY2022–FY2026",
        "Assets · Debt · Equity · Liquidity · Leverage ratios",
        "~1:00")
 
     curr_a = _get_series(["Current Assets","Total Current Assets"], BAL, "rev")
-    if not np.any(curr_a > 0): curr_a = np.array([0.495, 0.535, 0.617, 0.641, 2.100])
+    if not np.any(curr_a > 0): curr_a = np.array([0.495, 0.535, 0.617, 0.641, 1.522])
     curr_l = _get_series(["Current Liabilities","Total Current Liabilities"], BAL, "rev")
-    if not np.any(curr_l > 0): curr_l = np.array([0.690, 0.698, 0.760, 0.727, 1.600])
+    if not np.any(curr_l > 0): curr_l = np.array([0.690, 0.698, 0.760, 0.727, 1.348])
 
     # Fallback current ratio from report data
     curr_ratio_fb = [0.79, 0.88, 0.93, 1.18, 1.31]
     nd_ebitda_fb  = [2.71, 2.93, 2.67, 2.15, 2.17]
 
     c1,c2,c3,c4 = st.columns(4)
-    c1.metric("Total Assets FY2026E",  f"${total_assets[4]:.2f}B", f"vs ${total_assets[3]:.2f}B FY2025")
-    c2.metric("Total Debt FY2026E",    f"${total_debt[4]:.2f}B",   "Elevated post-acquisition")
-    c3.metric("Equity FY2026E",        f"${equity_s[4]:.2f}B",     f"vs ${equity_s[3]:.2f}B FY2025")
+    c1.metric("Total Assets FY2026A",  f"${total_assets[4]:.2f}B", f"vs ${total_assets[3]:.2f}B FY2025")
+    c2.metric("Total Debt FY2026A",    f"${total_debt[4]:.2f}B",   "Reported total debt")
+    c3.metric("Equity FY2026A",        f"${equity_s[4]:.2f}B",     f"vs ${equity_s[3]:.2f}B FY2025")
     c4.metric("Net Debt/EBITDA FY2025","1.08x",                      "Down from 2.71x in FY2022")
 
     cc1, cc2 = st.columns(2)
@@ -946,18 +946,18 @@ elif tab == 3:
                 "Current Ratio","Net PPE","Goodwill & Intangibles","Inventory"],
         "FY2022":["$4.06B","$(0.07)B","$3.61B","$(0.19)B","0.79x","$2.24B","$0.89B","$0.59B"],
         "FY2025":["$6.48B","$1.19B","$4.71B","$0.19B","1.18x","$3.16B","$0.91B","$0.92B"],
-        "FY2026E":["$9.20B","$1.50B","$5.40B","$0.50B","~1.31x","est.","est.","$0.72B"],
-        "Comment":["Strong asset growth","Improved net worth","Elevated post-TRS","Positive shift",
-                   "Improved liquidity","Large tangible base","~10% of assets","Typical retail"],
+        "FY2026A":["$7.56B","$1.46B","$2.63B","$0.17B","1.13x","$1.26B","$2.40B","$1.10B"],
+        "Comment":["Strong asset growth","Improved net worth","Reported total debt","Positive shift",
+                   "Stable liquidity","Large tangible base","Large lease-related intangible/ROU footprint","Higher inventory post-acquisition"],
     }).set_index("Item")
     st.dataframe(bs_tbl, use_container_width=True)
     st.caption(
         "FY2022–FY2025: Yahoo Finance (yfinance), verified against Dollarama IR annual reports. "
-        "FY2026A: Dollarama IR Q1–Q3 actuals + Q4 consensus estimate (March 24, 2026). "
+        "FY2026A: Dollarama IR reported Fiscal 2026 results (March 24, 2026). "
         "Includes IFRS 16 right-of-use assets (~$2.5B) on the asset side and lease liabilities "
         "on the liability side — both sides of the balance sheet include operating lease obligations "
-        "per IFRS 16. Net financial debt ($2.155B) excludes lease liabilities. "
-        "FY2026A total assets $9.20B is an estimate pending final audited financials."
+        "per IFRS 16. Net financial debt ($2.294B) excludes lease liabilities. "
+        "FY2026A total assets $7.56B reflects the reported year-end statement of financial position."
     )
 
     cx("Negative equity in FY2022 explained",
@@ -1233,7 +1233,7 @@ elif tab == 7:
     inv_10k    = 10000 * (CURR_PRICE / ipo_price)
 
     # Shareholder earnings = EPS CAGR + dividend yield (professor's rubric definition)
-    eps_cagr_pct = 22.0   # verified FY2022-FY2026 ($2.18→$4.76, 4yr CAGR)
+    eps_cagr_pct = 21.4   # verified FY2022-FY2026 ($2.18→$4.73, 4yr CAGR)
     div_yield    = 1.0    # approximate dividend yield
     tsr_est      = eps_cagr_pct + div_yield  # ~23%/yr total shareholder earnings
 
@@ -1520,7 +1520,7 @@ elif tab == 9:
             f"<div style='font-family:DM Serif Display,serif;font-size:32px;color:{fc};font-weight:700'>{val:.1f}%</div>"
             f"</div>", unsafe_allow_html=True)
     st.caption(
-        f"Presentation snapshot (WACC mean 9%, seed 42): P5=$70 · P25=$84 · P50=$95 · P75=$109 · P95=$134. "
+        f"Presentation snapshot (WACC mean 9%, seed 42): P5=$72 · P25=$85 · P50=$97 · P75=$112 · P95=$139. "
         "Note: probability estimates are model-dependent and sensitive to WACC assumptions. Scenario outputs, not forecasts."
     )
 

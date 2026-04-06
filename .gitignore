@@ -15,6 +15,7 @@ dollarama_v6b_dashboard_fixed.py
 dollarama_live_demo.py
 dollarama_speech_*.md
 speech_*.md
+dollarama_analysis.py
 
 # ── Python cache ──────────────────────────────────────────────────────
 __pycache__/
