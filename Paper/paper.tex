@@ -1,0 +1,655 @@
+\documentclass[11pt]{article}
+\usepackage{hyphenat}
+\usepackage{hyphenat}
+\setlength{\headheight}{13.6pt}
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx} % for \resizebox
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+\usepackage[table]{xcolor}
+\usepackage{fancyhdr}
+\usepackage{pdflscape}
+\usepackage{threeparttable}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{newtxtext,newtxmath}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black,
+  pdftitle={Dollarama Equity Research White Paper},
+  pdfauthor={Soni \& Warner}
+}
+
+\definecolor{navybg}{HTML}{24375E}
+\definecolor{accentred}{HTML}{E35D5B}
+\definecolor{lightgray}{HTML}{F4F6F8}
+\definecolor{tablegray}{HTML}{ECEFF3}
+
+\setstretch{1.08}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist[itemize]{leftmargin=1.2em,itemsep=0.2em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=1.4em,itemsep=0.2em,topsep=0.2em}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Dollarama Inc. (DOL.TO)}
+\rhead{Equity Research White Paper}
+\cfoot{\thepage}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X} % for tabularx/tabularx-derived tables
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}} % for longtable (fixed-width text column)
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+\newcommand{\thesisbox}{%
+\noindent
+\colorbox{navybg}{%
+\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+\vspace{0.75em}
+{\color{accentred}\Large\bfseries Investment Thesis --- BUY \textperiodcentered\ Target \$212 \textasciitilde{}22.9\% upside}\par
+\vspace{0.9em}
+{\color{white}\normalsize On March 24, 2026 Dollarama reported FY2026 results and the stock fell 9\%. Revenue grew 13\%. EPS grew 13\%. FY2026 EBITDA came in at \$2.41B (33.2\% margin vs 33.1\% in FY2025) --- margins were essentially flat year-over-year; the Australia segment contributed intra-year dilution but did not cause a full-year decline. We view the Reject Shop integration as a temporary headwind, not a structural impairment to the business model. ROIC of \textasciitilde{}30\% vs WACC of 9\% --- a 21-point spread --- has widened every year for five years. The market is pricing permanent damage. We think it is pricing a headwind.}
+\vspace{0.75em}}}
+}
+
+\begin{document}
+
+\begin{titlepage}
+\thispagestyle{empty}
+\thesisbox
+
+\vspace{1.1cm}
+
+{\LARGE\bfseries Equity Research White Paper\par}
+\vspace{0.25cm}
+{\Large Dollarama Inc. (DOL.TO)\par}
+\vspace{0.15cm}
+{\normalsize TSX \textbar{} Consumer Defensive \textbar{} Fixed-Price Retail \textbar{} Canada\par}
+
+\vspace{0.6cm}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{0.95\linewidth}{>{\bfseries}Y C{2.2cm} C{2.4cm} C{2.8cm} C{2.6cm}}
+\toprule
+Recommendation & Price Target & Current Price & FY2026 Revenue & EPS CAGR (4-yr)\\
+\midrule
+BUY & \$212 CAD (\textasciitilde{}23\% upside) & \$172.59 CAD (Apr 2026) & \$7.256B (+13.1\% YoY) & +22\% (FY2022--FY2026, $>$7\% $\checkmark$)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vfill
+
+\begin{flushleft}
+\textbf{Course:} MBAN5570 --- Equity Research Analytics\\
+\textbf{Institution:} Saint Mary's University\\
+\textbf{Prepared by:} Soni \& Warner\\
+\textbf{Date:} 2026-04-08\\[0.6em]
+\begin{itemize}
+    \item \href{https://dollarama-equity-research.streamlit.app/}{Dashboard}
+    \item \href{https://youtu.be/0xYxGSXXuGI}{Youtube Demo}
+\end{itemize}
+This paper is prepared as an academic exercise and does not constitute investment advice.
+\end{flushleft}
+\end{titlepage}
+
+\section*{Executive Summary and Recommendation}
+The central thesis of this paper is straightforward: the market reaction to Dollarama's FY2026 results materially over-penalized a temporary acquisition-related margin headwind and underweighted the durability of the core business. On March 24, 2026, Dollarama reported FY2026 full-year results showing revenue growth of 13.1\% and EPS growth of 12.1\%, yet the stock fell 9\% in a single session. The selloff was driven by Australia integration costs from the acquisition of The Reject Shop; however, per the press release, FY2026 EBITDA margin was 33.2\% versus 33.1\% in FY2025 --- essentially flat year-over-year. Our view is that this is a one-year integration issue rather than evidence of structural deterioration.
+
+We recommend \textbf{BUY} with a \textbf{price target of \$212 CAD}, implying approximately 23\% upside from \$172.59. Three findings support that recommendation. First, Dollarama possesses a durable scale moat grounded in 1,691 Canadian stores, direct sourcing relationships with more than 3,000 manufacturers, and a merchandise mix anchored by approximately 90\% non-discretionary consumables. Second, earnings quality remains exceptional: a four-year EPS CAGR of 22\%, EBITDA margins around 33\%, and free cash flow generation that exceeded 100\% of net income in FY2025. Third, the growth runway remains visible through continued Canadian store expansion, Dollarcity in Latin America, and The Reject Shop in Australia.
+
+Two primary valuation approaches converge on nearly the same result. A DCF using a CAPM-derived WACC of 5.5\% yields approximately \$213 per share, while an EV/EBITDA cross-check implies about \$212 per share. That estimate is effectively identical to the analyst consensus target of \$212.06 cited in the source document. The principal risks are clear: Reject Shop integration, China-linked input cost pressure, and valuation multiple compression. Even so, the current market price appears to discount a far more severe and persistent impairment than the evidence supports.
+
+\medskip
+\begin{table}[H]
+\centering
+\caption{Rubric Summary and Final Recommendation}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y C{2.5cm} C{2cm} C{3.2cm}}
+\toprule
+\rowcolor{tablegray}
+Rubric Metric & Actual Performance & Threshold & Assessment \\
+\midrule
+Revenue CAGR (FY2022--FY2026) & 14\% & $>$5\% & Exceeds threshold $\checkmark$ \\
+EPS CAGR (FY2022--FY2026) & 22\% & $>$7\% & Exceeds threshold $\checkmark$ \\
+Shareholder earnings (EPS growth + div. yield) & \textasciitilde{}23\%/yr & $>$10\% & Exceeds threshold $\checkmark$ \\
+IPO compounding CAGR (from \$17.50, Oct. 9 2009) & \textasciitilde{}15\%/yr & $>$10\% & Exceeds threshold $\checkmark$ \\
+Forward EPS growth (FY2027E / FY2028E) & +10.6\% / +11.5\% & $>$7\% & Exceeds threshold $\checkmark$ \\
+Recommendation & BUY & -- & Target \$212 CAD (\textasciitilde{}23\% upside) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\medskip
+
+\section{Case Background}
+Dollarama operates Canada's leading fixed-price discount retail format, offering products generally priced between \$1.25 and \$5.00 CAD. The operating model relies on high inventory turnover, a relatively narrow but essential SKU mix, simple store operations, disciplined labor requirements, and a value proposition that resonates across economic cycles. Because the business is concentrated in consumables, household items, cleaning supplies, snacks, and seasonal goods, demand is tied to routine household spending rather than discretionary purchase cycles.
+
+The immediate context for this case is the March 24, 2026 post-earnings selloff. FY2026 results were strong on revenue and earnings growth, but concerns around the newly acquired Reject Shop led the market to re-rate the stock downward. This paper evaluates whether that repricing reflects a rational reassessment of intrinsic value or a temporary dislocation caused by short-term acquisition noise.
+
+The evidence favors the latter interpretation. Dollarama's long-run economics remain unusual for a retailer: capital expenditure requirements are modest relative to revenue, new stores have fast payback periods, ROIC materially exceeds the cost of capital, and free cash flow consistently supports both expansion and shareholder distributions. The current case therefore centers on distinguishing a short-run integration headwind from a structural break in business quality.
+
+\section{Key Findings}
+\subsection{1. Business quality remains intact}
+Dollarama's business model continues to generate unusually strong operating results for the discount retail category. New stores require roughly \$0.92M in capital and can generate approximately \$3.2M in annual sales within two years. Capital expenditure runs at roughly 3--4\% of revenue while the company continues to open new stores. The result is a business that is scalable, capital-efficient, and highly cash generative.
+
+The company also retains a meaningful competitive advantage. Dollarama's national scale, dense store footprint, and direct sourcing relationships with more than 3,000 manufacturers create purchasing leverage that is difficult for smaller entrants to replicate. The \$5 price ceiling acts not only as a consumer promise but also as an internal discipline mechanism that protects brand identity and discourages competitors from entering a format with thin room for error. In strategic terms, the firm benefits from low supplier power, low buyer power, and limited threat of large-scale fixed-price competition in Canada.
+
+\subsection{2. Financial performance decisively exceeds rubric thresholds}
+Dollarama exceeds each core rubric threshold by a large margin. Revenue CAGR from FY2022 to FY2026 was 14\%, well above the 5\% threshold. EPS CAGR over the same period was 22\%, far above the 7\% threshold. Shareholder earnings, defined as EPS growth plus dividend yield, are approximately 23\% annually, more than double the 10\% threshold used in the course rubric. Forward consensus estimates also remain above threshold, with projected revenue growth above 8\% and EPS growth above 10\% for FY2027 and FY2028.
+
+The quality of those earnings also matters. EBITDA margins near 33\% are materially above North American discount retail peers. Free cash flow of \$1.397B in FY2025 exceeded net income by about 20\%, indicating that the accounting earnings are supported by actual cash generation rather than aggressive accrual accounting. This is a critical distinction in equity research because the market often rewards growth, but sustained premium multiples require cash-backed growth.
+
+\subsection{3. Balance sheet and capital allocation remain supportive}
+Dollarama's balance sheet has strengthened materially over the period under review, even though FY2026 reflects a deliberate acquisition-driven expansion in assets and leverage. The company moved from negative book equity in FY2022, caused by cumulative buybacks rather than operating distress, to positive equity by FY2023 and stronger equity levels thereafter. Net debt to EBITDA improved substantially through FY2025 before rising again in FY2026 due to the Reject Shop acquisition.
+
+Capital allocation has also been disciplined. Management has funded store growth, pursued share repurchases, increased the dividend, and still maintained strong cash generation. The diluted share count declined by roughly 12\% over five years, magnifying EPS growth relative to revenue growth. Using the corrected ROIC formulation appropriate for a company with historically negative book equity, Dollarama generated approximately 38\% ROIC in FY2025 versus a 9\% WACC, confirming substantial economic value creation.
+
+\subsection{4. The core investment debate is about duration of margin pressure}
+The principal analytical question is not whether Dollarama is a strong business; it is whether the FY2026 margin profile represents a temporary acquisition effect or a lasting impairment. Our assessment is that the base case should assume continued margin stability toward approximately 33\% EBITDA margin through FY2027 and beyond. If integration costs accelerate beyond expectations, intrinsic value would need to be revised downward. This makes Reject Shop integration the highest-sensitivity variable in the entire case.
+
+That issue deserves emphasis because it explains both the selloff and the opportunity. If investors incorrectly extrapolate a temporary integration drag into a permanent lower-margin steady state, the stock can become mispriced even when operating performance remains fundamentally sound. The current evidence suggests that this is exactly what happened.
+
+\section{Summary of Recommendations}
+\subsection{Primary recommendation}
+Maintain a \textbf{BUY} recommendation with a \textbf{\$212 CAD target price}. The stock appears undervalued relative to intrinsic value under both a DCF framework and an EV/EBITDA cross-check. The current market price embeds an overly pessimistic interpretation of the Reject Shop acquisition impact.
+
+\subsection{Operational recommendation}
+Monitor Reject Shop integration closely, with specific attention to EBITDA margin trajectory, procurement harmonization, and the pace at which Australian operations begin to approach Dollarama's historical productivity and margin profile. This is the most important leading indicator for whether the thesis remains intact.
+
+\subsection{Analytical recommendation}
+Place primary weight on economics-driven valuation measures and corrected return metrics rather than on superficial signals such as headline multiple comparisons or AI-generated outputs that are not grounded in accounting logic. Premium valuation multiples are justified when accompanied by superior margins, superior ROIC, and superior growth.
+
+\subsection{Pedagogical recommendation for the academic exercise}
+Treat AI outputs as accelerants for analysis rather than substitutes for domain judgment. In this case, AI-assisted tools were useful for anomaly detection, stress testing, transcript sentiment review, and model prototyping, but several outputs required rejection or correction. The project therefore demonstrates that speed in analysis is valuable only when paired with accounting discipline and final human accountability.
+
+\section{Conclusion}
+Dollarama remains a high-quality compounder with strong operating economics, clear avenues for future growth, and a demonstrated capacity to convert accounting profit into free cash flow. The stock's post-FY2026 selloff appears to reflect an overreaction to temporary acquisition-related concerns rather than a rational repricing of long-run intrinsic value.
+
+For the purposes of the academic rubric, the company clears every threshold comfortably: historical revenue growth is above 5\%, historical EPS growth is above 7\%, shareholder earnings exceed 10\%, long-run IPO compounding exceeds 10\%, and forward consensus growth remains above the required hurdle rates. The critical caveat is that the thesis is highly sensitive to the pace of Reject Shop margin recovery. Subject to that condition, the evidence supports a BUY recommendation and a \$212 target price.
+
+
+\newpage
+\appendix
+\section*{Appendices}
+\addcontentsline{toc}{section}{Appendices}
+All appendices below preserve the detailed quantitative and methodological material from the source document. The main text above is designed to read as a concise 4--5 page academic white paper, while the appendices retain the full supporting detail.
+
+
+
+\section{Detailed Traditional Equity Research Analysis}
+\subsection{Business Model}
+Dollarama operates a high-volume, fixed-price discount retail model with every product priced between \$1.25 and \$5.00 CAD, a range that has not changed meaningfully since inception and functions as the brand's most powerful self-imposed discipline. Approximately 90\% of sales are consumables (household products, snacks, cleaning supplies, seasonal merchandise), anchoring demand in non-discretionary spending that is largely insensitive to economic cycles. The store format is deliberately simple: narrow SKU range, high inventory turnover, and minimal labour complexity relative to a general merchandiser. Opening a new store requires approximately \$0.92 million in capital; those stores generate approximately \$3.2 million in annual sales within two years, a two-year capital payback producing exceptionally high returns on incremental investment (Dollarama IR, FY2025 Annual Report). CapEx runs at 3--4\% of revenue while the company opens 40--60 new stores per year. The business model is scalable, asset-light in its incremental economics, and generates strong operating cash flows that fund both expansion and shareholder returns simultaneously.
+
+\subsection{Corporate Governance}
+Neil Rossy serves as Chief Executive Officer, representing the third generation of the founding Rossy family's leadership of a retail business dating to 1910. Management and board insiders collectively hold approximately 10\% of outstanding shares, directly aligning their financial interests with those of public shareholders. The company has met or exceeded its own published financial guidance in each of the past five consecutive fiscal years, an unusually consistent track record for a publicly traded retailer. In FY2025, management raised the quarterly dividend by 15\% (Dollarama IR, Q4 FY2025 press release, March 2025), a deliberate cash flow confidence signal that is difficult to manufacture without genuine earnings conviction. Executive compensation is tied to equity ownership and multi-year performance outcomes, with no evidence of short-termism in capital allocation decisions. The board structure includes experienced independent directors with retail and financial expertise.
+
+\subsection{Sustainable Competitive Advantage}
+Dollarama's moat is built on three reinforcing elements. First, purchasing scale: as Canada's largest fixed-price buyer sourcing directly from over 3,000 global manufacturers, Dollarama dictates price rather than accepting it; suppliers need Dollarama's volume more than Dollarama needs any individual supplier. Second, the \$5.00 CAD price ceiling itself is a competitive barrier of the highest order: it prevents management from trading up to higher-margin products, which would compromise the brand promise, and it makes competitive entry economically unattractive to any challenger who would face the same cost structure without Dollarama's purchasing volume or store density. No meaningful fixed-price competitor operates at national scale in Canada. Third, store network density creates local network effects: 1,691 stores across all 10 provinces means Dollarama is already within convenient distance of the vast majority of Canadian consumers, raising the cost of competitive entry to prohibitive levels. Porter's Five Forces analysis confirms low competitive rivalry, low threat of new entrants, low supplier power, and low buyer power.
+
+\subsection{Industry Analysis}
+Dollarama operates in the discount variety retail sector, a segment with a well-documented history of outperformance during periods of elevated household budget pressure. When consumers face cost-of-living stress, they trade down toward value retailers; they tend not to trade back up when conditions improve, having discovered that quality-at-price is satisfactory. This creates an asymmetric demand profile. The Bank of Canada has cut its overnight policy rate from a peak of 5.0\% to 2.75\% as of early 2026, a monetary easing cycle that simultaneously increases consumer purchasing power and reduces Dollarama's cost of debt. Canada--US trade tensions that intensified through late 2025 reinforced the preference for domestic spending channels. With over 95\% of revenue generated within Canada, Dollarama is almost entirely insulated from cross-border retail disruption (Dollarama IR, FY2026 Q3, December 2025). In FY2026, Dollarama grew revenue 13.1\% versus Dollar Tree at 2.1\% and Dollar General at 4.8\% in their most recent fiscal years (SEC FY2025 10-K filings).
+
+\subsection{Critical Risk Factor Analysis}
+\textbf{Reject Shop integration drag --- highest sensitivity.} Per the March 24, 2026 press release, FY2026 EBITDA margin was 33.2\% versus 33.1\% in FY2025 --- essentially flat year-over-year. The Australian segment contributed 140bps of intra-year dilution relative to the Canadian baseline, but this was offset by Canadian operational leverage at the consolidated level. Our base case DCF assumes continued margin stability at approximately 33\% through FY2027. If integration costs escalate materially beyond current levels, our DCF assumptions would be too optimistic and the \$212 target would require downward revision. This is the single most sensitive variable in the entire analysis: a one percentage-point miss on margin assumptions alone moves the DCF by approximately \$15.
+
+\textbf{COGS inflation and China sourcing exposure.} A material portion of Dollarama's product mix is sourced from Chinese manufacturers. The \$5.00 CAD price ceiling limits management's ability to pass through input cost increases. CEO Neil Rossy stated in March 2026 that price increases would be implemented only where ``absolutely necessary.'' A sustained tariff shock or significant CAD/USD depreciation would compress COGS margins directly, with limited ability to offset through pricing.
+
+\textbf{Valuation multiple compression.} Even if the business performs exactly according to plan, a broad market re-rating of the discount retail sector or a sustained rise in risk-free rates compresses the 29--31$\times$ EV/EBITDA multiple independent of earnings performance. This is a valuation risk, not a business risk.
+
+\textbf{Black swan risk.} Extreme scenarios include: (i) a major global supply chain shock disrupting Chinese manufacturing across Dollarama's entire sourcing base simultaneously; (ii) an abrupt tariff escalation making fixed-price retail economics unworkable at the \$5 ceiling; and (iii) a structural shift in Canadian consumer behaviour away from fixed-price retail following a prolonged economic expansion.
+
+\subsection{Balance Sheet Analysis}
+Dollarama's balance sheet strengthened materially from FY2022 to FY2025 and the FY2026 structure reflects deliberate post-acquisition expansion. Total assets grew from \$4.06B to \$6.48B (FY2022--FY2025), expanding to \$7.558B in FY2026 following The Reject Shop acquisition (Dollarama IR, March 24, 2026 press release). Shareholders' equity recovered from negative \$66M in FY2022, a consequence of buybacks exceeding retained earnings rather than financial distress, to positive \$1.19B in FY2025. Tangible assets dominate; net PP\&E of approximately \$3.16B in FY2025 reflects the store network's physical scale, while goodwill and intangibles of approximately \$0.91B are moderate relative to total assets. Net debt to EBITDA declined from 2.71$\times$ to 1.08$\times$ through organic FCF alone before rising again to approximately 2.07$\times$ in FY2026 (adjusted net debt to EBITDA, per press release) as a result of the acquisition.
+
+% Supporting table for Appendix A.6
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{P{4.2cm} C{2.0cm} C{2.0cm} C{2.0cm} C{2.0cm} C{2.0cm}}
+\caption{Full Balance Sheet Analysis (FY2022--FY2026)}\\
+\toprule
+\rowcolor{tablegray}
+Balance Sheet Item & FY2022 & FY2023 & FY2024 & FY2025 & FY2026A \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{tablegray}
+Balance Sheet Item & FY2022 & FY2023 & FY2024 & FY2025 & FY2026A \\
+\midrule
+\endhead
+Total Assets (\$B) & 4.06 & 4.72 & 5.45 & 6.48 & 7.558 \\
+Net PP\&E (\$B) & 2.24 & 2.57 & 2.83 & 3.16 & \textasciitilde{}4.50 \\
+Goodwill \& Intangibles (\$B) & 0.89 & 0.89 & 0.89 & 0.91 & \textasciitilde{}1.50 \\
+Inventory (\$B) & 0.59 & 0.69 & 0.77 & 0.92 & 1.103 \\
+Cash \& Equivalents (\$B) & 0.09 & 0.09 & 0.10 & 0.09 & 0.332 \\
+Total Liabilities (\$B) & 4.13 & 4.49 & 4.74 & 5.29 & 6.103 \\
+Total Debt (\$B) & 3.61 & 3.72 & 4.05 & 4.71 & 2.625 \\
+Current Liabilities (\$B) & 0.69 & 0.67 & 0.76 & 0.64 & 1.348 \\
+Shareholders' Equity (\$B) & (0.07) & 0.24 & 0.71 & 1.19 & 1.456 \\
+Current Ratio & 0.79$\times$ & 0.98$\times$ & 1.11$\times$ & 1.18$\times$ & 1.13$\times$ \\
+Net Debt / EBITDA & 2.71$\times$ & 2.71$\times$ & 1.89$\times$ & 1.08$\times$ & 2.07$\times$ \\
+Interest Coverage & 8.2$\times$ & 9.6$\times$ & 11.8$\times$ & 14.0$\times$ & \textasciitilde{}9.3$\times$ \\
+Tangibles \% of Total Assets & 78\% & 79\% & 80\% & 86\% & \textasciitilde{}84\% \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Capital Allocation, Intensity, and ROIC}
+CapEx at 3--4\% of revenue while opening 40--60 new stores per year signals capital-light growth. Store economics of approximately \$0.92M invested for \$3.2M in annual sales within two years imply a strong incremental return profile. Management reduced the diluted share count by approximately 12\% over five years through cumulative buybacks of approximately \$3.5B (FY2022--FY2026), amplifying EPS growth above revenue growth. Return on invested capital --- computed as EBIT $\times$ (1 $-$ tax rate) $\div$ (total assets $-$ current liabilities $-$ cash), which is the valid formula for a company with historically negative book equity --- was approximately 40\% in FY2022, 43\% in FY2024, 38\% in FY2025, and approximately 28\% in FY2026 as the acquisition increased the capital base.
+
+% Supporting table for Appendix A.7
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{P{4.0cm} C{2.0cm} C{2.0cm} C{2.0cm} C{2.0cm} C{2.0cm}}
+\caption{Capital Allocation, CapEx Intensity, and ROIC Detail (FY2022--FY2026)}\\
+\toprule
+\rowcolor{tablegray}
+Metric & FY2022 & FY2023 & FY2024 & FY2025 & FY2026A \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{tablegray}
+Metric & FY2022 & FY2023 & FY2024 & FY2025 & FY2026A \\
+\midrule
+\endhead
+Revenue (\$B) & 4.331 & 5.053 & 5.867 & 6.413 & 7.256 \\
+Operating Cash Flow (\$B) & 1.164 & 0.870 & 1.530 & 1.640 & 1.650 \\
+CapEx (\$M) & 159 & 157 & 279 & 247 & 272.8 \\
+CapEx \% of Revenue & 3.7\% & 3.1\% & 4.8\% & 3.8\% & 3.8\% \\
+Free Cash Flow (\$B) & 1.004 & 0.713 & 1.251 & 1.397 & 1.380 \\
+Share Buybacks (\$B, approx.) & 1.06 & 0.69 & 0.66 & 1.09 & 0.834 \\
+ROIC --- correct formula & \textasciitilde{}40\% & \textasciitilde{}39\% & \textasciitilde{}43\% & \textasciitilde{}38\% & \textasciitilde{}28\% \\
+WACC (cost of capital) & 9.0\% & 9.0\% & 9.0\% & 9.0\% & 9.0\% \\
+ROIC $-$ WACC Spread & +31pp & +30pp & +34pp & +29pp & +19pp \\
+New stores opened & \textasciitilde{}60 & 41 & 25 & 9 & 75 \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Income Statement Analysis}
+Revenue grew from \$4.331B (FY2022) to \$7.256B (FY2026), a four-year CAGR of 14\%. Profit per \$100 of sales in FY2026 was approximately \$45.00 of gross profit, \$33.20 of EBITDA, and \$18.05 of net income, well above typical North American discount retail peers. FCF conversion has been exceptional: free cash flow of \$1.397B in FY2025 exceeded net income of \$1.169B by 20\%, confirming that reported earnings are backed by cash generation.
+
+% Supporting table moved from former Appendix D into the relevant Appendix A subsection.
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{P{3.6cm} C{1.4cm} C{1.4cm} C{1.4cm} C{1.4cm} C{1.6cm} P{2.6cm}}
+\caption{Full Financial Data: Income Statement and Key Metrics (FY2022--FY2026)}\\
+\toprule
+\rowcolor{tablegray}
+Metric & FY2022 & FY2023 & FY2024 & FY2025 & FY2026A & CAGR/Trend \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{tablegray}
+Metric & FY2022 & FY2023 & FY2024 & FY2025 & FY2026A & CAGR/Trend \\
+\midrule
+\endhead
+Revenue (\$B) & 4.331 & 5.053 & 5.867 & 6.413 & 7.256 & 14\% $\checkmark$ \\
+Revenue Growth YoY & -- & +16.7\% & +16.1\% & +9.3\% & +13.1\% & $>$5\% all yrs \\
+Gross Profit (\$B) & 1.904 & 2.203 & 2.610 & 2.892 & 3.269 & +15\% \\
+Gross Margin & 44.0\% & 43.6\% & 44.5\% & 45.1\% & 45.0\% & Stable \\
+EBITDA (\$B) & 1.283 & 1.530 & 1.882 & 2.149 & 2.408 & +17\% \\
+EBITDA Margin & 29.6\% & 30.3\% & 32.1\% & 33.1\% & 33.2\% & Expanding \\
+EBIT (\$B) & 0.983 & 1.186 & 1.520 & 1.713 & 1.938 & +18\% \\
+Net Income (\$B) & 0.663 & 0.802 & 1.010 & 1.169 & 1.309 & +19\% \\
+Net Margin (per \$100 sales) & 15.30 & 15.87 & 17.22 & 18.23 & 18.05 & Expanding \\
+Diluted EPS (\$) & 2.18 & 2.76 & 3.56 & 4.16 & 4.73 & 22\% $\checkmark$ \\
+EPS Growth YoY & -- & +26.6\% & +29.0\% & +16.9\% & +13.7\% & $>$7\% all yrs \\
+FCF (\$B) & 1.004 & 0.713 & 1.251 & 1.397 & 1.380 & Strong \\
+FCF / Net Income & 151\% & 89\% & 124\% & 120\% & 105\% & $>$100\% avg \\
+CapEx (\$M) & 159 & 157 & 279 & 247 & 272.8 & 3--4\% rev \\
+CapEx / Revenue & 3.7\% & 3.1\% & 4.8\% & 3.8\% & 3.8\% & Capital-light \\
+ROIC (correct formula) & \textasciitilde{}40\% & \textasciitilde{}39\% & \textasciitilde{}43\% & \textasciitilde{}38\% & \textasciitilde{}28\% & vs WACC 9\% \\
+Canadian Stores & 1,541 & 1,582 & 1,607 & 1,616 & 1,691 & $\to$2,200/2034 \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Trend Analysis and Threshold Assessment}
+Revenue growth exceeded 5\% in every year of the analysis: 16.7\% in FY2023, 16.1\% in FY2024, 9.3\% in FY2025, and 13.1\% in FY2026. The four-year revenue CAGR of 14\% exceeds the rubric threshold by nine percentage points. EPS grew 20.9\% (or 26.6\% depending on the cited annual series), 26.1\% / 29.0\%, 16.9\%, and 12.1\% / 13.7\% across the period depending on the data cut used in the source tables, and the four-year EPS CAGR of 22\% exceeds the 7\% rubric threshold by 15 percentage points. EBITDA margins expanded in each year of the analysis, including FY2026 (33.2\%) which slightly exceeded FY2025 (33.1\%) on a consolidated basis.
+
+\subsection{Valuation Analysis}
+Dollarama trades at approximately 29--31$\times$ EV/EBITDA, 36.5$\times$ trailing P/E, 3.24$\times$ PEG, 7.5$\times$ price-to-sales, 40.8$\times$ price-to-book, 8.3$\times$ EV/revenue, and 31.6$\times$ EV/EBITDA. All seven multiples exceed the Consumer Defensive sector benchmark, and the source document transparently labels the dashboard signal as ``OVERVALUED.'' The key interpretive point, however, is that the premium is rational given superior economics. Dollarama earns around 33\% EBITDA margins versus approximately 10--12\% for peers, ROIC around 38\% versus roughly 13--15\% for peers, and revenue growth roughly three times the peer rate. A premium multiple is therefore analytically justified.
+
+Primary valuation: EV/EBITDA at 29$\times$ FY2026 EBITDA of \$2.408B implies roughly \$70B enterprise value and approximately \$212/share. Secondary valuation: DCF at WACC 5.5\% independently yields about \$213/share. Analyst consensus at the time of the source snapshot was \$212.06. Three methods converge on essentially the same answer.
+
+\begin{table}[H]
+\centering
+\caption{Valuation Multiples vs Sector Benchmarks}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y C{2.1cm} C{2.2cm} Y}
+\toprule
+\rowcolor{tablegray}
+Valuation Multiple & Dollarama (DOL.TO) & Sector Benchmark & Signal vs. Benchmark \\
+\midrule
+Trailing P/E & 36.5$\times$ & 25.0$\times$ & Above --- expensive vs sector average \\
+Forward P/E & 36.6$\times$ & 22.0$\times$ & Above --- expensive vs sector average \\
+PEG Ratio & 3.24$\times$ & 2.0$\times$ & Above --- growth priced in \\
+Price / Sales (TTM) & 7.53$\times$ & 2.5$\times$ & Above --- premium margin justified \\
+Price / Book & 40.8$\times$ & 8.0$\times$ & Above --- asset-light model + buybacks \\
+EV / Revenue & 8.26$\times$ & 3.0$\times$ & Above --- margin premium reflects quality \\
+EV / EBITDA & 31.55$\times$ & 18.0$\times$ & Above --- justified by 33\% margins \\
+Composite Signal & OVERVALUED & 7 / 7 above average & Correct vs sector avg; rational vs quality \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{CAPM / WACC Derivation}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y Y}
+\toprule
+\rowcolor{tablegray}
+CAPM / WACC Component & Value and Source \\
+\midrule
+Risk-free rate (Rf) --- 10yr Government of Canada bond, March 2026 & 3.50\% (Bank of Canada) \\
+Beta ($\beta$) --- Yahoo Finance 5-year monthly regression & 0.37 \\
+Equity Risk Premium (ERP) --- Damodaran (Canada, 2026) & 6.50\% \\
+Cost of Equity: $K_e = R_f + \beta \times ERP$ & 5.92\% \\
+Pre-tax cost of debt & 4.25\% \\
+Effective tax rate & 26.5\% \\
+After-tax cost of debt & 3.12\% \\
+Debt weight & 12\% \\
+Equity weight & 88\% \\
+WACC calculated & 5.57\% $\to$ slider set to 5.5\% \\
+WACC stress test & 9.0\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{DCF Model Inputs and Output}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y C{4.1cm}}
+\toprule
+\rowcolor{tablegray}
+DCF Parameter & Value \\
+\midrule
+Base FCF (FY2025 actual free cash flow) & \$1.397B \\
+Stage 1 FCF growth rate & 8.0\%/yr \\
+Stage 1 forecast horizon & 5 years \\
+Terminal growth rate (TGR) & 2.5\% \\
+WACC --- base case & 5.5\% \\
+Net financial debt & \$2.294B \\
+Diluted shares outstanding & 277 million \\
+DCF Price & \$213 CAD \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Five-Year FCF Projection (Base FCF \$1.397B, Growth 8.0\%, WACC 5.5\%)}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{C{2.1cm} C{2.1cm} C{2.1cm} C{2.1cm} C{2.1cm}}
+\toprule
+\rowcolor{tablegray}
+Year 1 & Year 2 & Year 3 & Year 4 & Year 5 \\
+\midrule
+FCF: \$1.509B & FCF: \$1.629B & FCF: \$1.760B & FCF: \$1.901B & FCF: \$2.053B \\
+PV: \$1.430B & PV: \$1.464B & PV: \$1.499B & PV: \$1.534B & PV: \$1.571B \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{DCF Sensitivity Table --- Implied Share Price (CAD) by WACC and Terminal Growth Rate}
+\small
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
+\toprule
+\rowcolor{tablegray}
+WACC $\backslash$ TGR & 1.5\% & 2.0\% & 2.5\% & 3.0\% & 3.5\% \\
+\midrule
+3.0\% & \$454 & \$673 & \$1,332 & N/A & N/A \\
+4.0\% & \$268 & \$331 & \$437 & \$648 & \$1,281 \\
+5.0\% & \$188 & \$217 & \$258 & \$319 & \$420 \\
+5.5\% (base) & \$163 & \$185 & \$213 & \$253 & \$313 \\
+6.0\% & \$144 & \$160 & \$181 & \$209 & \$248 \\
+7.0\% & \$116 & \$126 & \$138 & \$154 & \$174 \\
+8.0\% & \$96 & \$103 & \$111 & \$121 & \$133 \\
+9.0\% (stress) & \$82 & \$87 & \$93 & \$99 & \$107 \\
+10.0\% & \$71 & \$75 & \$79 & \$84 & \$89 \\
+11.0\% & \$62 & \$65 & \$68 & \$72 & \$76 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Forward Guidance}
+Dollarama operates 1,691 Canadian stores against a long-term target of approximately 2,200 by 2034. Dollarcity (60.1\% owned) targets 1,000+ Latin American stores by 2031 from a base of 732 (as at December 31, 2025). The Reject Shop establishes a third international platform in Australia with 402 stores as at February 1, 2026. Forward EPS consensus estimates in the source paper are +10.6\% in FY2027 and +11.5\% in FY2028; projected revenue growth is 8.1\% and 8.2\%, respectively. These forecasts continue to exceed the academic rubric thresholds.
+
+\begin{table}[H]
+\centering
+\caption{Forward Guidance and Store Network Projections}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y C{1.7cm} C{1.7cm} C{1.7cm} Y}
+\toprule
+\rowcolor{tablegray}
+Metric & FY2026A & FY2027E & FY2028E & Rubric Assessment \\
+\midrule
+Revenue (\$B) & 7.256 & \textasciitilde{}7.83 & \textasciitilde{}8.48 & Growth 8.1\% / 8.2\%; both $>$5\% $\checkmark$ \\
+EPS (\$) & 4.73 & \textasciitilde{}5.26 & \textasciitilde{}5.87 & Growth +10.6\% / +11.5\%; both $>$7\% $\checkmark$ \\
+EBITDA Margin & 33.2\% & \textasciitilde{}33.5\% & \textasciitilde{}33.5\% & Stable; modest expansion expected \\
+Shareholder earnings (EPS growth + div.) & \textasciitilde{}23\% & \textasciitilde{}12\% & \textasciitilde{}12\% & Both years $>$10\% $\checkmark$ \\
+\bottomrule
+\end{tabularx}
+\vspace{0.6em}
+
+\begin{tabularx}{\linewidth}{Y C{2cm} C{2cm} C{2cm} C{2cm}}
+\toprule
+\rowcolor{tablegray}
+Year & Canada Stores & Dollarcity (LatAm) & Reject Shop (AUS) & Total Stores \\
+\midrule
+FY2025 (actual) & 1,616 & 632 & 395 & 2,643 \\
+FY2026A & 1,691 & 732 & 402 & 2,825 \\
+FY2027E & 1,751 & 800 & 420 & 2,971 \\
+FY2028E & 1,811 & 900 & 440 & 3,151 \\
+Long-term target (2034) & 2,200 & 1,000+ & \textasciitilde{}450 & \textasciitilde{}3,650+ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Shareholder Value Creation Analysis}
+Under the course definition, shareholder earnings equal EPS growth plus dividend yield. Since listing at \$17.50 CAD on October 9, 2009, the stock has compounded at approximately 15\% annually over 16.5 years, turning a hypothetical \$10,000 IPO investment into approximately \$99,000. Historically, shareholder earnings have approximated 23\% annually, combining a 22\% EPS CAGR and roughly 1\% dividend yield. Forward shareholder earnings are estimated at roughly 12\% annually, still above the 10\% threshold.
+
+\clearpage
+\section{AI-Assisted Equity Research Analysis}
+In addition to the traditional analyses above, the source document incorporated four clearly labeled AI-assisted tools.
+
+\textbf{AI Tool 1 --- EBITDA Margin Trend Detection.} The AI scanned five years of financial statements, correctly identified margin expansion from FY2022 through FY2025, and noted that FY2026 consolidated margin of 33.2\% was essentially flat versus FY2025 (33.1\%), with Australia contributing intra-year dilution that was offset by Canadian operational leverage.
+
+\textbf{AI Tool 2 --- DCF Intrinsic Value and Monte Carlo Simulation.} Parameters included WACC 5.5\% base / 9.0\% stress, terminal growth 2.5\%, stage-one FCF growth 8\%, base FCF \$1.397B, net debt \$2.294B (FY2026 actual, per March 24, 2026 press release, excluding IFRS 16 lease liabilities), and 277M diluted shares. DCF at WACC 5.5\% yielded \$213/share. At WACC 9.0\%, the stress case yielded approximately \$92/share. The 5,000-path Monte Carlo using a deliberate stress lens produced P5 = \$70, P25 = \$83, P50 = \$95, P75 = \$108, and P95 = \$133.
+
+The key conclusion preserved from the source document is that the model's high $R^2$ is not evidence of predictive power. Because the moving-average feature is itself a smoothed transformation of price, the regression effectively learns to repeat the price back. The output is therefore a tutorial deliverable rather than a credible investment signal.
+
+
+\begin{table}[H]
+\centering
+\caption{Monte Carlo DCF Simulation (5,000 Paths) --- Parameters}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y Y Y}
+\toprule
+\rowcolor{tablegray}
+Parameter & Distribution & Values \\
+\midrule
+WACC & Normal & Mean 9.0\%, SD 0.8\% \\
+FCF Growth (Stage 1) & Triangular & Floor 2.7\%, Mode 8.0\%, Ceiling 17.1\% \\
+Terminal Growth Rate & Triangular (constrained) & Floor 1.5\%, Mode 2.5\%, Ceiling 3.5\%; constrained $\leq$ WACC $-$ 1.5pp \\
+Base FCF & Fixed & \$1.397B \\
+Net Debt & Fixed & \$2.294B \\
+Diluted Shares & Fixed & 277 million \\
+Simulation paths & Fixed & 5,000 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Appendix A5. Monte Carlo Results --- WACC Mean 9.0\% (Stress Scenario)}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y C{1.7cm} C{1.7cm} C{1.9cm} C{1.7cm} C{1.7cm}}
+\toprule
+\rowcolor{tablegray}
+Statistic & P5 & P25 & P50 (Median) & P75 & P95 \\
+\midrule
+Implied Share Price (CAD) & \$70 & \$83 & \$95 & \$108 & \$133 \\
+\bottomrule
+\end{tabularx}
+\vspace{0.4em}
+
+\begin{tabularx}{\linewidth}{Y C{4cm}}
+\toprule
+\rowcolor{tablegray}
+Probability Metric & Result \\
+\midrule
+Probability share price $>$ \$212.06 (analyst target) & 0.1\% \\
+Probability share price $>$ \$172.59 (profitable outcome) & 0.4\% \\
+Probability share price $<$ \$130 (severe stress outcome) & 93.8\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{AI Tool 3 --- NLP Sentiment Analysis on Earnings Call Transcripts.} Polarity scoring was applied to five Dollarama earnings call transcripts using a custom lexicon. Results were: FY2022 Annual $-$8.6\%, FY2023 +10.0\%, FY2024 +14.6\%, FY2025 +14.8\%, and FY2026 Q3 +12.6\%.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{P{2.8cm} C{1.5cm} C{1.1cm} C{1.1cm} C{1.4cm} P{3.2cm} P{1.6cm} P{3.2cm}}
+\caption{NLP Sentiment Analysis: Full Results (FY2022--FY2026 Q3)}\\
+\toprule
+\rowcolor{tablegray}
+Earnings Call & Polarity Score & Pos. Words & Neg. Words & Subjectivity & Financial Context & Signal & Interpretation \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{tablegray}
+Earnings Call & Polarity Score & Pos. Words & Neg. Words & Subjectivity & Financial Context & Signal & Interpretation \\
+\midrule
+\endhead
+FY2022 Annual & $-$8.6\% & 11 & 26 & 2.3\% & Supply chain crisis; margin pressure; freight cost surge & Negative & Management honest about headwinds; no manufactured optimism \\
+FY2023 Annual & +10.0\% & 19 & 2 & 4.7\% & Revenue +16.7\%; EPS +26.6\%; margin recovery to 30.3\% & Positive & Sharp reversal in tone tracked recovery in financials \\
+FY2024 Annual & +14.6\% & 24 & 0 & 3.7\% & Revenue +16.1\%; EPS +29.0\%; EBITDA margin 32.1\% & Positive & Zero negative words; exceptional confidence signal \\
+FY2025 Annual & +14.8\% & 26 & 0 & 4.0\% & Revenue +9.3\%; EPS +16.9\%; EBITDA margin 33.1\% & Positive $\uparrow$ & Peak polarity and strongest confidence signal \\
+FY2026 Q3 & +12.6\% & 24 & 1 & 5.5\% & Revenue +13\% YTD; Reject Shop integration in progress & Positive & Slight dip from peak; one negative word reflects acquisition complexity \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\textbf{AI Tool 4 --- ML Price Model (Linear Regression).} Using 1,255 trading days of DOL.TO price history and features including a 10-day moving average and 14-day RSI, the test-set results were reported as $R^2 = 0.884$ and RMSE = \$3.84.
+
+\begingroup
+\small
+\begin{table}[H]
+\centering
+\caption{ML Price Model: Linear Regression Results}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Y Y}
+\toprule
+\rowcolor{tablegray}
+Parameter & Value \\
+\midrule
+Model type & Linear Regression (scikit-learn OLS, Python) \\
+Feature 1 & 10-day Moving Average of closing price (MA10) \\
+Feature 2 & 14-day Relative Strength Index (RSI14) \\
+Target variable & Next-day closing price of DOL.TO (CAD) \\
+Training data & 1,255 trading days of DOL.TO daily price history \\
+Train / test split & 80\% / 20\% chronological \\
+$R^2$ --- test set & 0.884 \\
+RMSE --- test set & \$3.84 \\
+MA10 coefficient & 1.0027 \\
+RSI14 coefficient & Small; secondary driver \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\endgroup
+
+
+\clearpage
+\section{Critical Evaluation of AI Outputs}
+The source document correctly treats traditional analysis as the benchmark and evaluates each AI-generated output against accounting logic and financial reasoning.
+
+\textbf{What AI got right.} EBITDA margin trend detection was accurate and useful. The Monte Carlo simulation was methodologically useful as a risk communication tool. NLP sentiment scores broadly tracked financial reality and provided corroborative evidence of management credibility.
+
+\textbf{What AI got wrong or missed.} The most important error was the use of shareholders' equity as the ROIC denominator. Because Dollarama had negative equity in FY2022 as a result of buybacks, the resulting ROIC output was structurally invalid. The Altman Z-Score was also inappropriately applied to a Canadian IFRS 16 retailer. The linear regression price model exhibited data leakage because the moving-average feature was itself a lagged transformation of the target variable. LDA topic modeling was also inappropriate for a corpus of only five transcripts.
+
+
+\textbf{What was accepted.} Margin trend detection was retained as a core analytical output. The Monte Carlo simulation was retained as a stress-testing and downside-communication tool, not as the base valuation estimate. NLP polarity scores were retained as supplementary evidence on management credibility.
+
+\textbf{What was discarded.} The incorrect ROIC calculation was discarded and rebuilt using the proper asset-based denominator. The Altman Z-Score was discarded as inapplicable. The LDA topic model was discarded due to insufficient corpus size. The ML model was retained only as a technical tutorial deliverable and excluded from valuation use because of confirmed data leakage.
+
+\textbf{How AI enhances equity research when used properly.} The project demonstrates three principles: AI improves speed, but not judgment; AI can identify patterns, but not explain economic causality; and final accountability for formulas, assumptions, and interpretation remains with the analyst.
+
+\clearpage
+% Supporting table moved from former Appendix D.
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{P{4.0cm} P{4.0cm} P{7.0cm}}
+\caption{Data Sources, Methodology, and Citation Index}\\
+\toprule
+\rowcolor{tablegray}
+Data Element & Source & Notes and Verification \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{tablegray}
+Data Element & Source & Notes and Verification \\
+\midrule
+\endhead
+FY2022--FY2025 financial statements & Yahoo Finance (\texttt{yfinance} Python library) & Pulled via DOL.TO ticker and verified against Dollarama IR annual reports and press releases. \\
+FY2026 income statement & Dollarama Investor Relations press releases & Q1--Q3 FY2026 actuals plus Q4 results disclosed March 24, 2026. \\
+Current market data & Yahoo Finance info dict & Frozen to April 3, 2026 in presentation mode. \\
+Peer data (DLTR, DG) & SEC EDGAR 10-K filings FY2025 & Dollar Tree and Dollar General filings used for peer comparisons. \\
+Risk-free rate (3.50\%) & Bank of Canada & 10-year Government of Canada benchmark bond yield, March 2026. \\
+Equity risk premium (6.50\%) & Damodaran, NYU (2026) & Canada market equity risk premium. \\
+IPO offer price (\$17.50 CAD) & TSX / Dollarama IR / CBC News & October 9, 2009 IPO first trading day. \\
+Earnings call transcripts (NLP) & Dollarama IR / Seeking Alpha & FY2022 Annual through FY2026 Q3. \\
+Daily price history (ML model) & Yahoo Finance (\texttt{yfinance}) & 1,255 trading days of OHLCV history. \\
+Analyst consensus target (\$212.06) & Yahoo Finance info dict & \texttt{targetMeanPrice} field frozen in presentation mode. \\
+Bank of Canada policy rate (2.75\%) & Bank of Canada & Overnight rate as of early 2026. \\
+Dollar General / Dollar Tree revenue growth & SEC 10-K filings / company press releases & DLTR FY2025 revenue growth 2.1\%; DG FY2025 revenue growth 4.8\%. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+Thank you!!
+
+\end{document}
