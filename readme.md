@@ -199,17 +199,6 @@ git checkout main     # switch to main branch
 
 ---
 
-### Optional — Export data to Excel first
-
-```bash
-# Pull live data from Yahoo Finance and save to dollarama_snapshot.xlsx
-python dollarama_data_export.py
-```
-
-This creates a 13-sheet Excel workbook and a `csv/` folder with individual files. Run this once before a presentation to have the data cached locally.
-
----
-
 ## Presentation Mode
 
 The dashboard ships with **`PRESENTATION_MODE = True`** hardcoded near the top of `Dashboard.py`. This is the most important setting.
@@ -400,17 +389,6 @@ openpyxl >= 3.1.0   # for data export only
 **Python 3.9+ required.** Tested on Python 3.10, 3.11, 3.12 across Windows, macOS, and Linux.
 
 > **Note on yfinance:** Pinned below 1.0.0 because yfinance 1.x requires a C compiler for installation (`curl_cffi` dependency). Version 0.2.x installs cleanly on all platforms with no compilation step.
-
----
-
-## Deployment — Streamlit Community Cloud (free)
-
-1. Push this repo to GitHub
-2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
-3. Click **New app** → select this repo → branch `main` → main file: `Dashboard.py`
-4. Click **Deploy**
-
-Streamlit reads `requirements.txt` automatically. The app will be live at a public URL within a few minutes.
 
 ---
 
