@@ -8,7 +8,7 @@
 ![Status](https://img.shields.io/badge/Status-Presentation%20Ready-brightgreen)
 
 **MBAN5570 — Equity Research Analytics**  
-**Soni & Warner · Saint Mary's University · 2025**
+**Soni & Warner · Saint Mary's University · 2026**
 
 ***THIS IS A UNIVERSITY PROJECT NOT MEANT FOR FINANCIAL ADVICE***
 
