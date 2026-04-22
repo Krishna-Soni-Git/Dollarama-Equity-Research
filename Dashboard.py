@@ -285,6 +285,26 @@ DATA = fetch_all(PRESENTATION_MODE)
 LIVE = DATA["live"]
 INFO = DATA["info"]
 
+@st.cache_data(show_spinner=False, ttl=60)
+def fetch_live_price(presentation_mode: bool = False):
+    """Fetch current price every 60 s using 1-min intraday history (cloud-friendly)."""
+    if presentation_mode:
+        return _SNAP["currentPrice"]
+    try:
+        import yfinance as yf
+        h = yf.Ticker(TICKER).history(period="1d", interval="1m")
+        if not h.empty:
+            return float(h["Close"].iloc[-1])
+    except Exception:
+        pass
+    try:
+        lp = getattr(yf.Ticker(TICKER).fast_info, "last_price", None)
+        if lp:
+            return float(lp)
+    except Exception:
+        pass
+    return None
+
 # Derive fiscal year labels from income statement columns
 if DATA["income"] is not None:
     INC   = DATA["income"]
@@ -302,14 +322,18 @@ else:
     N = 5
     INC = BAL = CF = None
 
-# Current price — live from info, else cached
+# Current price — dedicated 60-second cached fetch, falls back to info dict
 def _curr_price():
     if PRESENTATION_MODE:
         return _SNAP["currentPrice"], True
-    p = INFO.get("currentPrice") or INFO.get("regularMarketPrice")
-    if p and isinstance(p, (int, float)) and not math.isnan(p):
-        return float(p), LIVE
-    return 170.0, False   # March 2026 estimate fallback
+    p = fetch_live_price(PRESENTATION_MODE)
+    if p:
+        return p, True
+    # Secondary fallback: info dict (may be stale)
+    p2 = INFO.get("currentPrice") or INFO.get("regularMarketPrice")
+    if p2 and isinstance(p2, (int, float)) and not math.isnan(p2):
+        return float(p2), LIVE
+    return _SNAP["currentPrice"], False   # last-resort snapshot
 
 CURR_PRICE, PRICE_LIVE = _curr_price()
 
