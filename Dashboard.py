@@ -1,7 +1,7 @@
 """
 =============================================================================
 DOLLARAMA INC. (DOL.TO) — UNIFIED PRESENTATION DASHBOARD
-MBAN5570 · Soni & Warner, 2025 · v6B — Aligned with Google Colab v6B
+MBAN5570 · Soni & Warner, 2026 · v6B — Aligned with Google Colab v6B
 
 EXACT ALIGNMENT WITH COLAB v6B:
   · Colour palette: BRAND=#E63946 (red), ACCENT=#1D3557 (navy)
@@ -46,7 +46,7 @@ except ImportError:
 # =============================================================================
 # PRESENTATION MODE — single toggle, controls all live data in the dashboard
 # =============================================================================
-PRESENTATION_MODE = True   # ← flip to False for live mode
+PRESENTATION_MODE = False  # live mode — all data fetched from yfinance
 
 # ── Snapshot taken: April 3 2026 ─────────────────────────────────────────
 _SNAP = {
@@ -195,7 +195,7 @@ def fmt_pct(v):
 # LIVE DATA FETCHES
 # ─────────────────────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False, ttl=3600)
-def fetch_all():
+def fetch_all(presentation_mode: bool = False):
     """
     Pull all live data from yfinance exactly as Colab Cell 4 does.
     Returns dict with all statements, info, history.
@@ -204,16 +204,27 @@ def fetch_all():
     result = {
         "income": None, "balance": None, "cashflow": None,
         "info": {}, "hist": None, "hist_ipo": None,
-        "live": False, "error": None,
+        "live": True, "error": None,
     }
     try:
         import yfinance as yf
         dol = yf.Ticker(TICKER)
-        if PRESENTATION_MODE:
+        if presentation_mode:
             info = _SNAP
         else:
-            info = dol.info
-            if not info or info.get("regularMarketPrice") is None:
+            info = dol.info or {}
+            # Patch in live price via fast_info if info dict is missing it
+            try:
+                fi = dol.fast_info
+                if not info.get("currentPrice") and not info.get("regularMarketPrice"):
+                    lp = getattr(fi, "last_price", None)
+                    if lp:
+                        info = dict(info)
+                        info["currentPrice"] = float(lp)
+                        info["regularMarketPrice"] = float(lp)
+            except Exception:
+                pass
+            if not info:
                 raise ValueError("info dict empty")
 
         # Annual statements — exact attribute names from Colab Cell 4
@@ -256,7 +267,7 @@ def fetch_all():
         result["error"] = str(e)
     return result
 
-DATA = fetch_all()
+DATA = fetch_all(PRESENTATION_MODE)
 LIVE = DATA["live"]
 INFO = DATA["info"]
 
@@ -1339,7 +1350,7 @@ elif tab == 8:
 
         # CAPM derivation
         st.markdown("#### CAPM / WACC Derivation")
-        rf, beta_v, erp = 3.50, (_SNAP if PRESENTATION_MODE else INFO).get("beta", 0.37), 6.50
+        rf, beta_v, erp = 3.50, INFO.get("beta", 0.37), 6.50
         if not isinstance(beta_v,(int,float)) or math.isnan(beta_v): beta_v = 0.37
         ke = rf + beta_v * erp
         kd_at = 4.25 * (1 - 26.5/100)

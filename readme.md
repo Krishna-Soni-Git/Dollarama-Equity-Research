@@ -328,11 +328,39 @@ All FY2026 figures sourced from Dollarama IR press release, March 24, 2026.
 ```
 dollarama-equity-research/
 │
-├── Dashboard.py                 # Main Streamlit app — 13 tabs, all analysis
-├── dollarama_data_export.py     # Optional: export live data to Excel + CSV
-├── requirements.txt             # Python dependencies
-├── README.md                    # This file
-└── .gitignore                   # Keeps temp files and secrets out of repo
+├── Dashboard.py                         # Main Streamlit app (13 tabs)
+├── dollarama_data_pull.py               # Pulls financial + market data
+├── dollarama_analysis.py                # Core financial calculations (DCF, ratios)
+├── dollarama_research.py                # Research logic / valuation support
+│
+├── Output/                              # Generated outputs (charts, CSVs)
+│   ├── dollarama_financials.csv
+│   ├── dollarama_prices.csv
+│   ├── fig1_income.png
+│   ├── fig2_balance.png
+│   ├── fig3_valuation.png
+│   ├── fig4_montecarlo.png
+│   └── fig5_trends.png
+│
+├── Paper/                               # Final written reports
+│   ├── MBAN5570-PROJ001-SONI_WARNER.pdf
+│   └── MBAN5570-PROJ001-SONI_WARNER.docx
+│
+├── PPT/                                 # Presentation files
+│   ├── dollarama_updated.pptx
+│   ├── dollarama_presentation_speaking_points.md
+│   └── dollarama_presentation_speaking_points.html
+│
+├── dollarama_dashboard_alternative.html # Exported dashboard version
+├── dollarama_analysis_output.txt        # Text output logs / summaries
+├── dollarama_snapshot.xlsx              # Snapshot of financial data
+│
+├── config.toml                          # Streamlit / config settings
+├── requirements.txt                     # Python dependencies
+├── README.md                            # Project documentation
+├── .gitignore                           # Files excluded from Git
+│
+└── (ignored files below)
 ```
 
 ---
