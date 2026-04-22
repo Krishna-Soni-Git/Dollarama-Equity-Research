@@ -212,20 +212,34 @@ def fetch_all(presentation_mode: bool = False):
         if presentation_mode:
             info = _SNAP
         else:
-            info = dol.info or {}
-            # Patch in live price via fast_info if info dict is missing it
+            info = {}
             try:
-                fi = dol.fast_info
-                if not info.get("currentPrice") and not info.get("regularMarketPrice"):
-                    lp = getattr(fi, "last_price", None)
-                    if lp:
-                        info = dict(info)
-                        info["currentPrice"] = float(lp)
-                        info["regularMarketPrice"] = float(lp)
+                info = dol.info or {}
             except Exception:
                 pass
-            if not info:
-                raise ValueError("info dict empty")
+
+            # Always patch price from history — most reliable endpoint on cloud hosts
+            # dol.info is often blocked by Yahoo on AWS/GCP IPs
+            try:
+                _h1d = dol.history(period="5d")
+                if not _h1d.empty:
+                    _live_price = float(_h1d["Close"].iloc[-1])
+                    info = dict(info)
+                    info["currentPrice"]       = _live_price
+                    info["regularMarketPrice"] = _live_price
+            except Exception:
+                pass
+
+            # Fallback: fast_info if history also failed
+            if not info.get("currentPrice"):
+                try:
+                    lp = getattr(dol.fast_info, "last_price", None)
+                    if lp:
+                        info = dict(info)
+                        info["currentPrice"]       = float(lp)
+                        info["regularMarketPrice"] = float(lp)
+                except Exception:
+                    pass
 
         # Annual statements — exact attribute names from Colab Cell 4
         income  = dol.financials
